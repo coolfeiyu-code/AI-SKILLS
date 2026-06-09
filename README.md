@@ -4,9 +4,11 @@
 
 | 文件夹名称 | 技能中文标签 | 核心功用 | 常用激活命令 |
 | :--- | :--- | :--- | :--- |
+| `agent-reach` | **互联网平台路由器** | 17 平台工具集合，支持搜索/阅读社交/招聘/开发/网页/视频，零配置 8 渠道 | `$agent-reach` / `搜一下` / `读这个链接` |
 | `impeccable` | **前端视觉判官** | 像素级审查，干掉AI塑料感审美，死磕色彩间距排版动效，附带 critique / audit / polish / craft 全套子命令 | `$impeccable critique` / `$impeccable polish` |
 | `brandkit` | **品牌视觉生成器** | 生成高端品牌指南板、Logo系统、视觉身份套件、品牌色板 | `用 brandkit 生成品牌规范` |
 | `brutalist-skill` | **工业布鲁塔尔 UI** | 裸露机械感界面，瑞士字体排印 + 军事终端美学，刚硬网格、极端字号对比 | `用 brutalist 风格做一个仪表盘` |
+| `find-skills` | **本地技能发现器** | 快速搜索和发现 AI Skills Hub 中安装的技能，按需推荐合适的技能组合 | `有什么技能` / `找技能` / `find skill` |
 | `gpt-tasteskill` | **GSAP 动效大师** | 精准 GSAP ScrollTrigger 动效、视差滚动、弹性交互动画、AIDA 页面结构 | `用 gpt-taste 做一个带动效的落地页` |
 | `high-end-visual-design` | **高端视觉规范** | 定义字体、间距、阴影、卡片结构、动效的"昂贵感"标准，封杀廉价默认值 | `用高端视觉规范审查这个页面` |
 | `image-to-code` | **设计图转代码** | 先生成设计参考图，再逐像素还原成可运行的网页代码 | `用 image-to-code 实现这个设计` |
@@ -32,9 +34,12 @@
 | **仪表盘/后台** | `brutalist-skill` 或 `minimalist-skill` |
 | **中文文案润色** | `Humanizer-zh` |
 | **通用视觉提升** | `high-end-visual-design` → `impeccable polish` |
+| **网页/社交内容获取** | `agent-reach` → 搜索/阅读各平台内容 |
+| **不知用什么技能** | `find-skills` → 搜索和发现推荐 |
 
 ## 🔄 更新记录
 
+- **2026-06-09** 新增 `agent-reach`（来源: github.com/Panniantong/Agent-Reach）和 `find-skills`（本地技能发现器），更新 README 结构
 - **2026-06-08** 初始建立，收录 15 个技能
 - `impeccable` 通过 git sparse checkout 安装（来源: pbakaus/impeccable）
 - `Humanizer-zh` 通过 git sparse checkout 安装（来源: op7418/Humanizer-zh）
