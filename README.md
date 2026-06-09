@@ -15,6 +15,7 @@
 | `imagegen-frontend-mobile` | **移动端界面生成** | 生成 iOS/Android 应用界面概念图，手机 mockup 框架，多屏一致性 | `生成移动端设置页面设计图` |
 | `imagegen-frontend-web` | **Web 设计参考图** | 逐 section 生成横版设计参考图，构图多样化，统一色板 | `为落地页每个 section 生成设计图` |
 | `minimalist-skill` | **极简编辑风格** | 温暖单色、排版对比、扁平 bento 网格、柔粉色，无渐变无重阴影 | `用 minimalist 风格重做这个页面` |
+| `last30days` | **多源热点研究器** | 搜索 Reddit / X / YouTube / TikTok / Hacker News / Polymarket / GitHub / 网页，汇总近 30 天内人们关于任意话题的真实讨论，附来源引用 | `$last30days <话题>` |
 | `output-skill` | **完整代码输出器** | 强制完整代码输出，禁止占位符，处理 token 上限拆分 | 自动生效（用于需要完整输出的任务） |
 | `redesign-skill` | **存量项目重设计** | 审计现有设计，识别 AI 通用模式，升级到高端标准而不破坏功能 | `用 redesign 升级这个项目的 UI` |
 | `stitch-skill` | **Google Stitch 设计系统** | 生成 agent 友好的 DESIGN.md，强制高端反通用 UI 标准 | `为项目生成 Stitch 设计系统文档` |
@@ -36,10 +37,11 @@
 | **通用视觉提升** | `high-end-visual-design` → `impeccable polish` |
 | **网页/社交内容获取** | `agent-reach` → 搜索/阅读各平台内容 |
 | **不知用什么技能** | `find-skills` → 搜索和发现推荐 |
+| **研究/热点追踪** | `$last30days <话题>` → 多平台近30天讨论汇总 |
 
 ## 🔄 更新记录
 
-- **2026-06-09** 新增 `agent-reach`（来源: github.com/Panniantong/Agent-Reach）和 `find-skills`（本地技能发现器），更新 README 结构
+- **2026-06-09** 新增 `agent-reach`（来源: github.com/Panniantong/Agent-Reach）、`find-skills`（本地技能发现器）和 `last30days`（来源: github.com/mvanhorn/last30days-skill），更新 README 结构
 - **2026-06-08** 初始建立，收录 15 个技能
 - `impeccable` 通过 git sparse checkout 安装（来源: pbakaus/impeccable）
 - `Humanizer-zh` 通过 git sparse checkout 安装（来源: op7418/Humanizer-zh）
