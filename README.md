@@ -22,6 +22,7 @@
 | `taste-skill` | **反套路前端设计 v2** | 强制真随机布局、AIDA 结构、宽幅排版、GSAP ScrollTrigger，反 AI 模板化 | `用 taste-skill 做一个不AI味的落地页` |
 | `taste-skill-v1` | **反套路前端 v1** | v2 的旧版，保留用于需要精确向后兼容的项目 | 同 taste-skill |
 | `Humanizer-zh` | **中文内容人性化** | 将 AI 生成的中文内容改写为自然人类风格，消除机器味 | `用 Humanizer 改写这段文字` |
+| `serenity-skill` | **供应链瓶颈投研** | 将 AI 转为供应链瓶颈猎手，溯源投研、产业链映射、股票筛选、逻辑压力测试 | `用 Serenity 的方式看` / `深度调研` / `产业链瓶颈` |
 
 ## 📋 按场景速查
 
@@ -38,9 +39,11 @@
 | **网页/社交内容获取** | `agent-reach` → 搜索/阅读各平台内容 |
 | **不知用什么技能** | `find-skills` → 搜索和发现推荐 |
 | **研究/热点追踪** | `$last30days <话题>` → 多平台近30天讨论汇总 |
+| **投资研究/产业链分析** | `serenity-skill` → 深度产业链调研、瓶颈识别、股票排序 |
 
 ## 🔄 更新记录
 
+- **2026-06-12** 新增 `serenity-skill`（来源: github.com/muxuuu/serenity-skill），供应链瓶颈投研技能
 - **2026-06-09** 新增 `agent-reach`（来源: github.com/Panniantong/Agent-Reach）、`find-skills`（本地技能发现器）和 `last30days`（来源: github.com/mvanhorn/last30days-skill），更新 README 结构
 - **2026-06-08** 初始建立，收录 15 个技能
 - `impeccable` 通过 git sparse checkout 安装（来源: pbakaus/impeccable）
