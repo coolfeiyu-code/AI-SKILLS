@@ -4,6 +4,7 @@
 
 | 文件夹名称 | 技能中文标签 | 核心功用 | 常用激活命令 |
 | :--- | :--- | :--- | :--- |
+| `a-stock-data` | **A股全栈数据工具包** | 27 个端点覆盖行情(mootdx+腾讯+百度K线)、研报(东财+同花顺+iwencai)、信号(热点+北向+龙虎榜+解禁+行业)、资金面(融资融券+大宗+股东户数+分红+资金流)、新闻公告、财报三表、F10、巨潮公告 | `帮我估一下 688017 PE/PEG` / `今天哪些股票走强` / `这个人形机器人研报` |
 | `agent-reach` | **互联网平台路由器** | 17 平台工具集合，支持搜索/阅读社交/招聘/开发/网页/视频，零配置 8 渠道 | `$agent-reach` / `搜一下` / `读这个链接` |
 | `impeccable` | **前端视觉判官** | 像素级审查，干掉AI塑料感审美，死磕色彩间距排版动效，附带 critique / audit / polish / craft 全套子命令 | `$impeccable critique` / `$impeccable polish` |
 | `brandkit` | **品牌视觉生成器** | 生成高端品牌指南板、Logo系统、视觉身份套件、品牌色板 | `用 brandkit 生成品牌规范` |
@@ -34,6 +35,7 @@
 | **品牌/Logo/身份** | `brandkit` → `stitch-skill` |
 | **纯动效页面** | `gpt-tasteskill` + `impeccable animate` |
 | **仪表盘/后台** | `brutalist-skill` 或 `minimalist-skill` |
+| **A股数据查询** | `a-stock-data` → 直接说股票代码+问题 |
 | **中文文案润色** | `Humanizer-zh` |
 | **通用视觉提升** | `high-end-visual-design` → `impeccable polish` |
 | **网页/社交内容获取** | `agent-reach` → 搜索/阅读各平台内容 |
@@ -43,6 +45,7 @@
 
 ## 🔄 更新记录
 
+- **2026-06-15** 新增 `a-stock-data`（来源: github.com/simonlin1212/a-stock-data），A股全栈数据工具包
 - **2026-06-12** 新增 `serenity-skill`（来源: github.com/muxuuu/serenity-skill），供应链瓶颈投研技能
 - **2026-06-09** 新增 `agent-reach`（来源: github.com/Panniantong/Agent-Reach）、`find-skills`（本地技能发现器）和 `last30days`（来源: github.com/mvanhorn/last30days-skill），更新 README 结构
 - **2026-06-08** 初始建立，收录 15 个技能
