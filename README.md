@@ -24,6 +24,7 @@
 | `taste-skill-v1` | **反套路前端 v1** | v2 的旧版，保留用于需要精确向后兼容的项目 | 同 taste-skill |
 | `Humanizer-zh` | **中文内容人性化** | 将 AI 生成的中文内容改写为自然人类风格，消除机器味 | `用 Humanizer 改写这段文字` |
 | `serenity-skill` | **供应链瓶颈投研** | 将 AI 转为供应链瓶颈猎手，溯源投研、产业链映射、股票筛选、逻辑压力测试 | `用 Serenity 的方式看` / `深度调研` / `产业链瓶颈` |
+| `Ultimate-AI-Skill-Library` | **终极 AI 技能总库** | 17 个规则文件覆盖需求/架构/编码/审查/调试/HTML/Godot/插件/资源/UI/性能/QA，适配 WorkBuddy·ChatGPT Projects·Cursor·Claude Code·Codex | `请读取 Skills 文件夹中的全部规则，整个项目严格遵守` |
 
 ## 📋 按场景速查
 
@@ -45,6 +46,7 @@
 
 ## 🔄 更新记录
 
+- **2026-07-07** 新增 `Ultimate-AI-Skill-Library`，通用 AI 技能总库（17 个规则文件），已安装至 `~/.workbuddy/skills/ultimate-ai-skill-library/`，并设为全局默认项目规范
 - **2026-06-15** 新增 `a-stock-data`（来源: github.com/simonlin1212/a-stock-data），A股全栈数据工具包
 - **2026-06-12** 新增 `serenity-skill`（来源: github.com/muxuuu/serenity-skill），供应链瓶颈投研技能
 - **2026-06-09** 新增 `agent-reach`（来源: github.com/Panniantong/Agent-Reach）、`find-skills`（本地技能发现器）和 `last30days`（来源: github.com/mvanhorn/last30days-skill），更新 README 结构
