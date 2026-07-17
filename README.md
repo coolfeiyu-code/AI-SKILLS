@@ -54,3 +54,24 @@
 - `impeccable` 通过 git sparse checkout 安装（来源: pbakaus/impeccable）
 - `Humanizer-zh` 通过 git sparse checkout 安装（来源: op7418/Humanizer-zh）
 - 其余为 Codex curated list 安装
+
+## 📈 推票 / 投研技能栈（2026-07 增补）
+
+面向「研究后推荐候选标的」而不是自动下单。组合逻辑：
+
+| 层级 | 技能来源 | 干什么 |
+| :--- | :--- | :--- |
+| A股数据 | `a-stock-data` | 行情/估值/资金/龙虎榜/公告（拉数） |
+| 产业链 | `serenity-skill` | 瓶颈/卡点/主题优先研究名单 |
+| 分析框架 | `InvestSkill`（`stock-eval`/`stock-screener`/`full-report`/`bear-case`…） | 质量分、筛选排名、完整报告、空方压力测试 |
+| 决策纪律 | `trading-skills`（`pre-trade-check`/`thesis-validation`/`position-sizing`…） | 推之前做 go/no-go、证伪、仓位与组合风险 |
+| 全球数据 | `gauss314-skills` 精选（yahoo/tradingview/finviz/google-finance/portfolio…） | 美股/全球行情、筛选、组合优化、回测 |
+| 舆情补充 | `last30days` | 近30天多平台真实讨论（非行情） |
+
+**推荐推票流水线：** `serenity` 或 主题 → `a-stock-data`/`yahoo-finance` 拉数 → `stock-screener`/`stock-eval` 排名 → `bear-case`+`thesis-validation` 证伪 → `pre-trade-check`+`position-sizing` 才输出候选。
+
+本地路径：
+- `D:\AI-SKILLS\trading-skills` ← https://github.com/marian2js/trading-skills
+- `D:\AI-SKILLS\InvestSkill` ← https://github.com/yennanliu/InvestSkill
+- `D:\AI-SKILLS\gauss314-skills` ← https://github.com/gauss314/skills
+

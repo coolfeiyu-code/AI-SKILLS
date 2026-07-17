@@ -1,0 +1,37 @@
+# New Skill Checklist
+
+Use this checklist before opening a pull request for a new skill or a major skill rewrite.
+
+## Naming and scope
+
+- The skill name is capability-first and concise.
+- The skill does not expose a provider name unless there is a strong user-facing reason.
+- The skill does not introduce broker dependency or execution behavior for v1.
+
+## Skill quality
+
+- `SKILL.md` frontmatter matches the directory name. Keep it minimal unless an imported skill needs extra metadata that is worth preserving.
+- The description explains what the skill does and when to use it.
+- The skill clearly states helpful inputs.
+- The skill clearly states what it returns.
+- The skill clearly states what it will not do.
+- The examples feel realistic rather than toy-like.
+
+## Trust and risk clarity
+
+- The skill avoids hype, guarantees, and fake precision.
+- Risk, caveats, and uncertainty are explicit.
+- Data-backed output discloses provider, freshness, and coverage limitations.
+- Analysis support is kept separate from execution claims.
+
+## Data-backed skills only
+
+- `references/data-providers.md` exists if optional provider support is needed.
+- concise provider docs exist under `references/providers/`.
+- the user-data-first and provider fallback behavior are documented.
+
+## Keep it simple
+
+- Do not add metadata fields unless the repo uses them right now.
+- Do not create new public skills for provider variants of the same capability.
+- Keep the skill directory lean. Do not add `fixtures/` or `sample-output.md`.
