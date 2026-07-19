@@ -23,3 +23,11 @@ ehthumbs.db
 # Temporary files
 tmp/
 temp/
+
+# AI/agent-generated temp scripts and outputs
+# (from stock data skills, scans, holdings analysis, etc. — do not commit)
+_tmp*
+*_tmp*.py
+*_out.txt
+tmp-*
+**/.tmp/
