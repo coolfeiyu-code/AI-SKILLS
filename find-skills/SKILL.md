@@ -12,37 +12,45 @@ triggers:
   - search: 搜索技能/技能搜索/search skills/find skill
   - introspect: 技能详情/skill details/技能说明/skill readme
 metadata:
-  hub: /Users/zhuqi/Downloads/AI-SKILLS
+  hub: D:\AI SKILLS
 ---
 
 # Find Skills — 本地技能发现器
 
 帮助你在 AI Skills Hub 中快速找到合适的技能。
 
+## Hub 根路径
+
+```
+D:\AI SKILLS
+```
+
 ## 技能查询方法
 
 ### 1. 列出所有技能
 
-```bash
-ls -d /Users/zhuqi/Downloads/AI-SKILLS/*/ | grep -v -E '\.git|scripts|docs'
+```powershell
+Get-ChildItem "D:\AI SKILLS" -Directory |
+  Where-Object { $_.Name -notmatch '^\.git$' } |
+  Select-Object -ExpandProperty Name
 ```
 
 ### 2. 查看技能详情
 
-```bash
-cat /Users/zhuqi/Downloads/AI-SKILLS/<skill-name>/SKILL.md
+```powershell
+Get-Content "D:\AI SKILLS\<skill-name>\SKILL.md" -Encoding UTF8
 ```
 
 ### 3. 按关键字搜索技能
 
-```bash
-grep -rl "关键字" /Users/zhuqi/Downloads/AI-SKILLS/*/SKILL.md 2>/dev/null
+```powershell
+Select-String -Path "D:\AI SKILLS\*\SKILL.md" -Pattern "关键字" -SimpleMatch
 ```
 
 ### 4. 从 README 获取技能速查表
 
-```bash
-cat /Users/zhuqi/Downloads/AI-SKILLS/README.md
+```powershell
+Get-Content "D:\AI SKILLS\README.md" -Encoding UTF8
 ```
 
 ## 使用场景
