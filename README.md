@@ -23,6 +23,7 @@
 | `taste-skill` | **反套路前端设计 v2** | 强制真随机布局、AIDA 结构、宽幅排版、GSAP ScrollTrigger，反 AI 模板化 | `用 taste-skill 做一个不AI味的落地页` |
 | `taste-skill-v1` | **反套路前端 v1** | v2 的旧版，保留用于需要精确向后兼容的项目 | 同 taste-skill |
 | `Humanizer-zh` | **中文内容人性化** | 将 AI 生成的中文内容改写为自然人类风格，消除机器味 | `用 Humanizer 改写这段文字` |
+| `seedance-prompt` | **AI视频真实感提示词** | 为 Seedance/Sora/Kling/Runway/Veo 生成去 AI 感、纪录片质感的结构化视频提示词，内置设备美学缺陷包(DV/VHS/Super 8/手机/监控)、氛围翻译表、去 AI 感自检清单 | `纽约街头早晨，真实手机随拍感` / `帮我把视频 prompt 改得更真实` |
 | `serenity-skill` | **供应链瓶颈投研** | 将 AI 转为供应链瓶颈猎手，溯源投研、产业链映射、股票筛选、逻辑压力测试 | `用 Serenity 的方式看` / `深度调研` / `产业链瓶颈` |
 | `Ultimate-AI-Skill-Library` | **终极 AI 技能总库** | 17 个规则文件覆盖需求/架构/编码/审查/调试/HTML/Godot/插件/资源/UI/性能/QA，适配 WorkBuddy·ChatGPT Projects·Cursor·Claude Code·Codex | `请读取 Skills 文件夹中的全部规则，整个项目严格遵守` |
 
@@ -46,6 +47,7 @@
 
 ## 🔄 更新记录
 
+- **2026-07-20** 新增 `seedance-prompt`（来源: github.com/zhouwei713/seedance-prompt），AI视频真实感提示词技能
 - **2026-07-07** 新增 `Ultimate-AI-Skill-Library`，通用 AI 技能总库（17 个规则文件），已安装至 `~/.workbuddy/skills/ultimate-ai-skill-library/`，并设为全局默认项目规范
 - **2026-06-15** 新增 `a-stock-data`（来源: github.com/simonlin1212/a-stock-data），A股全栈数据工具包
 - **2026-06-12** 新增 `serenity-skill`（来源: github.com/muxuuu/serenity-skill），供应链瓶颈投研技能
