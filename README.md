@@ -17,6 +17,7 @@
 | `imagegen-frontend-web` | **Web 设计参考图** | 逐 section 生成横版设计参考图，构图多样化，统一色板 | `为落地页每个 section 生成设计图` |
 | `minimalist-skill` | **极简编辑风格** | 温暖单色、排版对比、扁平 bento 网格、柔粉色，无渐变无重阴影 | `用 minimalist 风格重做这个页面` |
 | `last30days` | **多源热点研究器** | 搜索 Reddit / X / YouTube / TikTok / Hacker News / Polymarket / GitHub / 网页，汇总近 30 天内人们关于任意话题的真实讨论，附来源引用 | `$last30days <话题>` |
+| `last30days-cn` | **中文平台热点追踪** | last30days 中文专属版本，8 大中文平台搜索（微博/小红书/抖音/B站/知乎/微信/百度/头条），Playwright 浏览器引擎深度抓取 | `搜下 A股 <话题>` / `看看最近 <话题>` |
 | `output-skill` | **完整代码输出器** | 强制完整代码输出，禁止占位符，处理 token 上限拆分 | 自动生效（用于需要完整输出的任务） |
 | `redesign-skill` | **存量项目重设计** | 审计现有设计，识别 AI 通用模式，升级到高端标准而不破坏功能 | `用 redesign 升级这个项目的 UI` |
 | `stitch-skill` | **Google Stitch 设计系统** | 生成 agent 友好的 DESIGN.md，强制高端反通用 UI 标准 | `为项目生成 Stitch 设计系统文档` |
@@ -42,12 +43,12 @@
 | **通用视觉提升** | `high-end-visual-design` → `impeccable polish` |
 | **网页/社交内容获取** | `agent-reach` → 搜索/阅读各平台内容 |
 | **不知用什么技能** | `find-skills` → 搜索和发现推荐 |
-| **研究/热点追踪** | `$last30days <话题>` → 多平台近30天讨论汇总 |
+| **研究/热点追踪** | `$last30days <话题>` → 多平台近30天讨论汇总（海外平台） / `$last30days-cn <话题>` → 中文平台近30天讨论（微博/B站/知乎/小红书等） |
 | **投资研究/产业链分析** | `serenity-skill` → 深度产业链调研、瓶颈识别、股票排序 |
 
 ## 🔄 更新记录
 
-- **2026-07-20** 新增 `seedance-prompt`（来源: github.com/zhouwei713/seedance-prompt），AI视频真实感提示词技能
+- **2026-07-20** 新增 `last30days-cn`（来源: github.com/Jesseovo/last30days-skill-cn），中文平台热点追踪技能（微博/B站/知乎/小红书/抖音/微信/百度/头条），需 Playwright Chromium 引擎；新增 `seedance-prompt`（来源: github.com/zhouwei713/seedance-prompt），AI视频真实感提示词技能
 - **2026-07-07** 新增 `Ultimate-AI-Skill-Library`，通用 AI 技能总库（17 个规则文件），已安装至 `~/.workbuddy/skills/ultimate-ai-skill-library/`，并设为全局默认项目规范
 - **2026-06-15** 新增 `a-stock-data`（来源: github.com/simonlin1212/a-stock-data），A股全栈数据工具包
 - **2026-06-12** 新增 `serenity-skill`（来源: github.com/muxuuu/serenity-skill），供应链瓶颈投研技能
