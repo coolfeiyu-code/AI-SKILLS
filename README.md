@@ -16,6 +16,7 @@
 | `gpt-tasteskill` | **GSAP 动效大师** | 精准 GSAP ScrollTrigger 动效、视差滚动、弹性交互动画、AIDA 页面结构 | `用 gpt-taste 做一个带动效的落地页` |
 | `gh-skill-installer` | **GitHub 技能安装器** | 搜索 GitHub → 稀疏克隆 → 安全审计 → 安装到技能库的复用流程，自动跳过已装/重叠项 | `从 GitHub 装个 UI skill` |
 | `high-end-visual-design` | **高端视觉规范** | 定义字体、间距、阴影、卡片结构、动效的"昂贵感"标准，封杀廉价默认值 | `用高端视觉规范审查这个页面` |
+| `ian-xiaohei-illustrations` | **小黑怪诞配图** | 为中文文章生成手绘怪诞正文配图，小黑IP、纯白线稿、红橙蓝批注、清爽留白 | `分析怎么配图` / `生成小黑配图` |
 | `interface-design` | **跨会话一致 UI 工艺** | 仪表盘/SaaS/工具类产品的工艺优先设计，token/状态/视觉方向一致，跨会话持久（`.interface-design/system.md`） | `审查这个后台的 UI` |
 | `image-to-code` | **设计图转代码** | 先生成设计参考图，再逐像素还原成可运行的网页代码 | `用 image-to-code 实现这个设计` |
 | `imagegen-frontend-mobile` | **移动端界面生成** | 生成 iOS/Android 应用界面概念图，手机 mockup 框架，多屏一致性 | `生成移动端设置页面设计图` |
@@ -54,9 +55,11 @@
 | **不知用什么技能** | `find-skills` → 搜索和发现推荐 |
 | **研究/热点追踪** | `$last30days <话题>` → 多平台近30天讨论汇总（海外平台） / `$last30days-cn <话题>` → 中文平台近30天讨论（微博/B站/知乎/小红书等） |
 | **投资研究/产业链分析** | `serenity-skill` → 深度产业链调研、瓶颈识别、股票排序 |
+| **中文文章配图** | `ian-xiaohei-illustrations` → 分析结构 → shot list → 单张生成 → QA检查 |
 
 ## 🔄 更新记录
 
+- **2026-07-24** 新增 `ian-xiaohei-illustrations`（来源: github.com/helloianneo/ian-xiaohei-illustrations），中文文章小黑怪诞手绘配图技能，纯白线稿+红橙蓝批注+16:9横版，安全审计 P2 通过（纯 Markdown 指导，零脚本）
 - **2026-07-20** 新增 5 个 GitHub 热门 UI 设计 skill（安全审计 P2 通过）：`frontend-design`（Anthropic 官方，277K+ 安装）、`ui-ux-pro-max` / `ui-styling` / `design-system`（nextlevelbuilder，#1 社区 88.7k★）、`interface-design`（Dammyjay93，5k★）；并新增 `gh-skill-installer`（GitHub 技能搜索→克隆→审计→安装复用流程）。来源：github.com/anthropics/skills、github.com/nextlevelbuilder/ui-ux-pro-max-skill、github.com/Dammyjay93/interface-design
 - **2026-07-20** README 与目录对齐：补列 `InvestSkill` / `gauss314-skills` / `trading-skills` / `yao-meta-skill`（目录有但原表未列）；移除 `taste-skill-v1`（目录已无对应文件夹）。注：`high-end-visual-design` 与 `soft-skill` 为同一技能（文件夹名 soft-skill、技能名 high-end-visual-design），`image-to-code` 对应文件夹 `image-to-code-skill`，均保留。
 - **2026-07-20** 新增 `last30days-cn`（来源: github.com/Jesseovo/last30days-skill-cn），中文平台热点追踪技能（微博/B站/知乎/小红书/抖音/微信/百度/头条），需 Playwright Chromium 引擎；新增 `seedance-prompt`（来源: github.com/zhouwei713/seedance-prompt），AI视频真实感提示词技能
