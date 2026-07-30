@@ -36,6 +36,7 @@
 | `ui-ux-pro-max` | **UI/UX 设计情报库** | 可搜索本地数据库 84 风格 / 192 配色 / 74 字体组合 / 98 UX 指南 / 16 GSAP 动效 / 22 技术栈，自动生成设计系统 | UI 任务自动触发 / `做一个 fintech 仪表盘` |
 | `trading-skills` | **交易纪律工作流** | 事前检查 / 论点验证 / 仓位 sizing / 风险收益 sanity / 盘后复盘，覆盖 idea 发现→构建→执行→复盘全链路（pre-trade-check、thesis-validation、position-sizing…） | `pre-trade-check` / `position-sizing` |
 | `yao-meta-skill` | **技能自举元技能** | 从工作流/提示词/对话/文档中创建、重构、评估、打包 agent 技能，用于技能沉淀与团队分发 | `把这个流程做成 skill` |
+| `grill-me` | **需求拷问 / 反追问** | 写码/做需求/出方案前反过来逐个追问用户，逼出边界条件与决策点，达成共识再动手；一次一问+给推荐答案，能自查的事实自己查，决策点交用户拍板 | `grill me` / `拷问我` / `先问清楚` / `需求确认` / `帮我想清楚` |
 
 ## 📋 按场景速查
 
@@ -57,6 +58,7 @@
 
 ## 🔄 更新记录
 
+- **2026-07-30** 新增 `grill-me`（来源: github.com/mattpocock/skills，移植为 WorkBuddy 自包含 skill，合并 grill-me + grilling 逻辑），需求拷问/反追问技能，用于编码·产品·方案任务前的边界厘清；安全审计 P2（纯提示词）。已同步安装至 `~/.workbuddy/skills/grill-me/`，副本在本目录 `grill-me/`
 - **2026-07-20** 新增 5 个 GitHub 热门 UI 设计 skill（安全审计 P2 通过）：`frontend-design`（Anthropic 官方，277K+ 安装）、`ui-ux-pro-max` / `ui-styling` / `design-system`（nextlevelbuilder，#1 社区 88.7k★）、`interface-design`（Dammyjay93，5k★）；并新增 `gh-skill-installer`（GitHub 技能搜索→克隆→审计→安装复用流程）。来源：github.com/anthropics/skills、github.com/nextlevelbuilder/ui-ux-pro-max-skill、github.com/Dammyjay93/interface-design
 - **2026-07-20** README 与目录对齐：补列 `InvestSkill` / `gauss314-skills` / `trading-skills` / `yao-meta-skill`（目录有但原表未列）；移除 `taste-skill-v1`（目录已无对应文件夹）。注：`high-end-visual-design` 与 `soft-skill` 为同一技能（文件夹名 soft-skill、技能名 high-end-visual-design），`image-to-code` 对应文件夹 `image-to-code-skill`，均保留。
 - **2026-07-20** 新增 `last30days-cn`（来源: github.com/Jesseovo/last30days-skill-cn），中文平台热点追踪技能（微博/B站/知乎/小红书/抖音/微信/百度/头条），需 Playwright Chromium 引擎；新增 `seedance-prompt`（来源: github.com/zhouwei713/seedance-prompt），AI视频真实感提示词技能
