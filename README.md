@@ -60,11 +60,8 @@
 
 ## 🔄 更新记录
 
-<<<<<<< HEAD
 - **2026-07-30** 新增 `grill-me`（来源: github.com/mattpocock/skills，移植为 WorkBuddy 自包含 skill，合并 grill-me + grilling 逻辑），需求拷问/反追问技能，用于编码·产品·方案任务前的边界厘清；安全审计 P2（纯提示词）。已同步安装至 `~/.workbuddy/skills/grill-me/`，副本在本目录 `grill-me/`
-=======
 - **2026-07-24** 新增 `ian-xiaohei-illustrations`（来源: github.com/helloianneo/ian-xiaohei-illustrations），中文文章小黑怪诞手绘配图技能，纯白线稿+红橙蓝批注+16:9横版，安全审计 P2 通过（纯 Markdown 指导，零脚本）
->>>>>>> 7ff21b8b90fa2370c0066c2af37f7f2c69d7c86d
 - **2026-07-20** 新增 5 个 GitHub 热门 UI 设计 skill（安全审计 P2 通过）：`frontend-design`（Anthropic 官方，277K+ 安装）、`ui-ux-pro-max` / `ui-styling` / `design-system`（nextlevelbuilder，#1 社区 88.7k★）、`interface-design`（Dammyjay93，5k★）；并新增 `gh-skill-installer`（GitHub 技能搜索→克隆→审计→安装复用流程）。来源：github.com/anthropics/skills、github.com/nextlevelbuilder/ui-ux-pro-max-skill、github.com/Dammyjay93/interface-design
 - **2026-07-20** README 与目录对齐：补列 `InvestSkill` / `gauss314-skills` / `trading-skills` / `yao-meta-skill`（目录有但原表未列）；移除 `taste-skill-v1`（目录已无对应文件夹）。注：`high-end-visual-design` 与 `soft-skill` 为同一技能（文件夹名 soft-skill、技能名 high-end-visual-design），`image-to-code` 对应文件夹 `image-to-code-skill`，均保留。
 - **2026-07-20** 新增 `last30days-cn`（来源: github.com/Jesseovo/last30days-skill-cn），中文平台热点追踪技能（微博/B站/知乎/小红书/抖音/微信/百度/头条），需 Playwright Chromium 引擎；新增 `seedance-prompt`（来源: github.com/zhouwei713/seedance-prompt），AI视频真实感提示词技能

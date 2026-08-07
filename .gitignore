@@ -2,8 +2,6 @@
 .DS_Store
 .AppleDouble
 .LSOverride
-
-# macOS thumbnail files
 ._*
 
 # Windows thumbnail files
@@ -23,11 +21,51 @@ ehthumbs.db
 # Temporary files
 tmp/
 temp/
+**/tmp/
+**/temp/
+**/.tmp/
 
 # AI/agent-generated temp scripts and outputs
-# (from stock data skills, scans, holdings analysis, etc. — do not commit)
+# (skills run elsewhere now; keep as safety net if cwd is this repo)
 _tmp*
 *_tmp*.py
 *_out.txt
 tmp-*
-**/.tmp/
+*.pyc
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+node_modules/
+.cache/
+**/.cache/
+
+# Runtime outputs agents often dump into the repo root/cwd
+output/
+outputs/
+**/output/
+**/outputs/
+reports/
+**/reports/
+dist/
+build/
+*.db
+*.sqlite
+*.sqlite3
+.env
+.env.*
+!.env.example
+
+# Design/session state some UI skills write next to the project
+.interface-design/
+**/.interface-design/
+
+# Ad-hoc agent scratch at repo root
+/*.html
+!README.md
+/*-report.*
+/*_report.*
+/scan-*/
+/holdings-*/
