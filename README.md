@@ -38,6 +38,7 @@
 | `trading-skills` | **交易纪律工作流** | 事前检查 / 论点验证 / 仓位 sizing / 风险收益 sanity / 盘后复盘，覆盖 idea 发现→构建→执行→复盘全链路（pre-trade-check、thesis-validation、position-sizing…） | `pre-trade-check` / `position-sizing` |
 | `yao-meta-skill` | **技能自举元技能** | 从工作流/提示词/对话/文档中创建、重构、评估、打包 agent 技能，用于技能沉淀与团队分发 | `把这个流程做成 skill` |
 | `grill-me` | **需求拷问 / 反追问** | 写码/做需求/出方案前反过来逐个追问用户，逼出边界条件与决策点，达成共识再动手；一次一问+给推荐答案，能自查的事实自己查，决策点交用户拍板 | `grill me` / `拷问我` / `先问清楚` / `需求确认` / `帮我想清楚` |
+| `dotnet-mod-recon` | **.NET/Mod 只读逆向勘察** | 不用反编译器，靠元数据字符串堆还原 .NET / Unity BepInEx 插件的模块划分、Hook 点、数据流与算法思路；含只读查 SQLite、配置与日志取证的安全流程 | `研究下这个 mod` / `这个 DLL 怎么实现的` / `分析下这个插件目录` |
 
 ## 📋 按场景速查
 
@@ -60,6 +61,10 @@
 
 ## 🔄 更新记录
 
+<<<<<<< Updated upstream
+=======
+- **2026-08-08** 新增 `dotnet-mod-recon`（自建，非 GitHub 来源；由分析 The Bazaar 的 BazaarPlusPlus V5 插件的实战流程沉淀而来），.NET / Unity BepInEx Mod 无反编译器只读逆向勘察技能，含 #Strings/#US 双堆符号提取、Hook 点定位、只读 SQLite 取证；纯 Markdown 指导，零脚本
+>>>>>>> Stashed changes
 - **2026-07-30** 新增 `grill-me`（来源: github.com/mattpocock/skills，移植为 WorkBuddy 自包含 skill，合并 grill-me + grilling 逻辑），需求拷问/反追问技能，用于编码·产品·方案任务前的边界厘清；安全审计 P2（纯提示词）。已同步安装至 `~/.workbuddy/skills/grill-me/`，副本在本目录 `grill-me/`
 - **2026-07-24** 新增 `ian-xiaohei-illustrations`（来源: github.com/helloianneo/ian-xiaohei-illustrations），中文文章小黑怪诞手绘配图技能，纯白线稿+红橙蓝批注+16:9横版，安全审计 P2 通过（纯 Markdown 指导，零脚本）
 - **2026-07-20** 新增 5 个 GitHub 热门 UI 设计 skill（安全审计 P2 通过）：`frontend-design`（Anthropic 官方，277K+ 安装）、`ui-ux-pro-max` / `ui-styling` / `design-system`（nextlevelbuilder，#1 社区 88.7k★）、`interface-design`（Dammyjay93，5k★）；并新增 `gh-skill-installer`（GitHub 技能搜索→克隆→审计→安装复用流程）。来源：github.com/anthropics/skills、github.com/nextlevelbuilder/ui-ux-pro-max-skill、github.com/Dammyjay93/interface-design
@@ -90,7 +95,7 @@
 **推荐推票流水线：** `serenity` 或 主题 → `a-stock-data`/`yahoo-finance` 拉数 → `stock-screener`/`stock-eval` 排名 → `bear-case`+`thesis-validation` 证伪 → `pre-trade-check`+`position-sizing` 才输出候选。
 
 本地路径：
-- `D:\AI-SKILLS\trading-skills` ← https://github.com/marian2js/trading-skills
-- `D:\AI-SKILLS\InvestSkill` ← https://github.com/yennanliu/InvestSkill
-- `D:\AI-SKILLS\gauss314-skills` ← https://github.com/gauss314/skills
+- `D:\AI SKILLS\trading-skills` ← https://github.com/marian2js/trading-skills
+- `D:\AI SKILLS\InvestSkill` ← https://github.com/yennanliu/InvestSkill
+- `D:\AI SKILLS\gauss314-skills` ← https://github.com/gauss314/skills
 

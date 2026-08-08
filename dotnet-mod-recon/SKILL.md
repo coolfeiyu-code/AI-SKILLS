@@ -1,0 +1,90 @@
+---
+name: dotnet-mod-recon
+description: 无反编译器逆向分析 .NET / Unity BepInEx Mod 的架构与实现原理。当用户要求"研究/分析/看看这个 mod / 这个 DLL 怎么实现的 / 某功能是怎么做出来的"，且目标是 .NET 程序集（.dll）、BepInEx 插件目录或 Unity 游戏 Mod 时使用。也适用于只读勘察游戏/软件的运行时数据目录（SQLite 库、配置、缓存、回放文件）。
+agent_created: true
+---
+
+# .NET / BepInEx Mod 只读逆向勘察
+
+不依赖 ILSpy / dnSpy，仅用 Python + 正则从程序集的元数据堆里提取符号，即可还原出模块划分、数据流、Hook 点和算法思路。准确率对"架构级问题"足够高。
+
+## 铁律
+
+1. **默认只读。** 用户说"不要改动"时尤其严格：不写入、不删除、不让工具产生副作用文件。
+2. **读 SQLite 必须先复制副本。** 直接打开会生成 `-wal` / `-shm` / `-journal` 污染原目录。
+3. **先验证再下结论。** 符号名是证据，不要凭功能猜实现。找不到证据就说找不到。
+
+## 环境注意（Windows / Git Bash）
+
+- Python 用托管版绝对路径，例如 `C:/Users/<user>/.workbuddy/binaries/python/versions/3.13.12/python.exe`。
+- Git Bash 的 `/tmp` **Python 无法识别**，临时文件一律用 Windows 绝对路径。
+- 路径含空格必须加引号。
+
+## 步骤
+
+### 1. 摸清盘面
+
+```bash
+ls -la "<目标目录>"
+ls -la "<游戏根>/BepInEx/plugins"     # 插件本体在这里，不在数据目录
+cat  "<游戏根>/BepInEx/config/*.cfg"  # 配置项自带注释，是最好的功能清单
+head -60 "<游戏根>/BepInEx/LogOutput.log"  # 启动日志直接列出加载的插件和 patch 名
+```
+
+配置文件的 `##` 注释行往往把每个功能解释得比任何文档都清楚，优先读。
+
+### 2. 提取程序集符号
+
+两个堆分别用不同正则：
+
+```python
+import re
+d = open('Target.dll','rb').read()
+
+# #Strings 堆 —— 类型名/方法名/字段名，UTF-8 单字节
+ids = set(x.decode('ascii') for x in re.findall(rb'[A-Za-z_][A-Za-z0-9_`<>.]{3,90}', d))
+
+# #US 堆 —— 用户字符串（URL、日志事件、UI 文案），UTF-16LE
+us = set(x.decode('utf-16le') for x in re.findall(rb'(?:[\x20-\x7e]\x00){5,}', d))
+
+# 中文 UI 文案
+cn = set()
+for m in re.finditer(rb'((?:.[\x4e-\x9f]){2,40})', d, re.S):
+    try: s = m.group(1).decode('utf-16le')
+    except: continue
+    if all('\u4e00' <= c <= '\u9fff' for c in s): cn.add(s)
+```
+
+### 3. 按线索追问
+
+| 想知道 | 过滤什么 |
+|---|---|
+| 模块划分 | 以 `<产品名>.` 开头的完整命名空间 |
+| Hook 了游戏什么 | 宿主命名空间（如 `BazaarGameShared.*`）+ 以 `Patch` 结尾的类名 |
+| 数据从哪来 | `*Event` / `*Message` / `*Reader` / `*Subscription` |
+| 算法思路 | `*Aggregator` / `*Projector` / `*Accumulator` / `*Attribution` / `*Resolver` |
+| 网络行为 | `http` 开头的串、`/api`、域名片段 |
+| 功能全景 | 形如 `xxx.yyy.zzz` 的小写点分日志事件名，一个前缀 = 一个功能模块 |
+| UI 长什么样 | 中文/英文文案串、USS/class 名 |
+
+命名是最强的信号：`ImpactTransitionClaim` + `IsClaimedByAnotherExecution` 就说明作者在防重复归因；`periodic-impact-v6` 说明这套方案迭代过 6 版。
+
+### 4. 只读查 SQLite
+
+```bash
+cp "<原库>" "<工作区>/tmp/copy.db"
+```
+```python
+sqlite3.connect('file:C:/绝对路径/copy.db?mode=ro', uri=True)   # 必须 Windows 绝对路径
+```
+先 `sqlite_master` 看建表语句（CHECK 约束和索引会暴露业务规则），再 `count(*)`，最后抽样。用完删副本。
+
+### 5. 交付
+
+用流程图讲清数据链路，再用文字补细节。附上关键符号名作为证据，读者可自行复核。涉及上传/账号/隐私的配置项要主动点出来。
+
+## 反面清单
+
+- 不要拿 `strings` 命令糊弄，UTF-16 串会全部丢失。
+- 不要把混淆后的编译器生成名（`<Xxx>b__0_1`、`k__BackingField`）当业务符号讲。
+- 不要在没看到证据时描述"它应该是这样实现的"。
