@@ -69,6 +69,17 @@ for m in re.finditer(rb'((?:.[\x4e-\x9f]){2,40})', d, re.S):
 
 命名是最强的信号：`ImpactTransitionClaim` + `IsClaimedByAnotherExecution` 就说明作者在防重复归因；`periodic-impact-v6` 说明这套方案迭代过 6 版。
 
+### Hook 可行性快速评估
+
+用户问"能不能 hook 某功能"时，先测绘现有 hook 面再下结论：
+
+1. **枚举 Harmony patch**：`grep -n "Patch\b" strings.txt`。patch 类名（`XxxTooltipPatch` / `YyyShowPatch`）直接暴露模组已经 patch 了哪些原生 UI —— 这些就是"已验证可稳 hook"的目标，新功能优先复用同族模式。
+2. **枚举原生 Controller**：`grep -n "Controller" strings.txt`。`*VisualController` / `*TooltipController` 是注入 UI 的候选锚点。
+3. **判断确定性**：
+   - 数据侧：找模组内部持有的状态字段（如 `_recommendations` / `_outstandingAcquisitions`），反射读取即可，零新逻辑 → 确定性最高。
+   - UI 侧：`*TooltipPatch` 系列最稳（只往 tooltip 追加文本，不碰布局）；patch 原生视觉/列表布局方法风险最高，且依赖游戏版本、签名易变。
+4. 唯一必须 IL 确认的是"具体原生方法签名"；符号名只能给到类名级别。
+
 ### 4. 只读查 SQLite
 
 ```bash
