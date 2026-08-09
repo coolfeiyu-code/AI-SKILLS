@@ -1,12 +1,12 @@
 ---
 name: dotnet-mod-recon
-description: 无反编译器逆向分析 .NET / Unity BepInEx Mod 的架构与实现原理。当用户要求"研究/分析/看看这个 mod / 这个 DLL 怎么实现的 / 某功能是怎么做出来的"，且目标是 .NET 程序集（.dll）、BepInEx 插件目录或 Unity 游戏 Mod 时使用。也适用于只读勘察游戏/软件的运行时数据目录（SQLite 库、配置、缓存、回放文件）。
+description: 只读逆向分析 .NET / Unity BepInEx Mod 的架构与实现原理（有 ilspycmd 优先反编译拿签名，无则 Python 提取符号）。当用户要求"研究/分析/看看这个 mod / 这个 DLL 怎么实现的 / 某功能是怎么做出来的"，且目标是 .NET 程序集（.dll）、BepInEx 插件目录或 Unity 游戏 Mod 时使用。也适用于只读勘察游戏/软件的运行时数据目录（SQLite 库、配置、缓存、回放文件）。
 agent_created: true
 ---
 
 # .NET / BepInEx Mod 只读逆向勘察
 
-不依赖 ILSpy / dnSpy，仅用 Python + 正则从程序集的元数据堆里提取符号，即可还原出模块划分、数据流、Hook 点和算法思路。准确率对"架构级问题"足够高。
+能用 `ilspycmd`（本机已装全局 dotnet tool）时**优先反编译**：直接拿确切方法签名、IL 与 `[HarmonyPatch]` 目标类型，远比纯符号准。没有反编译器时，才用 Python + 正则从元数据堆里提取符号做架构级还原。准确率对"架构级问题"足够高。
 
 ## 铁律
 
@@ -55,6 +55,21 @@ for m in re.finditer(rb'((?:.[\x4e-\x9f]){2,40})', d, re.S):
     if all('\u4e00' <= c <= '\u9fff' for c in s): cn.add(s)
 ```
 
+### 2b. 有 ilspycmd 时优先反编译（拿确切签名）
+
+纯符号只能到类名级别，拿不到方法签名和 IL。本环境 `ilspycmd` 10.1 已全局安装，直接反编译：
+
+```bash
+ilspycmd "<dll>" -l c > types.txt            # 列出所有 class（c/i/s/d/e 过滤实体类型）
+ilspycmd "<dll>" -t "Namespace.Type" > t.cs  # 反编译单个类型（C#）
+ilspycmd "<dll>" -t "Ns.Type" -il            # 只要 IL
+```
+
+要点：
+- 游戏本体的 managed 程序集通常在 `<游戏根>/<Game>_Data/Managed/`（如 `TheBazaarRuntime.dll`、`Assembly-CSharp.dll`）。插件 DLL 与游戏 DLL 分开，原生类型/方法要去游戏 DLL 里找。
+- 想看模组 hook 了哪个原生方法，反编译对应的 `*Patch` 类，读 `[HarmonyPatch(typeof(NativeType), "MethodName")]` 与 Postfix 参数 —— 这直接给出**确切的原生签名**，是最稳的 hook 锚点证据。
+- 确认"某功能是否按状态变化重算"：反编译宿主 Controller，找触发方法（如 `Open()` / `OnStateChanged`），看它读的是实时快照还是缓存。符号推断在这里最容易翻车，必须以 IL 为准。
+
 ### 3. 按线索追问
 
 | 想知道 | 过滤什么 |
@@ -76,7 +91,7 @@ for m in re.finditer(rb'((?:.[\x4e-\x9f]){2,40})', d, re.S):
 1. **枚举 Harmony patch**：`grep -n "Patch\b" strings.txt`。patch 类名（`XxxTooltipPatch` / `YyyShowPatch`）直接暴露模组已经 patch 了哪些原生 UI —— 这些就是"已验证可稳 hook"的目标，新功能优先复用同族模式。
 2. **枚举原生 Controller**：`grep -n "Controller" strings.txt`。`*VisualController` / `*TooltipController` 是注入 UI 的候选锚点。
 3. **判断确定性**：
-   - 数据侧：找模组内部持有的状态字段（如 `_recommendations` / `_outstandingAcquisitions`），反射读取即可，零新逻辑 → 确定性最高。
+   - 数据侧：找模组内部持有的运行时状态字段（如 `_recommendations` / `_matches` / `_liveSnapshot`），反射读取即可，零新逻辑 → 确定性最高。
    - UI 侧：`*TooltipPatch` 系列最稳（只往 tooltip 追加文本，不碰布局）；patch 原生视觉/列表布局方法风险最高，且依赖游戏版本、签名易变。
 4. 唯一必须 IL 确认的是"具体原生方法签名"；符号名只能给到类名级别。
 
