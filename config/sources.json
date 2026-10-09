@@ -42,12 +42,6 @@
     "pinned": false
   },
   {
-    "folder": "last30days",
-    "repo": "mvanhorn/last30days-skill",
-    "subpath": "",
-    "pinned": false
-  },
-  {
     "folder": "last30days-cn",
     "repo": "Jesseovo/last30days-skill-cn",
     "subpath": "",
