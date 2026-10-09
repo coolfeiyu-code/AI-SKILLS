@@ -1,0 +1,7 @@
+[
+  {"category": "web/前端设计", "keywords": ["frontend-design", "ui", "ux", "tailwind", "shadcn", "design-system", "animation", "figma", "css", "landing-page", "web"]},
+  {"category": "投研/金融",    "keywords": ["stock", "investing", "finance", "trading", "quant", "a-share", "valuation", "research", "portfolio", "investment"]},
+  {"category": "中文内容",      "keywords": ["chinese", "nlp", "writing", "humanize", "prompt", "copywriting", "中文"]},
+  {"category": "agent/工具",    "keywords": ["agent", "skill", "claude-skill", "cursor", "workflow", "automation", "mcp", "agentic"]},
+  {"category": "生产力",        "keywords": ["productivity", "note", "knowledge", "search", "memory", "second-brain"]}
+]

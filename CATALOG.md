@@ -61,6 +61,7 @@
 ## 技能更新记录（运维历史，与项目版本号无关）
 
 - **2026-10-09** 批量更新 12 个上游 skill 至最新版：`frontend-design` / `agent-reach` / `a-stock-data` / `serenity-skill` / `last30days-cn` / `ui-ux-pro-max` / `Humanizer-zh` / `seedance-prompt` / `last30days` / `InvestSkill` / `impeccable` / `ian-xiaohei-illustrations`；并修复 README 残留的合并冲突标记。跳过本地已较新（下游提交更旧）的 `trading-skills` / `interface-design` / `gauss314-skills`，以及本地移植合并的 `grill-me`。
+- **2026-10-09（后续）** 移除非技术栈/审美不匹配的 4 个 skill：`stitch-skill` / `brutalist-skill` / `seedance-prompt` / `ian-xiaohei-illustrations`（已 `git rm`）。其中 `seedance-prompt`、`ian-xiaohei-illustrations` 曾受 `skillsync` 管理，已从 `config/sources.json` 与 `skillsync.py` 内嵌 `SOURCES` 一并移除，避免日后 `update` 误复活。
 - **2026-08-08** 新增 `dotnet-mod-recon`（自建，非 GitHub 来源；由分析 The Bazaar 的 BazaarPlusPlus V5 插件的实战流程沉淀而来），.NET / Unity BepInEx Mod 无反编译器只读逆向勘察技能。
 - **2026-07-30** 新增 `grill-me`（来源: github.com/mattpocock/skills，移植为 WorkBuddy 自包含 skill，合并 grill-me + grilling 逻辑）。
 - **2026-07-24** 新增 `ian-xiaohei-illustrations`（来源: github.com/helloianneo/ian-xiaohei-illustrations）。

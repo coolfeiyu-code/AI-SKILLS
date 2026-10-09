@@ -11,7 +11,7 @@
 - 仓库根即技能库：31 个 skill 目录**直接放在根下**（不嵌套 `skills/`）。
 - 远程：`origin = https://github.com/coolfeiyu-code/AI-SKILLS.git`，默认分支 `main`。
 - 工具链：**Python 3.11+**（建议 3.13）。跨平台靠 Python + `pathlib`，不用平台专属命令。
-- 版本：`VERSION` 文件（`1.0.0`），语义化；`CHANGELOG.md` 记录大/中/小版本。
+- 版本：`VERSION` 文件（`1.1.0`），语义化；`CHANGELOG.md` 记录大/中/小版本。
 - 无垃圾公约：运行时产物一律写仓库外系统缓存；`.gitignore` 已覆盖常见垃圾。
 - 文档：`README.md`（项目复用+工具指向+公约）、`CATALOG.md`（技能清单）、本文件。
 
@@ -19,9 +19,9 @@
 
 | 文件 | 职责 |
 | :--- | :--- |
-| `skillsync*` | CLI：`update` / `discover` / `sync` / `status` |
-| `config/interests.yaml` | `discover` 的兴趣主题（决定搜什么） |
-| `sources` 映射 | 每个 skill → GitHub repo + 子路径(subpath) + `pinned` 标志 |
+| `skillsync*` | CLI：`update` / `discover` / `sync` / `status` / `version` |
+| `config/interests.json` | `discover` 的兴趣主题（决定搜什么） |
+| `config/sources.json` | 每个 skill → GitHub repo + 子路径(subpath) + `pinned` 标志（内嵌于 `skillsync.py` 的 `SOURCES` 为兜底） |
 | `tools/` | 给其他 Coding 软件的符号链接/配置脚本（`.sh` + `.ps1`） |
 | `CATALOG.md` | 技能清单（功能/命令/更新记录） |
 
@@ -46,11 +46,9 @@ python skillsync.py status             # 各技能 本地基线 vs 上游最新 
 | Humanizer-zh | op7418/Humanizer-zh | （根） | 否 | |
 | impeccable | pbakaus/impeccable | （根） | 否 | 含 tests/gallery，文件多但非垃圾 |
 | InvestSkill | yennanliu/InvestSkill | （根） | 否 | SKILL.md 嵌套在 plugins 下 |
-| ian-xiaohei-illustrations | helloianneo/ian-xiaohei-illustrations | （根） | 否 | |
 | last30days | mvanhorn/last30days-skill | （根） | 否 | |
 | last30days-cn | Jesseovo/last30days-skill-cn | （根） | 否 | 需 Playwright |
 | serenity-skill | muxuuu/serenity-skill | （根） | 否 | |
-| seedance-prompt | zhouwei713/seedance-prompt | （根） | 否 | |
 | ui-ux-pro-max | nextlevelbuilder/ui-ux-pro-max-skill | （根） | 否 | |
 | trading-skills | marian2js/trading-skills | （根） | **是** | 本地比上游新 |
 | interface-design | Dammyjay93/interface-design | （根） | **是** | 本地比上游新 |
@@ -70,8 +68,8 @@ python skillsync.py status             # 各技能 本地基线 vs 上游最新 
 
 ## 6. 如何扩展
 
-- **新增受管技能**：在 sources 映射加一行（folder, repo, subpath, pinned）；首次安装用 `gh-skill-installer` 或稀疏克隆，再纳入 git。
-- **新增兴趣分类**：编辑 `config/interests.yaml`（见下）。
+- **新增受管技能**：在 `config/sources.json` 加一行（folder, repo, subpath, pinned）；首次安装用 `gh-skill-installer` 或稀疏克隆，再纳入 git。注意 `skillsync.py` 内嵌的 `SOURCES` 是兜底，修改后两处需同步。
+- **新增兴趣分类**：编辑 `config/interests.json`（见下）。
 - **新增 Coding 工具支持**：在 `tools/` 加对应软链脚本，并在 `README.md` 第 5 节补一行。
 
 ## 7. 不要做的事

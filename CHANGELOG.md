@@ -10,6 +10,28 @@
 
 > **重要约定**：日常 `skillsync update` 刷新技能内容属于运维动作，**不一定**触发版本号步进；只有项目本体（脚本 / 结构 / 约定）变更才按上表 bump。技能自身的版本（如 `a-stock-data` v3.2.2）与本项目版本互不影响，分别记录于各自 `SKILL.md` 与下方的技能更新记录。
 
+## [1.1.0] - 2026-10-09 · CLI 落地
+
+> 触发条件（对照步进表）：新增 `discover` 子命令 + 新增 `config/` 兴趣与来源配置 + 新增 `tools/` 软链脚本 → 向后兼容的新功能，按约定 bump 为 MINOR。
+
+### 新增
+- 跨平台 CLI `skillsync.py`（零依赖 Python 3.11+）正式落地，覆盖 5 个子命令：
+  - `status`：各技能 本地 git 基线 / 上游最新提交 / pinned / 待更新 一览。
+  - `update [--dry-run]`：仅对「上游更新且非 pinned」的技能用 `codeload.github.com` tarball 覆盖并本地提交。
+  - `discover [--top N] [--min-stars]`：在 GitHub 按 star 发现相关高星技能，**仅列出候选**供人工决策（默认最小 50★，限定 `claude-code/claude-skill/cursor-rules/agent-skill/skills/prompt-engineering` 等 skill 相关 topic，已过滤 claude-code/cursor/claude/codex 等泛名与已存在项）。
+  - `sync [--push]`：提交本地变更，`--push` 才推送到 `origin/main`。
+  - `version`：打印 `VERSION` 文件内容。
+- `config/sources.json`：受管技能映射（repo / subpath / pinned）的单一事实源，可被 `skillsync.py` 内嵌 `SOURCES` 兜底覆盖。
+- `config/interests.json`：`discover` 的 5 类兴趣关键词（web/前端设计、投研/金融、中文内容、agent/工具、生产力）。
+- `tools/link.sh`（macOS/Linux）与 `tools/link.ps1`（Windows）：把每个含 `SKILL.md` 的技能目录以符号链接 / Junction 指向 WorkBuddy / Claude / Cursor 等 Coding 软件，实现「技能库指向此处」且不复制、不污染本仓库。
+
+### 修复 / 一致性
+- 从 `config/sources.json` 与 `skillsync.py` 内嵌 `SOURCES` 中移除已被用户删除的 `ian-xiaohei-illustrations`、`seedance-prompt`，防止 `update` 在后续上游有新提交时误复活已删技能。
+- 同步修正 `TASK.md`（版本号、`config/*.json` 文件名、删除技能行）与 `CATALOG.md`（删除记录说明），保持文档与仓库一致。
+
+### 已知限制（待后续讨论）
+- `discover` 基于 GitHub topic 搜索，仍可能混入少量非 skill 的大型仓库（如 dify 类）；候选仅作人工筛选参考，不直接安装。
+
 ## [1.0.0] - 2026-10-09 · 项目化基线
 
 ### 新增
