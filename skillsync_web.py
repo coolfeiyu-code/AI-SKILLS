@@ -481,7 +481,22 @@ async function act(action, btn){
     showErr('请求失败: ' + e + ' —— 请确认服务窗口(skillsync_web.py)仍在运行');
   }finally{
     if(btn){ btn.disabled = false; btn.textContent = btn.dataset.old; }
+    refreshBadge();
   }
+}
+
+async function refreshBadge(){
+  try{
+    const d = await fetch('/api/unpushed').then(r=>r.json());
+    const b = document.getElementById('unpushedBadge');
+    if(!b) return;
+    if(d.count > 0){
+      b.style.display = '';
+      b.textContent = '⚠ 本地领先 ' + d.count + ' 个提交未推送';
+    } else {
+      b.style.display = 'none';
+    }
+  }catch(e){ /* 静默 */ }
 }
 
 document.querySelectorAll('[data-action]').forEach(b=>{
@@ -873,8 +888,9 @@ def render_rows(skills):
 def render_page():
     skills = build_skills()
     n = unpushed_count()
-    badge = (f'<span class="badge risk-high">⚠ 本地领先 {n} 个提交未推送</span> '
-             if n > 0 else "")
+    disp = "" if n > 0 else "none"
+    unpushed_html = (f'<span class="badge risk-high" id="unpushedBadge" '
+                     f'style="display:{disp}">⚠ 本地领先 {n} 个提交未推送</span> ')
     return (PAGE_HTML
             .replace("__CSS__", PAGE_CSS)
             .replace("__JS__", PAGE_JS)
@@ -882,7 +898,7 @@ def render_page():
             .replace("__REPO__", html.escape(REPO))
             .replace("__VERSION__", html.escape(read_version()))
             .replace("__START__", html.escape(START_TS))
-            .replace("__UNPUSHED__", badge)
+            .replace("__UNPUSHED__", unpushed_html)
             .replace("__COUNT__", str(len(skills))))
 
 
@@ -1120,6 +1136,11 @@ class Handler(BaseHTTPRequestHandler):
         path = urlparse(self.path).path
         if path == "/favicon.ico":
             self._send(204, b"")
+            return
+        if path == "/api/unpushed":
+            self._send(200, json.dumps({"ok": True, "count": unpushed_count()},
+                                       ensure_ascii=False),
+                       "application/json; charset=utf-8")
             return
         if path == "/api/skill":
             qs = urlparse(self.path).query

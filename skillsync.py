@@ -341,10 +341,14 @@ def cmd_sync(args):
         git("commit", "-q", "-m", f"chore: 同步技能库 {ts}")
         print("已提交本地变更。")
     else:
-        print("无本地变更，无需提交。")
+        print("本地无新改动(工作区干净)。")
     if args.push:
         r = git("push", "origin")
-        print(r.stdout or r.stderr)
+        out = ((r.stdout or "") + (r.stderr or "")).strip()
+        if out:
+            print(out)
+        print("✓ 已推送到 GitHub。" if r.returncode == 0
+              else "✗ 推送失败(检查网络/凭据后重试)。")
     else:
         print("未推送。如需推送到 GitHub，加 --push（或运行 skillsync sync --push）。")
 
