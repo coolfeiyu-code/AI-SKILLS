@@ -165,6 +165,9 @@ def link_all(targets, skills):
             except Exception as e:  # noqa: BLE001
                 fail += 1
                 print(f"  [失败]   {tname}: {sk.name} -> {e}")
+    st = load_state()
+    st["linked_skills"] = sorted(s.name for s in skills)
+    save_state(st)
     return ok, skip, collide, fail
 
 

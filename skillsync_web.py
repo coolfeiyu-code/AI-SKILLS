@@ -444,6 +444,11 @@ font-family:Consolas,Menlo,monospace;font-size:12px;color:var(--text);white-spac
 max-height:300px;overflow:auto;min-height:60px;margin:12px 0;}
 #result.err{color:var(--danger);}
 .hint{color:var(--muted);font-size:12px;margin:-6px 0 10px;}
+.notice{margin:0 0 12px;padding:9px 12px;border-radius:8px;font-size:12.5px;line-height:1.55;
+border-left:4px solid var(--green);background:#f3f8f3;color:#2f5230;}
+.notice.warn{border-left-color:var(--warn);background:#fbf3e0;color:#7a5a12;}
+.notice.info{border-left-color:var(--blue);background:#eef4fb;color:#2a4a66;}
+.notice.ok{border-left-color:var(--green);background:#f3f8f3;color:#2f5230;}
 .disc-item{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);}
 .disc-item:last-child{border-bottom:0;}
 .disc-item .d-repo{font-family:Consolas,Menlo,monospace;color:var(--blue);font-size:12.5px;white-space:nowrap;}
@@ -587,6 +592,26 @@ async function loadLinks(){
       + '<td>' + t.total + '</td>'
       + '</tr>').join('');
     document.getElementById('linkRows').innerHTML = rows;
+    const nb = document.getElementById('linkNotice');
+    if(d.needs_relink){
+      const sample = d.new_skills.slice(0,3).map(esc).join('、');
+      const more = d.new_skills.length > 3 ? ' 等 ' + d.new_skills.length + ' 个' : '';
+      nb.className = 'notice warn';
+      nb.style.display = '';
+      nb.innerHTML = '⚠ 检测到 ' + d.new_skills.length + ' 个新增技能（如 ' + sample + more + '），工具侧尚未生效。点「一键连接全部」即可同步（幂等，不影响已有链接）。';
+    } else if(d.removed_skills && d.removed_skills.length){
+      const sample = d.removed_skills.slice(0,3).map(esc).join('、');
+      const more = d.removed_skills.length > 3 ? ' 等 ' + d.removed_skills.length + ' 个' : '';
+      nb.className = 'notice info';
+      nb.style.display = '';
+      nb.innerHTML = 'ℹ 已删除 ' + d.removed_skills.length + ' 个技能（如 ' + sample + more + '）。工具侧悬挂链接会在下次连接或撤销时自动清理，无需重连。';
+    } else if(d.baseline_exists){
+      nb.className = 'notice ok';
+      nb.style.display = '';
+      nb.innerHTML = '✓ 链接已是最新，无需重新连接';
+    } else {
+      nb.style.display = 'none';
+    }
   }catch(e){ /* 静默: 状态加载失败不影响其他功能 */ }
 }
 
@@ -828,7 +853,8 @@ PAGE_HTML = """<!doctype html>
       <button class="neutral" id="lkCopy" title="复制提示词, 可粘贴给任何 coding 工具让它自己连接">复制自连接提示词</button>
       <button class="neutral" id="lkRefresh">刷新状态</button>
     </div>
-    <div class="hint">连接 = 在工具侧创建指向技能库的目录链接(仓库零写入) · 工具重启后生效 · 新装工具后再点一次「一键连接全部」即可</div>
+    <div class="hint">连接 = 在工具侧创建指向技能库的目录链接(仓库零写入) · 工具重启后生效 · 新增/删除技能后点一次「一键连接全部」即可</div>
+    <div id="linkNotice" class="notice" style="display:none"></div>
     <table>
       <thead><tr><th>工具</th><th>skills 目录</th><th>已连接</th><th>同名占用</th><th>总项</th></tr></thead>
       <tbody id="linkRows"><tr><td colspan="5" class="empty">加载中…</td></tr></tbody>
@@ -973,6 +999,14 @@ def links_status():
     tools = []
     total = 0
     names = {s.name for s in linker.skill_dirs()}
+    st = linker.load_state()
+    baseline = st.get("linked_skills")
+    if baseline is None:
+        new_skills, removed_skills, needs_relink = [], [], False
+    else:
+        new_skills = sorted(names - set(baseline))
+        removed_skills = sorted(set(baseline) - names)
+        needs_relink = bool(new_skills)
     for name, tdir in linker.candidate_targets():
         linked = collide = titems = 0
         if tdir.is_dir():
@@ -987,7 +1021,9 @@ def links_status():
         tools.append({"name": name, "path": str(tdir), "linked": linked,
                       "collide": collide, "total": titems})
     tools.sort(key=lambda t: t["name"].lower())
-    return {"ok": True, "tools": tools, "total": total}
+    return {"ok": True, "tools": tools, "total": total,
+            "new_skills": new_skills, "removed_skills": removed_skills,
+            "needs_relink": needs_relink, "baseline_exists": baseline is not None}
 
 
 def _capture(fn, *a, **kw):
