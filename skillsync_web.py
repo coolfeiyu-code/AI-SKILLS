@@ -3,8 +3,8 @@
 
 所有机器可直接使用: 仅需 Python 3.11+ 与 git, 无需 tkinter / 无需 pip 安装。
 运行:
-    python skillsync_web.py [--port 8765] [--host 127.0.0.1]
-然后浏览器打开 http://localhost:8765
+    python skillsync_web.py [--port 8766] [--host 127.0.0.1]
+然后浏览器打开 http://localhost:8766
 
 功能:
     - 表格展示所有技能: 名称 / 作用 / 版本号 / 最后更新 / 来源仓库 / 固定 / 操作
@@ -767,7 +767,7 @@ def main():
     import argparse
     ap = argparse.ArgumentParser(description="AI-SKILLS Web 仪表盘")
     ap.add_argument("--host", default="127.0.0.1")
-    ap.add_argument("--port", type=int, default=8765)
+    ap.add_argument("--port", type=int, default=8766)
     args = ap.parse_args()
     try:
         srv = HTTPServer((args.host, args.port), Handler)

@@ -12,7 +12,7 @@
 - 仓库根即技能库：31 个 skill 目录**直接放在根下**（不嵌套 `skills/`）。
 - 远程：`origin = https://github.com/coolfeiyu-code/AI-SKILLS.git`，默认分支 `main`。
 - 工具链：**Python 3.11+**（建议 3.13）。跨平台靠 Python + `pathlib`，不用平台专属命令。
-- 版本：`VERSION` 文件（`1.5.0`），语义化；`CHANGELOG.md` 记录大/中/小版本。
+- 版本：`VERSION` 文件（`1.5.1`），语义化；`CHANGELOG.md` 记录大/中/小版本。
 - 无垃圾公约：运行时产物一律写仓库外系统缓存；`.gitignore` 已覆盖常见垃圾。
 - 位置与同步：仓库现位于同步盘 `C:/AI 云同步/AGENT-SKILLS`（Syncthing/极空间同步）。`.gitignore` 已忽略 `.workbuddy/`；目录级 `.stignore` 已排除 `.git` / `.workbuddy` / 缓存，避免仓库内部与本地 agent 状态被同步到极空间。旧路径 `C:/AI-SKILLS` 为指向本目录的交接点。
 - 文档：`README.md`（项目复用+工具指向+公约）、`CATALOG.md`（技能清单）、本文件。
@@ -48,8 +48,8 @@ python skillsync.py status             # 各技能 本地基线 vs 上游最新 
 
 `skillsync_web.py` 仅用 Python 标准库 `http.server` + git，**不需要 tkinter、不需要 pip 安装**，因此可在任意装有 Python 3.11+ 与 git 的机器上直接运行：
 
-- **Windows**：双击 `skillsync-web.bat` → 打开 `http://localhost:8765`。
-- **macOS / Linux**：`python3 skillsync_web.py` → 打开 `http://localhost:8765`。
+- **Windows**：双击 `skillsync-web.bat` → 打开 `http://localhost:8766`。
+- **macOS / Linux**：`python3 skillsync_web.py` → 打开 `http://localhost:8766`。
 - 表格总览（目录/名称/作用/版本号/最后更新/来源仓库/固定/操作），数据聚合自 `SKILL.md` frontmatter + `CATALOG.md` + `config/sources.json` + `git log`。
 - **新增**：填 文件夹名 + 来源仓库(owner/name) + 可选子路径 + 是否 pinned → 自动 `git clone --depth 1` + 复制 subpath（排除 `.git`）+ 写入 `sources.json` + `git add`。
 - **删除**：每行「删除」按钮（浏览器二次确认）→ `git rm -r -f` + 从 `sources.json` 移除。

@@ -2,7 +2,7 @@
 
 > 一个**带版本号、可一键更新、可自动发现高星技能、可同步到 GitHub** 的本地 AI 技能库。macOS / Windows 双端通用；并指导 Cursor / Claude Code / Codex / WorkBuddy / Cline / Windsurf 等把技能库指向此处，且**运行时不污染本仓库**。
 
-**当前版本：`1.5.0`**（版本定义见 [`VERSION`](./VERSION)，更新说明见 [`CHANGELOG.md`](./CHANGELOG.md)）。
+**当前版本：`1.5.1`**（版本定义见 [`VERSION`](./VERSION)，更新说明见 [`CHANGELOG.md`](./CHANGELOG.md)）。
 
 ---
 
@@ -59,8 +59,8 @@ AI-SKILLS/
 
 想要**在任意机器零配置**管理技能库（表格看全部、网页里增删技能）？用 Web 版——它**只依赖 Python 标准库 + git，不需要 tkinter、不需要装任何包**：
 
-- **Windows**：双击 **`skillsync-web.bat`** → 自动开浏览器到 `http://localhost:8765`。
-- **macOS / Linux**：`python3 skillsync_web.py`（或 `python skillsync_web.py`）→ 浏览器打开 `http://localhost:8765`。
+- **Windows**：双击 **`skillsync-web.bat`** → 自动开浏览器到 `http://localhost:8766`。
+- **macOS / Linux**：`python3 skillsync_web.py`（或 `python skillsync_web.py`）→ 浏览器打开 `http://localhost:8766`。
 - **表格总览**：目录 / 名称 / 作用 / 版本号 / 最后更新 / 来源仓库 / 固定 / 操作，数据来自 `SKILL.md` + `CATALOG.md` + `sources.json` + `git`。
 - **新增技能**：填 文件夹名 + 来源仓库(owner/name) + 可选子路径 + 是否固定 → 自动克隆安装并登记到 `config/sources.json`。
 - **删除技能**：每行「删除」按钮（二次确认）→ 从仓库移除并提交删除。
