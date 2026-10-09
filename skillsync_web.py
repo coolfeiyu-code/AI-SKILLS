@@ -325,7 +325,27 @@ def delete_skill(folder):
         if r.returncode != 0:
             shutil.rmtree(dest, ignore_errors=True)
             subprocess.run(["git", "add", "-A", "--", folder], cwd=REPO)
+    # 清理各工具侧指向该技能的悬挂链接
+    if linker is not None:
+        removed_links = 0
+        try:
+            for _name, tdir in linker.candidate_targets():
+                lp = tdir / folder
+                if (lp.is_symlink() or lp.exists()) and linker.resolve_into_repo(lp):
+                    remove_link_safe(lp)
+                    removed_links += 1
+            if removed_links:
+                print(f"[links] 已清理 {removed_links} 条工具侧悬挂链接")
+        except Exception:
+            pass
     return True, f"已删除 {folder}, 待提交/同步"
+
+
+def remove_link_safe(p):
+    if p.is_symlink():
+        p.unlink()
+    else:
+        os.rmdir(p)
 
 
 def run_cli(action):
@@ -723,7 +743,7 @@ def render_rows(skills):
                 f'<td>{html.escape(s["last_updated"])}</td>'
                 f'<td><span class="folder">{html.escape(s["repo"])}</span></td>'
                 f"<td>{pin}</td>"
-                f'<td><button class="danger" data-folder="{html.escape(s["folder"])}">删除</button></td>'
+                f'<td><button class="danger del" data-folder="{html.escape(s["folder"])}">删除</button></td>'
                 "</tr>"
             )
     return "\n".join(rows)
@@ -849,6 +869,9 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         path = urlparse(self.path).path
+        if path == "/favicon.ico":
+            self._send(204, b"")
+            return
         if path in ("/", "/index.html"):
             self._send(200, render_page())
         elif path == "/api/skills":
