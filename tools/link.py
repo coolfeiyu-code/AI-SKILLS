@@ -101,12 +101,38 @@ def resolve_into_repo(p: Path):
 
 def make_link(link: Path, target: Path):
     if os.name == "nt":
+        # mklink 输出为本地编码(GBK), 用字节模式避免解码线程异常
         r = subprocess.run(f'mklink /J "{link}" "{target}"', shell=True,
-                           capture_output=True, text=True)
+                           capture_output=True)
         if r.returncode != 0 or not link.exists():
-            raise RuntimeError((r.stderr or r.stdout).strip() or "mklink 失败")
+            err = ((r.stderr or b"") + (r.stdout or b"")).decode("utf-8", "replace")
+            raise RuntimeError(err.strip() or "mklink 失败")
     else:
         os.symlink(target, link)
+
+
+def sweep_dangling(targets):
+    """清理指向本仓库、但目标技能已被删除的悬挂链接。返回 (数量, 明细行)。"""
+    removed, lines = 0, []
+    repo_low = str(REPO).lower()
+    for tname, tdir in targets:
+        if not tdir.is_dir():
+            continue
+        for p in list(tdir.iterdir()):
+            if p.exists():
+                continue
+            try:
+                inside = str(p.resolve()).lower().startswith(repo_low)
+            except OSError:
+                continue
+            if inside:
+                try:
+                    os.rmdir(p)
+                    removed += 1
+                    lines.append(f"  [清悬挂] {tname}: {p.name} (指向的技能已被删除)")
+                except OSError as e:
+                    lines.append(f"  [失败]   {tname}: {p.name} -> {e}")
+    return removed, lines
 
 
 def remove_link(link: Path):
@@ -118,6 +144,9 @@ def remove_link(link: Path):
 
 def link_all(targets, skills):
     ok = skip = collide = fail = 0
+    swept, swept_lines = sweep_dangling(targets)
+    for ln in swept_lines:
+        print(ln)
     for tname, tdir in targets:
         tdir.mkdir(parents=True, exist_ok=True)
         for sk in skills:

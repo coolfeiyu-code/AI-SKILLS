@@ -82,11 +82,5 @@
     "repo": "gauss314/skills",
     "subpath": "",
     "pinned": true
-  },
-  {
-    "folder": "wanxiang-build",
-    "repo": "Cjy-CN/wanxiang-build",
-    "subpath": "skills/wanxiang-build",
-    "pinned": false
   }
 ]

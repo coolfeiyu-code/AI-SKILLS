@@ -181,6 +181,7 @@ def build_skills():
             "subpath": src.get("subpath", ""),
             "pinned": bool(src.get("pinned", False)),
             "category": category_of(folder),
+            "risk": risk_scan(folder)[0],
         })
     return skills
 
@@ -306,7 +307,15 @@ def install_skill(folder, repo, subpath, pinned):
                      "subpath": sub, "pinned": bool(pinned)})
         save_sources(data)
         subprocess.run(["git", "add", "-A", folder], cwd=REPO)
-        return True, f"已安装 {folder}(来自 {repo}{'/' + sub if sub else ''}){detected}, 待提交 {note}"
+        level, hits = risk_scan(folder)
+        warn = ""
+        if level == "high":
+            warn = (f"\n⚠ 安全扫描: 发现 {sum(1 for h in hits if h[0] == '高危')}"
+                    f" 处高危模式, 安装前请审查该技能内容!")
+        elif level == "warn":
+            warn = f"\n安全扫描: {len(hits)} 处提示级匹配, 建议查看内容确认"
+        return True, (f"已安装 {folder}(来自 {repo}{'/' + sub if sub else ''}){detected}, 待提交"
+                      + (f" {note}" if note else "") + warn)
     except Exception as e:  # noqa: BLE001
         return False, f"安装失败: {e}"
     finally:
@@ -349,7 +358,7 @@ def remove_link_safe(p):
 
 
 def run_cli(action):
-    allowed = {"status": [], "update": [], "discover": [],
+    allowed = {"status": [], "update": [], "discover": [], "pull": [],
                "sync": [], "syncpush": ["--push"], "version": []}
     if action not in allowed:
         return "不允许的操作"
@@ -408,6 +417,19 @@ td.purpose{max-width:380px;color:#6f6c63;font-size:12.5px;
 white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:999px;
 background:#f5efdf;color:var(--warn);border:1px solid #e5d8b8;}
+.badge.risk-high{background:#f8e4e2;color:var(--danger);border-color:#eabab5;font-weight:600;}
+.badge.risk-warn{background:#f5efdf;color:var(--warn);border-color:#e5d8b8;}
+.modal{display:none;position:fixed;inset:0;background:rgba(40,36,30,.45);z-index:50;
+align-items:center;justify-content:center;}
+.modal.open{display:flex;}
+.modal-box{background:var(--panel);border:1px solid var(--border);border-radius:10px;
+width:min(880px,94vw);max-height:84vh;display:flex;flex-direction:column;overflow:hidden;
+box-shadow:0 12px 40px rgba(50,45,35,.22);}
+.modal-head{display:flex;justify-content:space-between;align-items:center;
+padding:10px 14px;border-bottom:1px solid var(--border);font-weight:600;font-size:13px;}
+.modal-body{margin:0;padding:14px 16px;overflow:auto;flex:1;
+font-family:Consolas,Menlo,monospace;font-size:12px;white-space:pre-wrap;color:var(--text);
+background:#fbfaf6;}
 .muted{color:var(--muted);}
 form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 16px;}
 label{display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--muted);}
@@ -605,6 +627,78 @@ document.getElementById('lkCopy').addEventListener('click', async e=>{
 document.getElementById('lkRefresh').addEventListener('click', ()=>loadLinks());
 loadLinks();
 
+/* ───── 表格搜索过滤 ───── */
+const qBox = document.getElementById('q');
+qBox.addEventListener('input', ()=>{
+  const kw = qBox.value.trim().toLowerCase();
+  const tb = document.getElementById('skillsTable').tBodies[0];
+  const rows = [...tb.rows];
+  const segs = [];
+  let start = 0;
+  for(let i = 0; i < rows.length; i++){
+    if(rows[i].className === 'group'){ segs.push([start, i - 1, i]); start = i + 1; }
+  }
+  segs.push([start, rows.length - 1, -1]);
+  for(const [a, b, g] of segs){
+    let any = false;
+    for(let i = a; i <= b; i++){
+      const hit = kw === '' || rows[i].textContent.toLowerCase().includes(kw);
+      rows[i].style.display = hit ? '' : 'none';
+      if(hit) any = true;
+    }
+    if(g >= 0) rows[g].style.display = any ? '' : 'none';
+  }
+});
+
+/* ───── 技能查看器 ───── */
+document.querySelectorAll('.view').forEach(b=>{
+  b.addEventListener('click', async ()=>{
+    const f = b.dataset.folder;
+    try{
+      const d = await fetch('/api/skill?folder=' + encodeURIComponent(f))
+        .then(r=>r.json());
+      if(!d.ok){ showErr(d.msg || '读取失败'); return; }
+      document.getElementById('mTitle').textContent = f + ' / SKILL.md';
+      document.getElementById('mBody').textContent = d.content;
+      document.getElementById('modal').classList.add('open');
+    }catch(e){ showErr('读取失败: ' + e); }
+  });
+});
+document.getElementById('mClose').addEventListener('click',
+  ()=>document.getElementById('modal').classList.remove('open'));
+document.getElementById('modal').addEventListener('click',
+  e=>{ if(e.target.id === 'modal') e.currentTarget.classList.remove('open'); });
+
+/* ───── 回收站 ───── */
+async function loadBin(){
+  try{
+    const d = await post('/api/deleted', {});
+    const el = document.getElementById('binList');
+    if(!d.ok){ el.innerHTML = '<span class="muted">' + esc(d.msg || '加载失败') + '</span>'; return; }
+    if(!d.items.length){
+      el.innerHTML = '<span class="muted">没有可恢复的删除记录</span>';
+      return;
+    }
+    el.innerHTML = d.items.map(it =>
+      '<div class="disc-item">'
+      + '<span class="d-repo">' + esc(it.folder) + '</span>'
+      + '<span class="d-desc">' + esc(it.when) + ' · ' + esc(it.msg) + '</span>'
+      + '<button data-restore="' + esc(it.folder) + '">恢复</button>'
+      + '</div>').join('');
+    el.querySelectorAll('[data-restore]').forEach(b=>{
+      b.addEventListener('click', async ()=>{
+        b.disabled = true; b.textContent = '恢复中…';
+        try{
+          const r = await post('/api/restore', {folder: b.dataset.restore});
+          if(r.ok){ location.reload(); }
+          else { b.disabled = false; b.textContent = '恢复'; showErr(r.msg); }
+        }catch(e){ b.disabled = false; b.textContent = '恢复'; showErr(e); }
+      });
+    });
+  }catch(e){ /* 静默 */ }
+}
+loadBin();
+
 document.querySelectorAll('.del').forEach(b=>{
   let armed = false, timer = null;
   b.addEventListener('click', async ()=>{
@@ -662,7 +756,7 @@ PAGE_HTML = """<!doctype html>
 <div class="wrap">
   <header>
     <h1>AI-SKILLS 技能管理</h1>
-    <span class="sub">仓库: __REPO__ · 版本 __VERSION__ · 服务启动于 __START__ · 零依赖 Web 仪表盘(所有机器可用)</span>
+    <span class="sub">仓库: __REPO__ · 版本 __VERSION__ · 服务启动于 __START__ · __UNPUSHED__零依赖 Web 仪表盘(所有机器可用)</span>
   </header>
 
   <div class="card">
@@ -690,14 +784,16 @@ PAGE_HTML = """<!doctype html>
       <button class="primary" data-action="update" title="把有上游更新的技能更新到本地并提交">检查更新</button>
       <button id="discBtn" title="搜索 GitHub 高星相关技能, 在列表内可直接安装">发现新技能</button>
       <button data-action="syncpush" title="一键同步: 把改动提交到本地 git 历史并推送到 GitHub">同步到 GitHub</button>
+      <button data-action="pull" title="从 GitHub 拉取远端更新(仅快进合并, 有分叉会明确提示)">从 GitHub 拉取</button>
       <button class="neutral" data-action="version" title="显示当前版本号与最近更新内容">版本</button>
+      <input type="text" id="q" placeholder="🔍 搜索技能名 / 作用…" style="margin-left:auto;width:220px;background:#fbfaf6;border:1px solid var(--border);border-radius:7px;padding:7px 11px;color:var(--text);font-size:13px;font-family:inherit;">
     </div>
-    <div class="hint">同步到 GitHub = 提交改动并推送远端, 一步完成(其他机器 git pull 即得) · GitHub API 每小时限 60 次, 在 bat 内配置 GITHUB_TOKEN 可提升至 5000 次</div>
+    <div class="hint">同步到 GitHub = 提交改动并推送远端(你说推才由你点) · 从 GitHub 拉取 = 其他机器推送后在此拉取(仅快进) · 风险列 = 安装时对技能内容的自动安全扫描结果</div>
     <div id="result">点击上方按钮, 输出会显示在这里。</div>
-    <table>
+    <table id="skillsTable">
       <thead><tr>
         <th>目录</th><th>名称</th><th>作用</th><th>版本</th>
-        <th>最后更新</th><th>来源仓库</th><th>固定</th><th>操作</th>
+        <th>最后更新</th><th>来源仓库</th><th>固定</th><th>风险</th><th>操作</th>
       </tr></thead>
       <tbody>__ROWS__</tbody>
     </table>
@@ -717,6 +813,20 @@ PAGE_HTML = """<!doctype html>
       <tbody id="linkRows"><tr><td colspan="5" class="empty">加载中…</td></tr></tbody>
     </table>
   </div>
+
+  <div class="card">
+    <h2>回收站（git 历史中已删除的技能）</h2>
+    <div class="hint">恢复 = 从 git 历史把整个目录捞回(删除前版本) · 从未提交过的技能无法恢复 · 删除新技能前建议先「同步到 GitHub」</div>
+    <div id="binList"><span class="muted">加载中…</span></div>
+  </div>
+</div>
+
+<div class="modal" id="modal">
+  <div class="modal-box">
+    <div class="modal-head"><span id="mTitle">SKILL.md</span>
+      <button class="neutral" id="mClose">关闭</button></div>
+    <pre class="modal-body" id="mBody"></pre>
+  </div>
 </div>
 <script>__JS__</script>
 </body>
@@ -725,15 +835,18 @@ PAGE_HTML = """<!doctype html>
 
 def render_rows(skills):
     if not skills:
-        return '<tr><td colspan="8" class="empty">未找到含 SKILL.md 的技能目录</td></tr>'
+        return '<tr><td colspan="9" class="empty">未找到含 SKILL.md 的技能目录</td></tr>'
     rows = []
     for cat in CAT_ORDER:
         group = [s for s in skills if s["category"] == cat]
         if not group:
             continue
-        rows.append(f'<tr class="group"><td colspan="8">{html.escape(cat)} · {len(group)} 个</td></tr>')
+        rows.append(f'<tr class="group"><td colspan="9">{html.escape(cat)} · {len(group)} 个</td></tr>')
         for s in sorted(group, key=lambda x: x["folder"].lower()):
             pin = '<span class="badge">已固定</span>' if s["pinned"] else '<span class="muted">—</span>'
+            risk = {"high": '<span class="badge risk-high">高危</span>',
+                    "warn": '<span class="badge risk-warn">注意</span>'}.get(
+                        s.get("risk", "clean"), '<span class="muted">✓</span>')
             rows.append(
                 "<tr>"
                 f'<td><span class="folder">{html.escape(s["folder"])}</span></td>'
@@ -743,7 +856,9 @@ def render_rows(skills):
                 f'<td>{html.escape(s["last_updated"])}</td>'
                 f'<td><span class="folder">{html.escape(s["repo"])}</span></td>'
                 f"<td>{pin}</td>"
-                f'<td><button class="danger del" data-folder="{html.escape(s["folder"])}">删除</button></td>'
+                f"<td>{risk}</td>"
+                f'<td><button class="neutral view" data-folder="{html.escape(s["folder"])}">查看</button> '
+                f'<button class="danger del" data-folder="{html.escape(s["folder"])}">删除</button></td>'
                 "</tr>"
             )
     return "\n".join(rows)
@@ -751,6 +866,9 @@ def render_rows(skills):
 
 def render_page():
     skills = build_skills()
+    n = unpushed_count()
+    badge = (f'<span class="badge risk-high">⚠ 本地领先 {n} 个提交未推送</span> '
+             if n > 0 else "")
     return (PAGE_HTML
             .replace("__CSS__", PAGE_CSS)
             .replace("__JS__", PAGE_JS)
@@ -758,6 +876,7 @@ def render_page():
             .replace("__REPO__", html.escape(REPO))
             .replace("__VERSION__", html.escape(read_version()))
             .replace("__START__", html.escape(START_TS))
+            .replace("__UNPUSHED__", badge)
             .replace("__COUNT__", str(len(skills))))
 
 
@@ -856,6 +975,128 @@ def _capture(fn, *a, **kw):
     return buf.getvalue().strip()
 
 
+# ───────────────── 安全扫描(安装审查) ─────────────────
+RISK_EXTS = {".md", ".txt", ".py", ".js", ".ts", ".sh", ".ps1", ".bat",
+             ".cmd", ".yaml", ".yml", ".json", ".zsh", ".toml"}
+RISK_SKIP_DIRS = {".git", "node_modules", "__pycache__", ".workbuddy", ".venv"}
+RISK_HARD = [
+    ("管道执行远程脚本", r"(curl|wget|iwr|invoke-webrequest|invoke-restmethod)[^;\n]{0,100}\|\s*(sudo\s+)?(sh|bash|zsh|pwsh|powershell)\b"),
+    ("删除/格式化系统盘", r"(rm\s+-rf\s+/\s|format\s+[cC]:|diskpart|reg\s+delete\s+hk|remove-item\s+[^;\n]{0,60}-force[^;\n]{0,40}-recurse\s+c:\\\\)"),
+    ("读取凭据/密钥文件", r"(\.ssh/id_rsa|\.ssh/id_ed25519|\.aws[/\\]credentials|\.netrc|\.git-credentials|ls -(la )?~/?\.ssh)"),
+    ("窃取环境变量并外发", r"(printenv|export -p|env)\b[^;\n]{0,60}\|\s*.{0,40}(curl|wget|http)|process\.env[^;\n]{0,80}(fetch\(|axios|XMLHttpRequest|上传|发送)"),
+]
+RISK_SOFT = [
+    ("诱导忽略既有指令", r"(ignore|disregard|bypass|override)[^\n]{0,30}(previous|prior|above|earlier|system)\s+(instructions?|prompts?|rules?)|忽略(之前|以上|先前|系统)(的)?(指令|提示|规则)"),
+    ("诱导外发数据", r"(exfiltrat|上传到|发送到|上报到|post to)[^\n]{0,60}https?://"),
+    ("诱导下载并执行", r"(下载|download)[^\n]{0,50}(并)?(执行|运行|run|execute)|curl[^\n]{0,60}(-o\s+\S+\s+\|\||\|\|\s*sh)"),
+    ("超长Base64块", r"[A-Za-z0-9+/=]{600,}"),
+]
+_RISK_CACHE = {}
+
+
+def risk_scan(folder):
+    """轻量安装审查: 扫描技能目录文本文件的可疑模式。返回 (level, hits)。
+    level: high(发现高危) / warn(仅提示级) / clean。带缓存(按 SKILL.md mtime)。"""
+    sk = os.path.join(REPO, folder, "SKILL.md")
+    key = folder
+    try:
+        mtime = os.path.getmtime(sk)
+    except OSError:
+        mtime = 0
+    cached = _RISK_CACHE.get(key)
+    if cached and cached[0] == mtime:
+        return cached[1], cached[2]
+    hits = []
+    base = os.path.join(REPO, folder)
+    scanned = 0
+    for dirpath, dirnames, filenames in os.walk(base):
+        dirnames[:] = [d for d in dirnames if d not in RISK_SKIP_DIRS]
+        for fn in filenames:
+            if scanned >= 300:
+                break
+            if os.path.splitext(fn)[1].lower() not in RISK_EXTS:
+                continue
+            fp = os.path.join(dirpath, fn)
+            try:
+                if os.path.getsize(fp) > 200_000:
+                    continue
+                with open(fp, encoding="utf-8", errors="replace") as f:
+                    for i, line in enumerate(f, 1):
+                        low = line.lower()
+                        for pname, pat in RISK_HARD:
+                            if re.search(pat, low):
+                                hits.append(("高危", pname,
+                                             os.path.relpath(fp, base).replace("\\", "/"), i,
+                                             line.strip()[:120]))
+                        for pname, pat in RISK_SOFT:
+                            if re.search(pat, low):
+                                hits.append(("提示", pname,
+                                             os.path.relpath(fp, base).replace("\\", "/"), i,
+                                             line.strip()[:120]))
+                scanned += 1
+            except OSError:
+                continue
+    level = "high" if any(h[0] == "高危" for h in hits) else ("warn" if hits else "clean")
+    hits.sort(key=lambda h: 0 if h[0] == "高危" else 1)
+    hits = hits[:12]
+    _RISK_CACHE[key] = (mtime, level, hits)
+    return level, hits
+
+
+def unpushed_count():
+    """本地领先 origin/main 的提交数(拿不到则 0)。"""
+    try:
+        r = subprocess.run(["git", "rev-list", "--count", "origin/main..HEAD"],
+                           cwd=REPO, capture_output=True, text=True,
+                           encoding="utf-8", errors="replace")
+        if r.returncode == 0:
+            return int((r.stdout or "0").strip() or "0")
+    except Exception:
+        pass
+    return 0
+
+
+def deleted_skills():
+    """git 历史中删除过、且当前磁盘上已不存在的顶层技能目录。"""
+    r = subprocess.run(
+        ["git", "log", "--diff-filter=D", "--name-status",
+         "--pretty=format:@@%H|%ad|%s", "--date=short"],
+        cwd=REPO, capture_output=True, text=True, encoding="utf-8", errors="replace")
+    out = {}
+    cur = None
+    for line in (r.stdout or "").splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        if line.startswith("@@"):
+            parts = line[2:].split("|", 2)
+            if len(parts) == 3:
+                cur = parts
+        elif cur and (line.startswith("D\t") or line.startswith("D ")):
+            p = line.split("\t", 1)[-1].strip().strip('"')
+            if "/" not in p and "\\" not in p and p not in out:
+                out[p] = {"folder": p, "when": cur[1], "msg": cur[2], "commit": cur[0]}
+    return [v for k, v in sorted(out.items(), key=lambda kv: kv[1]["when"], reverse=True)
+            if not os.path.isdir(os.path.join(REPO, k))]
+
+
+def restore_skill(folder):
+    """从 git 历史恢复整目录(取删除提交的父版本)。"""
+    if not re.fullmatch(r"[A-Za-z0-9._-]+", folder or ""):
+        return False, "非法目录名"
+    r = subprocess.run(["git", "log", "--diff-filter=D", "--format=%H", "-n", "1", "--", folder],
+                       cwd=REPO, capture_output=True, text=True,
+                       encoding="utf-8", errors="replace")
+    cid = (r.stdout or "").strip()
+    if not cid:
+        return False, "git 历史中没有该技能的删除记录(可能从未提交过, 无法恢复)"
+    r2 = subprocess.run(["git", "checkout", cid + "^", "--", folder], cwd=REPO,
+                        capture_output=True, text=True, encoding="utf-8", errors="replace")
+    if r2.returncode != 0:
+        return False, "恢复失败: " + ((r2.stderr or "").strip()[:200] or "未知错误")
+    return True, f"已从历史恢复 {folder}(删除前版本), 待提交/同步"
+
+
 # ───────────────────────── HTTP 服务 ─────────────────────────
 class Handler(BaseHTTPRequestHandler):
     def _send(self, code, body, ctype="text/html; charset=utf-8"):
@@ -871,6 +1112,28 @@ class Handler(BaseHTTPRequestHandler):
         path = urlparse(self.path).path
         if path == "/favicon.ico":
             self._send(204, b"")
+            return
+        if path == "/api/skill":
+            qs = urlparse(self.path).query
+            folder = (urllib.parse.parse_qs(qs).get("folder") or [""])[0]
+            if folder not in list_skill_dirs():
+                self._send(404, json.dumps({"ok": False, "msg": "技能不存在"},
+                                           ensure_ascii=False),
+                           "application/json; charset=utf-8")
+                return
+            fp = os.path.join(REPO, folder, "SKILL.md")
+            try:
+                with open(fp, encoding="utf-8", errors="replace") as f:
+                    content = f.read(80_000)
+                if len(content) == 80_000:
+                    content += "\n…(过长截断)"
+                self._send(200, json.dumps(
+                    {"ok": True, "folder": folder, "content": content},
+                    ensure_ascii=False), "application/json; charset=utf-8")
+            except Exception as e:  # noqa: BLE001
+                self._send(200, json.dumps({"ok": False, "msg": str(e)},
+                                           ensure_ascii=False),
+                           "application/json; charset=utf-8")
             return
         if path in ("/", "/index.html"):
             self._send(200, render_page())
@@ -949,6 +1212,19 @@ class Handler(BaseHTTPRequestHandler):
                 self._send(200, json.dumps({"ok": False, "msg": str(e)},
                                            ensure_ascii=False),
                            "application/json; charset=utf-8")
+        elif path == "/api/deleted":
+            try:
+                self._send(200, json.dumps({"ok": True, "items": deleted_skills()},
+                                           ensure_ascii=False),
+                           "application/json; charset=utf-8")
+            except Exception as e:  # noqa: BLE001
+                self._send(200, json.dumps({"ok": False, "msg": str(e), "items": []},
+                                           ensure_ascii=False),
+                           "application/json; charset=utf-8")
+        elif path == "/api/restore":
+            ok, msg = restore_skill(data.get("folder", ""))
+            self._send(200, json.dumps({"ok": ok, "msg": msg}, ensure_ascii=False),
+                       "application/json; charset=utf-8")
         else:
             self._send(404, json.dumps({"ok": False, "msg": "unknown"}, ensure_ascii=False),
                        "application/json; charset=utf-8")

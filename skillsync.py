@@ -154,7 +154,8 @@ def get_latest_commit_date(repo: str):
 
 
 def git(*args):
-    return subprocess.run(["git", "-C", REPO_ROOT, *args], capture_output=True, text=True)
+    return subprocess.run(["git", "-C", REPO_ROOT, *args], capture_output=True,
+                          text=True, encoding="utf-8", errors="replace")
 
 
 def local_baseline(folder: str):
@@ -355,6 +356,15 @@ def cmd_version(args):
         print("unknown")
 
 
+def cmd_pull(args):
+    """从 GitHub 拉取更新: 仅快进合并(--ff-only), 有分叉/冲突时明确报错不硬合。"""
+    r = git("pull", "--ff-only", "origin", "main")
+    out = ((r.stdout or "") + "\n" + (r.stderr or "")).strip()
+    print(out or "(已是最新)")
+    if r.returncode != 0:
+        print("(提示: 拉取失败多为本地与远端有分叉, 请先处理本地未推送提交, 或联系维护者排查)")
+
+
 # ---------------------------------------------------------------------------
 # 可选配置覆盖（config/*.json 若存在则覆盖内嵌默认值）
 # ---------------------------------------------------------------------------
@@ -388,10 +398,11 @@ def main():
     p_sy = sub.add_parser("sync", help="提交本地变更（默认不推送）")
     p_sy.add_argument("--push", action="store_true", help="提交并推送到 origin/main")
     sub.add_parser("version", help="打印项目版本号")
+    sub.add_parser("pull", help="从 GitHub 拉取更新(仅快进合并, 有冲突会明确提示)")
 
     args = parser.parse_args()
     {"status": cmd_status, "update": cmd_update, "discover": cmd_discover,
-     "sync": cmd_sync, "version": cmd_version}[args.cmd](args)
+     "sync": cmd_sync, "version": cmd_version, "pull": cmd_pull}[args.cmd](args)
 
 
 if __name__ == "__main__":
