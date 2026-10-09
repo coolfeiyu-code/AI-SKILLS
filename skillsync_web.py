@@ -14,9 +14,11 @@
 """
 import os
 import re
+import io
 import sys
 import json
 import shutil
+import contextlib
 import subprocess
 import tempfile
 import datetime
@@ -31,6 +33,13 @@ SOURCES = os.path.join(REPO, "config", "sources.json")
 CATALOG = os.path.join(REPO, "CATALOG.md")
 VERSION_FILE = os.path.join(REPO, "VERSION")
 START_TS = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+
+# 复用统一连接器(tools/link.py): 探测/连接/撤销/提示词
+sys.path.insert(0, os.path.join(REPO, "tools"))
+try:
+    import link as linker  # noqa: E402
+except Exception:  # noqa: BLE001
+    linker = None
 
 
 # ───────────────────────── 元数据提取 ─────────────────────────
@@ -506,6 +515,76 @@ async function installRepo(repo, btn){
 
 document.getElementById('discBtn').addEventListener('click', e=>doDiscover(e.currentTarget));
 
+/* ───── 连接 Coding 工具 ───── */
+async function loadLinks(){
+  try{
+    const d = await post('/api/links/status', {});
+    if(!d.ok){ return; }
+    const rows = d.tools.map(t =>
+      '<tr>'
+      + '<td><span class="folder">' + esc(t.name) + '</span></td>'
+      + '<td class="purpose" title="' + esc(t.path) + '">' + esc(t.path) + '</td>'
+      + '<td>' + (t.linked ? '<span style="color:var(--green);font-weight:600">' + t.linked + '</span>'
+                           : '<span class="muted">0</span>') + '</td>'
+      + '<td>' + (t.collide ? t.collide : '<span class="muted">0</span>') + '</td>'
+      + '<td>' + t.total + '</td>'
+      + '</tr>').join('');
+    document.getElementById('linkRows').innerHTML = rows;
+  }catch(e){ /* 静默: 状态加载失败不影响其他功能 */ }
+}
+
+async function linksAct(url, btn){
+  const box = document.getElementById('result');
+  box.classList.remove('err');
+  box.textContent = '运行中…';
+  box.scrollIntoView({behavior:'smooth', block:'nearest'});
+  btn.disabled = true; btn.dataset.old = btn.textContent; btn.textContent = '运行中…';
+  try{
+    const d = await post(url, {});
+    box.textContent = d.msg || '(完成)';
+    await loadLinks();
+  }catch(e){
+    showErr('请求失败: ' + e);
+  }finally{
+    btn.disabled = false; btn.textContent = btn.dataset.old;
+  }
+}
+
+document.getElementById('lkConnect').addEventListener('click',
+  e=>linksAct('/api/links/connect', e.currentTarget));
+
+let lkRemoveArmed = false, lkRemoveTimer = null;
+document.getElementById('lkRemove').addEventListener('click', e=>{
+  const btn = e.currentTarget;
+  if(!lkRemoveArmed){
+    lkRemoveArmed = true;
+    btn.dataset.old = btn.textContent;
+    btn.textContent = '确认撤销?';
+    btn.classList.add('armed');
+    lkRemoveTimer = setTimeout(()=>{ lkRemoveArmed = false;
+      btn.textContent = btn.dataset.old; btn.classList.remove('armed'); }, 4000);
+    return;
+  }
+  clearTimeout(lkRemoveTimer);
+  lkRemoveArmed = false; btn.classList.remove('armed');
+  linksAct('/api/links/remove', btn);
+});
+
+document.getElementById('lkCopy').addEventListener('click', async e=>{
+  const btn = e.currentTarget;
+  try{
+    const d = await post('/api/links/prompt', {});
+    await navigator.clipboard.writeText(d.msg);
+    btn.textContent = '已复制 ✓';
+    setTimeout(()=>{ btn.textContent = '复制自连接提示词'; }, 2000);
+  }catch(err){
+    showErr('复制失败(可手动选择文本复制): ' + err);
+  }
+});
+
+document.getElementById('lkRefresh').addEventListener('click', ()=>loadLinks());
+loadLinks();
+
 document.querySelectorAll('.del').forEach(b=>{
   let armed = false, timer = null;
   b.addEventListener('click', async ()=>{
@@ -601,6 +680,21 @@ PAGE_HTML = """<!doctype html>
         <th>最后更新</th><th>来源仓库</th><th>固定</th><th>操作</th>
       </tr></thead>
       <tbody>__ROWS__</tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>连接 Coding 工具</h2>
+    <div class="toolbar">
+      <button class="primary" id="lkConnect" title="为下方所有工具的 skills 目录建立指向技能库的链接(幂等)">一键连接全部</button>
+      <button class="danger" id="lkRemove" title="撤销所有指向技能库的链接(不碰工具真实目录)">撤销全部链接</button>
+      <button class="neutral" id="lkCopy" title="复制提示词, 可粘贴给任何 coding 工具让它自己连接">复制自连接提示词</button>
+      <button class="neutral" id="lkRefresh">刷新状态</button>
+    </div>
+    <div class="hint">连接 = 在工具侧创建指向技能库的目录链接(仓库零写入) · 工具重启后生效 · 新装工具后再点一次「一键连接全部」即可</div>
+    <table>
+      <thead><tr><th>工具</th><th>skills 目录</th><th>已连接</th><th>同名占用</th><th>总项</th></tr></thead>
+      <tbody id="linkRows"><tr><td colspan="5" class="empty">加载中…</td></tr></tbody>
     </table>
   </div>
 </div>
@@ -711,6 +805,37 @@ def discover_candidates(top=15, min_stars=50):
     return out
 
 
+def links_status():
+    """连接矩阵: 各工具 skills 目录中 指向本仓库的链接数。"""
+    if linker is None:
+        raise RuntimeError("连接器加载失败(tools/link.py)")
+    tools = []
+    total = 0
+    names = {s.name for s in linker.skill_dirs()}
+    for name, tdir in linker.candidate_targets():
+        linked = collide = titems = 0
+        if tdir.is_dir():
+            for p in tdir.iterdir():
+                titems += 1
+                if p.name in names:
+                    if linker.resolve_into_repo(p):
+                        linked += 1
+                    else:
+                        collide += 1
+        total += linked
+        tools.append({"name": name, "path": str(tdir), "linked": linked,
+                      "collide": collide, "total": titems})
+    tools.sort(key=lambda t: t["name"].lower())
+    return {"ok": True, "tools": tools, "total": total}
+
+
+def _capture(fn, *a, **kw):
+    buf = io.StringIO()
+    with contextlib.redirect_stdout(buf):
+        fn(*a, **kw)
+    return buf.getvalue().strip()
+
+
 # ───────────────────────── HTTP 服务 ─────────────────────────
 class Handler(BaseHTTPRequestHandler):
     def _send(self, code, body, ctype="text/html; charset=utf-8"):
@@ -762,6 +887,45 @@ class Handler(BaseHTTPRequestHandler):
                 payload = {"ok": False, "msg": str(e)}
             self._send(200, json.dumps(payload, ensure_ascii=False),
                        "application/json; charset=utf-8")
+        elif path == "/api/links/status":
+            try:
+                payload = links_status()
+            except Exception as e:  # noqa: BLE001
+                payload = {"ok": False, "msg": str(e), "tools": [], "total": 0}
+            self._send(200, json.dumps(payload, ensure_ascii=False),
+                       "application/json; charset=utf-8")
+        elif path == "/api/links/connect":
+            try:
+                ok, _, collide, fail = linker.link_all(
+                    linker.candidate_targets(), linker.skill_dirs())
+                self._send(200, json.dumps(
+                    {"ok": True,
+                     "msg": f"完成: 连接 {ok} · 同名跳过 {collide} · 失败 {fail}"},
+                    ensure_ascii=False), "application/json; charset=utf-8")
+            except Exception as e:  # noqa: BLE001
+                self._send(200, json.dumps({"ok": False, "msg": f"连接失败: {e}"},
+                                           ensure_ascii=False),
+                           "application/json; charset=utf-8")
+        elif path == "/api/links/remove":
+            try:
+                msg = _capture(linker.cmd_remove) or "(没有可撤销的链接)"
+                self._send(200, json.dumps({"ok": True, "msg": msg},
+                                           ensure_ascii=False),
+                           "application/json; charset=utf-8")
+            except Exception as e:  # noqa: BLE001
+                self._send(200, json.dumps({"ok": False, "msg": f"撤销失败: {e}"},
+                                           ensure_ascii=False),
+                           "application/json; charset=utf-8")
+        elif path == "/api/links/prompt":
+            try:
+                msg = _capture(linker.cmd_prompt)
+                self._send(200, json.dumps({"ok": True, "msg": msg},
+                                           ensure_ascii=False),
+                           "application/json; charset=utf-8")
+            except Exception as e:  # noqa: BLE001
+                self._send(200, json.dumps({"ok": False, "msg": str(e)},
+                                           ensure_ascii=False),
+                           "application/json; charset=utf-8")
         else:
             self._send(404, json.dumps({"ok": False, "msg": "unknown"}, ensure_ascii=False),
                        "application/json; charset=utf-8")
