@@ -1,194 +1,28 @@
-# TODO - InvestSkill 改進計劃
+# TODO — InvestSkill
 
-本文檔記錄 InvestSkill 專案的改進想法和待辦事項。
+The curated top five. Everything else — with rationale, effort estimates, and release mapping — lives in the bilingual roadmap: [doc/IMPROVEMENT-ROADMAP.md](doc/IMPROVEMENT-ROADMAP.md) · [繁體中文](doc/IMPROVEMENT-ROADMAP-zh-TW.md). Progress against the roadmap's ten headline items is tracked in its §0 table.
 
-## 🎯 高優先級
+The previous long-form backlog (last updated 2026-02-24) is archived at [doc/archive/TODO-2026-02.md](doc/archive/TODO-2026-02.md).
 
-### 功能增強
-- [ ] **即時資料整合**
-  - 整合即時股價 API（如 Alpha Vantage, Yahoo Finance）
-  - 添加即時新聞來源整合
-  - 實作盤中警報功能
+## Top 5
 
-- [x] **進階分析技能**
-  - ✅ 添加選擇權分析技能（Greeks、隱含波動率、價差策略）（v1.2.0 完成）
-  - [ ] 實作量化分析技能（統計套利、因子分析）
-  - [ ] 添加配對交易分析
+1. **`full-report --depth comprehensive` runs every framework** — add the frameworks missing since v1.8 (`bear-case` above all) plus the new Tier 1 skills where they fit, swap the alias modules for their targets, add `--skip <skill>`. → roadmap §4.3
+2. **`--lang zh-TW` on every skill + a machine-readable JSON footer** — the remaining two items of the skill contract (§4.1); the footer is what lets `eval-skills.js` and `result-validator` parse results without regex on box-drawing characters.
+3. **Learning lessons: Macro & the Fed Cycle, Options for Stock Investors** — the two §5.1 lessons still open (Lesson 5 has the material); plus self-check quizzes for Lessons 1–8 and the printable cheat sheet (§5.4). → roadmap §5.1, §5.4
+4. **Non-US Investor Guide page** — Lesson 11's non-US section is the core; the page adds brokers, FX, and account opening (§5.4). Glossary: the ~16 filing / technical terms still missing (§5.3).
+5. **Tier 2 skills as demand shows** — `forensic-accounting`, `proxy-governance`, `trade-postmortem` (closed `thesis-tracker` files are its input), `investment-policy`. → roadmap §3.2
 
-- [ ] **風險管理工具**
-  - 實作 VaR（風險價值）計算器
-  - 添加壓力測試情境分析
-  - 建立投資組合風險報告
+## Recently shipped from the roadmap
 
-### 使用者體驗
-- [x] **互動式報告**
-  - ✅ 添加圖表視覺化支援（v1.1.0 完成）
-  - ✅ 建立 HTML/PDF 報告生成功能（v1.1.0 完成）
-  - ✅ 實作可匯出的分析報告（v1.1.0 完成）
+- Stale counts fixed and historical docs archived (§7)
+- Skill contract enforced on every analysis skill — `Data & Sources` header, Data Verification gate, Thesis Invalidation — with `scripts/check-skill-contract.js` in `npm test` (§4.1, §6.3)
+- The three redirect skills reclassified as aliases; honest count of 24 frameworks (§4.2)
+- `thesis-tracker` (§3.1)
+- The rest of Tier 1 — `etf-analysis`, `earnings-preview`, `tax-lens` (with `--non-us`), `risk-stress-test`, `learning-coach` (§3.1)
+- Learning track Part II — Lessons 9–13 (Before Your First Trade · ETFs · Taxes & Accounts incl. non-US · Earnings Season · Psychology & Process), the "When the Answer Is No" case study, self-check quizzes, glossary 44 → 76 (§5.1–5.3; see `doc/LEARNING-GAP-REVIEW.md`)
+- `fact-check` — claim-level verification against primary sources, recomputation, corrected report with inline citations and References; Verification Score feeds `result-validator` Data Quality (not on the roadmap; added on request)
+- `scripts/sync-prompts.js`, `scripts/new-skill.js`, `scripts/eval-skills.js`, `scripts/lib/signal-block.js` (§6.1, §6.2, §6.4, §6.11)
 
-- [ ] **自訂化選項**
-  - 允許使用者自訂分析參數
-  - 建立使用者偏好設定檔
-  - 添加個人化的觀察清單
+## Deliberately not planned
 
-## 📊 中優先級
-
-### 資料與整合
-- [ ] **加密貨幣支援**
-  - 添加加密貨幣技術分析
-  - 實作鏈上資料分析
-  - 整合加密貨幣新聞情緒
-
-- [ ] **國際市場**
-  - 擴展至其他主要市場（歐洲、亞洲）
-  - 添加外匯分析技能
-  - 實作全球市場比較
-
-- [x] **基本面資料增強**
-  - ✅ 整合財報電話會議記錄分析（v1.1.0 完成）
-  - ✅ 添加內部人交易追蹤（v1.1.0 完成）
-  - ✅ 實作機構持股變化分析（v1.1.0 完成）
-  - ✅ 添加股息分析技能（v1.2.0 完成）
-  - ✅ 添加空頭興趣分析技能（v1.2.0 完成）
-  - ✅ 添加 DCF 估值技能（v1.2.0 完成）
-  - ✅ 添加競爭分析護城河技能（v1.2.0 完成）
-  - ✅ 添加研究套組整合技能（v1.2.0 完成）
-  - ✅ 統一所有技能的信號輸出格式（v1.2.0 完成）
-
-### 自動化與效率
-- [ ] **批次處理**
-  - 實作多股票批次分析
-  - 添加產業批次比較功能
-  - 建立自動化掃描器（技術形態、基本面篩選）
-
-- [ ] **排程與通知**
-  - 添加定期報告排程
-  - 實作警報通知系統
-  - 建立財報日曆提醒
-
-## 🔧 技術改進
-
-### 程式碼品質
-- [ ] **測試覆蓋率**
-  - 添加單元測試
-  - 實作整合測試
-  - 建立 E2E 測試套件
-
-- [ ] **效能優化**
-  - 實作資料快取機制
-  - 優化 API 呼叫頻率
-  - 添加並行處理支援
-
-- [ ] **錯誤處理**
-  - 改善錯誤訊息
-  - 添加詳細的日誌記錄
-  - 實作優雅的降級機制
-
-### 文檔與範例
-- [ ] **文檔擴展**
-  - 添加更多使用範例
-  - 建立影片教學
-  - 撰寫最佳實踐指南
-
-- [ ] **開發者文檔**
-  - 建立架構文檔
-  - 添加 API 參考文檔
-  - 撰寫貢獻者指南（更詳細版本）
-
-## 💡 創新功能
-
-### AI/ML 增強
-- [ ] **機器學習模型**
-  - 實作價格預測模型
-  - 添加異常檢測
-  - 建立情緒分析模型
-
-- [ ] **自然語言處理**
-  - 新聞摘要與情緒分析
-  - 財報文字分析
-  - 社群媒體情緒追蹤
-
-### 進階分析
-- [ ] **回測引擎**
-  - 實作歷史回測功能
-  - 添加策略優化器
-  - 建立績效歸因分析
-
-- [ ] **配對交易與統計套利**
-  - 實作配對選擇演算法
-  - 添加協整性測試
-  - 建立配對交易信號生成器
-
-- [ ] **技術分析增強**
-  - 添加更多技術指標（Elder Ray、Ichimoku、等）
-  - 實作圖表形態識別 AI
-  - 建立多時間框架分析
-
-## 🌐 社群與生態系統
-
-### 社群功能
-- [ ] **分享與協作**
-  - 建立分析分享平台
-  - 實作社群評分系統
-  - 添加協作分析功能
-
-- [ ] **教育資源**
-  - 建立投資教育課程
-  - 添加互動式教學
-  - 撰寫市場分析文章
-
-### 整合與擴展
-- [ ] **第三方整合**
-  - 整合券商 API（Interactive Brokers、TD Ameritrade）
-  - 添加投資組合追蹤服務整合
-  - 實作社群媒體整合
-
-- [ ] **插件生態系統**
-  - 建立插件開發框架
-  - 鼓勵社群開發新技能
-  - 建立插件市集審核流程
-
-## 🐛 已知問題與修復
-
-- [ ] 檢查所有 SKILL.md 的格式一致性
-- [ ] 驗證所有範例程式碼可執行
-- [ ] 更新過時的 API 端點
-- [ ] 修正錯字和文法錯誤
-- [ ] 統一用語（使用者名稱、路徑等）
-
-## 📝 文檔更新
-
-- [ ] 添加更多 GIF 示範
-- [ ] 建立常見問題（FAQ）區段
-- [ ] 添加疑難排解指南
-- [ ] 撰寫版本遷移指南
-- [ ] 建立貢獻者名人堂
-
-## 🔒 安全與合規
-
-- [ ] **資料隱私**
-  - 實作資料加密
-  - 添加使用者資料管理功能
-  - 建立隱私權政策
-
-- [ ] **合規性**
-  - 確保符合金融資料使用規範
-  - 添加免責聲明強化
-  - 實作使用條款
-
----
-
-## 如何貢獻此 TODO
-
-如果您有新的想法或想要認領任務：
-
-1. 在 GitHub Issues 中開啟討論
-2. 在相關項目旁標記您的名字
-3. 完成後更新此文檔並標記為已完成 [x]
-
-**優先級說明：**
-- 🎯 高優先級：核心功能，直接影響使用者體驗
-- 📊 中優先級：重要但非立即需要的功能
-- 💡 創新功能：實驗性或長期發展功能
-
-**最後更新：** 2026-02-24
+Live-data / broker APIs, crypto and forex, ML price prediction, and changes to the signal block — see roadmap §9 for why.

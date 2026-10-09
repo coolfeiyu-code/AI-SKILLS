@@ -134,22 +134,22 @@ A:
 A: Not directly. Each platform has its own session. However:
 - The **same frameworks** are available on all platforms
 - You can **copy results** from one platform to another
-- Use the `research-bundle` skill for complete analysis you can share
+- Use the `full-report` skill for a complete analysis you can share as one HTML file
 
-### Do all platforms have the same 18 skills?
+### Do all platforms have the same skills?
 
-**Q: Are all 18 skills available on every platform?**
+**Q: Are all 34 skills available on every platform?**
 
-A: 
-- **Claude Code**: ✅ All 18 skills as `/skill-name` commands
-- **Cursor**: ✅ All 18 skills as `@prompts/skill-name.md` files
-- **Gemini CLI**: ✅ All 18 skills as `@prompts/skill-name.md` files
-- **Copilot**: ✅ All 18 frameworks via `.github/copilot-instructions.md`
-- **Universal**: ✅ 17 prompts in `prompts/` (report-generator excluded)
+A: Yes — every platform gets the same 34 skills: 30 analysis frameworks, 3 aliases (`fundamental-analysis`, `dcf-valuation`, `research-bundle`, which redirect to the skill that absorbed them), and the `report-generator` output tool.
+- **Claude Code**: ✅ All 34 skills as `/skill-name` commands
+- **Cursor**: ✅ All 34 skills as `@prompts/skill-name.md` files
+- **Gemini CLI**: ✅ All 34 skills as `@prompts/skill-name.md` files
+- **Copilot**: ✅ All 30 frameworks via `.github/copilot-instructions.md`
+- **Universal**: ✅ 34 prompts in `prompts/`, one per skill
 
-**Why is report-generator excluded from Universal?**
+**Why isn't report-generator counted as a framework?**
 
-Report-generator is an output tool (generates HTML/PDF), not an analysis framework. It works best when integrated with Claude Code's skill system.
+Report-generator is an output tool (it renders other skills' results as HTML/PDF), not an analysis framework, so the advertised count is 30 even though 34 files ship. The three aliases are likewise installed but not counted.
 
 ### Version differences between platforms
 
@@ -332,12 +332,9 @@ A:
 - **Recommended**: Latest version
 - **Check**: Run `claude --version`
 
-**Q: Does InvestSkill work with Claude 3 / Claude 4?**
+**Q: Which Claude models does InvestSkill work with?**
 
-A: Yes! InvestSkill is model-agnostic:
-- Works with Claude 3 Haiku, Sonnet, Opus
-- Works with Claude 4.6 (recommended for best results)
-- Works with any LLM via universal prompts
+A: Any. InvestSkill is plain markdown, so it runs on whichever model your Claude Code session uses, and on any other LLM via the universal prompts in `prompts/`. More capable models handle multi-module runs like `full-report` best.
 
 **Q: Which Cursor version do I need?**
 
@@ -449,7 +446,7 @@ A:
 Optimization:
 - Use simpler skills for quick decisions (stock-eval)
 - Use research-bundle when you need comprehensive analysis
-- Try Claude Sonnet for faster responses than Opus
+- Switch to a faster model with `/model` when speed matters more than depth
 
 **Q: Can I batch analyze multiple stocks?**
 
@@ -484,8 +481,11 @@ with open('prompts/stock-eval.md') as f:
     framework = f.read()
 
 # Use with Claude API
+import anthropic
+client = anthropic.Anthropic()
 response = client.messages.create(
-    model="claude-3-5-sonnet-20241022",
+    model="claude-opus-5",
+    max_tokens=16000,
     system=framework,
     messages=[{"role": "user", "content": "Evaluate AAPL"}]
 )

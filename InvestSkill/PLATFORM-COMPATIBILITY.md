@@ -4,17 +4,18 @@ Complete platform support, feature comparison, and version requirements for Inve
 
 ## Quick Comparison
 
-| Feature | Claude Code | Cursor | Gemini CLI | Copilot | Universal |
-|---------|:-----------:|:------:|:----------:|:-------:|:---------:|
-| **18 Analysis Skills** | ✅ | ✅ | ✅ | ✅ | ✅ |
-| **Native Plugin** | ✅ | ➖ | ➖ | ➖ | ➖ |
-| **Rules Integration** | ➖ | ✅ | ➖ | ➖ | ➖ |
-| **Slash Commands** | ✅ | ❌ | ❌ | ❌ | ❌ |
-| **Auto-Load Config** | ➖ | ✅ | ✅ | ✅ | ➖ |
-| **File References** | ➖ | ✅ | ✅ | ➖ | ➖ |
-| **Copy/Paste Ready** | ➖ | ➖ | ➖ | ➖ | ✅ |
-| **Real-Time Updates** | ✅ | ✅ | ✅ | ✅ | ⏰ |
-| **Works Offline** | ✅ | ✅ | ✅ | ❌ | ✅ |
+| Feature | Claude Code | Cursor | Gemini CLI | Copilot | Universal | Ollama |
+|---------|:-----------:|:------:|:----------:|:-------:|:---------:|:------:|
+| **30 Analysis Frameworks** (+ 3 aliases, 1 output tool) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Native Plugin** | ✅ | ➖ | ➖ | ➖ | ➖ | ➖ |
+| **Rules Integration** | ➖ | ✅ | ➖ | ➖ | ➖ | ➖ |
+| **Slash Commands** | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| **Auto-Load Config** | ➖ | ✅ | ✅ | ✅ | ➖ | ❌ |
+| **File References** | ➖ | ✅ | ✅ | ➖ | ➖ | ➖ |
+| **Copy/Paste Ready** | ➖ | ➖ | ➖ | ➖ | ✅ | ✅ |
+| **Real-Time Updates** | ✅ | ✅ | ✅ | ✅ | ⏰ | ⏰ |
+| **Works Offline** | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
+| **Runs Local Models** | ❌ | ❌ | ❌ | ❌ | ➖ | ✅ |
 
 **Legend**:  
 ✅ = Fully supported  
@@ -44,7 +45,7 @@ Complete platform support, feature comparison, and version requirements for Inve
 - GitHub account (optional, for local dev)
 
 #### Features Supported
-✅ All 18 skills as slash commands  
+✅ All 34 skills as slash commands (30 analysis frameworks + 3 aliases + 1 output tool)  
 ✅ Marketplace installation  
 ✅ Real-time updates  
 ✅ Version consistency  
@@ -75,10 +76,7 @@ Complete platform support, feature comparison, and version requirements for Inve
 - Skill execution depends on Claude Code's current model
 
 #### Model Compatibility
-Works with all Claude Code supported models:
-- Claude Opus 4.6
-- Claude Sonnet 4.6
-- Claude Haiku 4.5
+Works with whichever model your Claude Code session runs (`/model` shows and switches it).
 
 ---
 
@@ -99,7 +97,7 @@ Works with all Claude Code supported models:
 - AI enabled in Cursor settings
 
 #### Features Supported
-✅ All 18 frameworks as @prompts/ references  
+✅ All 30 frameworks as @prompts/ references  
 ✅ Auto-loading from .cursor/rules/  
 ✅ Natural language understanding  
 ✅ File paste/upload support  
@@ -227,7 +225,7 @@ Works with all Gemini models:
 - Internet connection
 
 #### Features Supported
-✅ All 18 frameworks in context  
+✅ All 30 frameworks in context  
 ✅ Auto-loading from .github/copilot-instructions.md  
 ✅ Natural language understanding  
 ✅ File/document paste support  
@@ -357,6 +355,43 @@ Works with ALL AI models:
 - ✅ Mistral
 - ✅ Any open-source model
 - ✅ Any API-based model
+
+---
+
+### 🦙 Ollama (Local Open-Source Models)
+
+**Status**: ✅ Supported (via Universal prompts)  
+**Type**: Local model runtime (Qwen, Llama, DeepSeek, Mistral…)  
+**Last Tested**: v1.10.0  
+
+#### Requirements
+- [Ollama](https://ollama.com) installed + a pulled model (≥ 32B recommended)
+- InvestSkill repo cloned (read `prompts/` files)
+- For automatic live data: a tool-capable client with web search (Open WebUI, Continue.dev, Cline) pointed at `http://localhost:11434/v1`
+
+#### Features Supported
+✅ All frameworks via `prompts/*.md`  
+✅ Runs fully offline / on-device  
+✅ No API key, no per-token cost  
+✅ Reusable models via Modelfile `SYSTEM` block  
+✅ Data privacy (nothing leaves the machine in Path A)  
+
+#### Features NOT Supported
+❌ Auto-load config (no `GEMINI.md`-style hook)  
+❌ Slash commands  
+❌ Live data from a bare `ollama run` (no internet access — paste it, or use a tool-capable client)  
+
+#### Model Compatibility
+- ✅ `qwen2.5:32b`, `llama3.1:70b`, `deepseek-r1:32b` — reliable formatting + tool use
+- ✅ `qwen2.5:14b` — usable, occasional format drift
+- ⚠️ `*:7b` / `*:8b` — runs, but expect broken tables and hallucinated numbers
+
+#### Limitations
+- Output quality tracks model size — small models drop the Signal Block and mangle tables
+- Live data access depends on your client, not Ollama itself
+- Frameworks refreshed manually (`git pull`)
+
+> Full setup: **[README-ollama.md](README-ollama.md)**
 
 ---
 

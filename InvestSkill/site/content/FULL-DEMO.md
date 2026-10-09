@@ -15,14 +15,17 @@ Complete, real-stock demonstrations of InvestSkill skills applied to live market
 Each full demo runs all 15 analysis skills:
 technical-analysis · fundamental-analysis · stock-eval · economics-analysis · sector-analysis · insider-trading · institutional-ownership · short-interest · earnings-call-analysis · chart-master · dcf-valuation · stock-valuation · options-analysis · dividend-analysis · competitor-analysis
 
-## Deep-Dive Filing Analysis (`financial-report-analyst`)
+## Deep-Dive Filing Analysis
 
 | Demo | Company | Filing | Language | Focus |
 |------|---------|--------|----------|-------|
+| [META 10-K Deep Dive](FULL-DEMO-META.md) | Meta Platforms | FY2025 Form 10-K | English | **Nine skills chained across one filing** — digest · statement-by-statement read · off-balance-sheet forensics · accounting quality · year-over-year language diff · promise tracker · bear case · DCF · catalyst calendar · confidence audit |
 | [NVDA 10-K Deep Dive](FULL-DEMO-NVDA.md) | NVIDIA Corporation | FY2026 Form 10-K | English | Segment revenue · margins · cash flow · balance sheet · risk factors · accounting quality · investor verdict |
 | [AMD 10-K 深度解析](FULL-DEMO-AMD.md) | Advanced Micro Devices | FY2025 Form 10-K | 繁體中文 | 部門營收 · 利潤 · 現金流 · 資產負債表 · 風險因素 · 會計品質 · 投資結論 |
 
-A focused demonstration of the `financial-report-analyst` skill applied end-to-end to a complete annual report — executive summary, financial health dashboard, ASCII charts, clean tables, red-flag review, and a professional-investor verdict. The NVDA (English) and AMD (Traditional Chinese) deep dives are language counterparts of the same framework.
+The NVDA (English) and AMD (Traditional Chinese) deep dives demonstrate the `financial-report-analyst` skill applied end-to-end to a complete annual report — executive summary, financial health dashboard, ASCII charts, clean tables, red-flag review, and a professional-investor verdict. They are language counterparts of the same framework.
+
+The **META deep dive** is a different shape of demo: instead of one skill run to completion, it chains **nine skills over a single PDF** (`10k-digest` → `financial-report-analyst` → `fundamental-analysis` → `chart-master` → `bear-case` → `stock-valuation`/`dcf-valuation` → `catalyst-calendar` → `position-ladder` → `result-validator`), and shows the technique of **diffing two consecutive filings** to surface what changed in management's own language. Use it as the reference example for *"analyze a financial report with the skills in this plugin."*
 
 ---
 

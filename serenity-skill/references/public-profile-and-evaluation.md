@@ -1,66 +1,26 @@
-# Public profile and evaluation notes
+# Serenity method sources
 
-Research snapshot: 2026-05-03
+Reviewed: 2026-09-14
 
-This file summarizes public materials used to distill the skill. Treat it as a source map for the method. Identity and performance claims need independent verification.
+Serenity.skill is inspired by public supply-chain research associated with [Serenity / @aleabitoreddit](https://x.com/aleabitoreddit). It is an independent project and does not represent an endorsement by the account owner.
 
-## Public profile
+## Public material behind the approach
 
-Serenity uses the handle `@aleabitoreddit` on X and appears publicly connected to the Reddit user `u/AleaBito`. Public profile descriptions and third-party writeups describe him as an AI/semi supply-chain analyst, former Reddit WallStreetBets trader, former RISC-V Foundation / AI research scientist, and trader of “unknown bottlenecks.” These identity claims are largely self-reported or repeated by secondary sources.
+[The AXT/InP supply-chain discussion posted by u/AleaBito](https://www.reddit.com/r/wallstreetbets/comments/1pyghud/the_entire_ai_buildout_google_nvda_msft_is/) traces an AI/photonics thesis upstream to materials and substrate suppliers. The author also links to [this X post](https://x.com/aleabitoreddit/status/2004569946492453003) in the discussion. The Reddit text was accessible at review time; X could not be retrieved directly in this review.
 
-Reliability note: verify any real-name, employment, credential, holdings, and return claims independently before relying on them.
+The useful research moves visible in that discussion are:
 
-## Method observed in public discussion
+- translating a broad technology theme into required physical inputs;
+- examining supplier concentration and expansion difficulty further upstream;
+- connecting a technical constraint to company exposure and market expectations;
+- considering competing technologies and restrictions that could interrupt the thesis.
 
-The repeated public pattern is “supply-chain chokepoint theory”:
+These are observations about a published line of reasoning. The post's company, market-share and valuation claims require their own company or industry evidence; they are not established by reproducing the post.
 
-1. Start from a large technology buildout.
-2. Translate it into architecture changes.
-3. Walk down the bill of materials and process chain.
-4. Find narrow upstream layers where capacity, qualification, materials, or equipment create scarcity.
-5. Compare strategic control with public-market valuation.
-6. Wait for orders, capacity reservations, price increases, customer validation, or financial mix shift to prove the thesis.
+## What this project contributes
 
-The best way to learn from the public persona is to study the reasoning path and then verify it with primary sources.
+The Skill turns that research pattern into a reusable process for ordinary investment research, with A-share source paths, explicit commercial stages, claim-specific evidence, earnings attribution, valuation dates and conditions that would change a judgment.
 
-## Outside positive evaluation
+The [AI semiconductor case](../examples/a-share-ai-semiconductor-demo.md) and [CPO company challenge](../examples/cpo-company-challenge.md) are this project's applications of the method. Their conclusions belong to their stated research dates, not to the public account.
 
-Public Substack analysts such as Jimmy狐狸 and Singularity Research Fund describe Serenity as unusually strong at photonics/CPO supply-chain mapping. Their praise centers on technical depth, early identification of photonics-related rotations, and the ability to locate upstream constraints before broad market consensus.
-
-These sources are useful for understanding public reputation and method, while performance claims remain non-audited unless backed by brokerage statements or independently reconstructed trade data.
-
-## Outside skepticism and risk evaluation
-
-Mainstream media coverage around the Raspberry Pi / OpenClaw trade shows that social-media narratives can move small-cap stocks. Reuters and Bloomberg reported that an X post by `aleabitoreddit` became part of the market narrative around Raspberry Pi’s rally. The Register took a skeptical view of the OpenClaw-on-Raspberry-Pi demand logic and framed the rally as meme-stock-like.
-
-This is a key lesson for this skill: a good Agent must separate “real bottleneck evidence” from “viral price action.” When a public account is influential, the account itself can become a market-moving variable.
-
-## Reliability ladder
-
-Use this ladder for every future research task:
-
-1. Primary: filings, exchange disclosures, company IR, transcripts, official orders, patents, standards, regulatory records.
-2. High-quality media: Reuters, Bloomberg, WSJ, FT, Nikkei, respected trade publications.
-3. Specialist analysis: Substack, industry blogs, sell-side notes, conference summaries.
-4. Public social posts: X, Reddit, Discord, forums, mirror sites.
-5. Rumor: unattributed screenshots, anonymous claims, “heard from supplier” posts.
-
-Only level 1 and 2 evidence should drive strong conclusions. Level 3 and 4 sources generate leads.
-
-## What the skill should imitate
-
-- System decomposition.
-- Engineering-first questions.
-- Attention to obscure upstream nodes.
-- Skepticism toward obvious winners and crowded narratives.
-- Willingness to write clear failure conditions.
-- Clear separation between thesis quality and timing.
-
-## What the skill should avoid
-
-- Personality cosplay.
-- Unverified return claims.
-- Harsh personal insults.
-- Low-liquidity hype.
-- Treating a public post as proof.
-- Ignoring dilution, governance, geopolitical, and execution risk.
+Use this page for attribution. Use company filings, named counterparties and technical sources to establish investment facts.

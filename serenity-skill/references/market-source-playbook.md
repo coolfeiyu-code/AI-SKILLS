@@ -2,6 +2,10 @@
 
 Use this file when the market determines which source path matters.
 
+For A-share research, start with the company code, reporting year and document type on [CNINFO](https://www.cninfo.com.cn/) or the listing exchange. Verify the issuer, consolidated versus parent-only scope, publication date and reporting period before extracting figures. Check subsequent investor records when product status is the question.
+
+If an official PDF endpoint returns an error page or cannot be read, try the company's IR site or another official disclosure venue, such as HKEX for a dual-listed company. An accessible report reproduction can be used with its provenance labeled and key figures cross-checked against an official source. Record a material retrieval gap rather than relying on the search snippet.
+
 ## US
 
 Primary source path:

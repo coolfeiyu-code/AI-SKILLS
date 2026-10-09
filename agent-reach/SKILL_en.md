@@ -1,312 +1,174 @@
 ---
 name: agent-reach
 description: >
-  Give your AI agent eyes to see the entire internet.
-  Search and read 17 platforms: Twitter/X, Reddit, YouTube, GitHub, Bilibili,
-  XiaoHongShu, Douyin, Weibo, WeChat Articles, Xiaoyuzhou Podcast, LinkedIn,
-  V2EX, Xueqiu, RSS, Exa web search, and any web page.
-  Zero config for 8 channels. Use when the user asks to search, read, or interact
-  on any supported platform, shares a URL, or asks to search the web.
-  Triggers: "search twitter", "search xiaohongshu", "watch this video",
-  "search the web", "look this up", "research", "youtube transcript",
-  "search reddit", "read this link", "bilibili", "douyin video",
-  "wechat article", "wechat official account", "weibo", "V2EX",
-  "xiaoyuzhou", "podcast", "xueqiu", "stock quote",
-  "install agent reach".
+  MUST USE when user wants to research/search/look up/find anything on the
+  internet — e.g. "research this topic", "do a deep dive on X", "search the
+  web for X", "see what people say about X", "look this up".
+
+  Also MUST USE when user mentions any platform or shares any URL/link:
+  Twitter/X, Reddit, Facebook, Instagram, YouTube, GitHub, Bilibili, XiaoHongShu,
+  Xiaoyuzhou Podcast, LinkedIn/Boss直聘/jobs/recruiting, V2EX, Xueqiu (stocks), RSS.
+
+  16 platforms, multi-backend routing (OpenCLI / per-platform CLIs / APIs).
+  Zero config for 6 channels. Run `agent-reach doctor --json` to see which
+  backend serves each platform right now.
+
+  NOT for: writing reports/analysis/translation (this skill only FETCHES
+  internet content); posting/commenting/liking (write operations); platforms
+  that already have a dedicated skill installed (prefer that skill).
 metadata:
-  openclaw:
-    homepage: https://github.com/Panniantong/Agent-Reach
+  homepage: https://github.com/Panniantong/Agent-Reach
 ---
 
-# Agent Reach — Usage Guide
+# Agent Reach — internet capability router
 
-Upstream tools for 17 platforms. Call them directly.
+16 platforms, multiple backends each. **When this skill exists, use it for
+these platforms — do not invent your own approach.**
 
-Run `agent-reach doctor` to check which channels are available.
+## Standing rules (apply for the whole session)
 
-## ⚠️ Workspace Rules
+1. **Health-check before acting**: for multi-backend/login-backed platforms (XiaoHongShu /
+   Reddit / Bilibili / Twitter / Facebook / Instagram), run `agent-reach doctor --json` first.
+   Use a populated `active_backend`; `active_backend: null` means Doctor deliberately skipped a
+   live probe to avoid browser-cookie reads or remote writes, not that no backend exists. Only when
+   the user's task requires that platform, run the reference's read-only command to verify it.
+2. **Announce what you use**: say "using agent-reach, platform X via backend Y"
+   before starting.
+3. **On failure, follow the retry chains in references/** — never guess
+   commands.
+4. **For broad research tasks**: combine platforms (Exa for web search +
+   Twitter/Reddit for discussions + XiaoHongShu/Bilibili for Chinese
+   perspectives), collect in parallel, then synthesize.
+5. **Watch versions for the user**: after finishing a substantial
+   multi-platform task, run `agent-reach check-update` (fast, one API call).
+   If a new version exists, append one line to your wrap-up: "Agent Reach
+   vX.Y.Z is available — paste this to me to update: 帮我更新 Agent Reach：
+   https://raw.githubusercontent.com/Panniantong/agent-reach/main/docs/update.md".
+   Never interrupt the current task to update; never nag about the same version twice.
 
-**Never create files in the agent workspace.** Use `/tmp/` for temporary output and `~/.agent-reach/` for persistent data.
+## Routing table
 
-## Web — Any URL
+| User intent | Category | Details |
+|---------|------|---------|
+| Web / code search | search | [references/search.md](references/search.md) |
+| XiaoHongShu / Twitter / Bilibili / V2EX / Reddit / Facebook / Instagram | social | [references/social.md](references/social.md) |
+| Jobs / LinkedIn | career | [references/career.md](references/career.md) |
+| GitHub / code | dev | [references/dev.md](references/dev.md) |
+| Web pages / articles / RSS | web | [references/web.md](references/web.md) |
+| YouTube / Bilibili / podcast transcripts | video | [references/video.md](references/video.md) |
+| Xueqiu / stock quotes | finance | [references/finance.md](references/finance.md) |
+
+## Zero-config quick commands
 
 ```bash
+# Exa web search
+mcporter call exa.web_search_exa query="query" numResults=5
+
+# Read any web page
 curl -s "https://r.jina.ai/URL"
-```
 
-## Web Search (Exa)
-
-```bash
-mcporter call 'exa.web_search_exa(query: "query", numResults: 5)'
-mcporter call 'exa.get_code_context_exa(query: "code question", tokensNum: 3000)'
-```
-
-## Twitter/X (bird)
-
-```bash
-bird search "query" -n 10                  # search
-bird read URL_OR_ID                        # read tweet (supports /status/ and /article/ URLs)
-bird user-tweets @username -n 20           # user timeline
-bird thread URL_OR_ID                      # full thread
-```
-
-## YouTube (yt-dlp)
-
-```bash
-yt-dlp --dump-json "URL"                     # video metadata
-yt-dlp --write-sub --write-auto-sub --sub-lang "zh-Hans,zh,en" --skip-download -o "/tmp/%(id)s" "URL"
-                                             # download subtitles, then read the .vtt file
-yt-dlp --dump-json "ytsearch5:query"         # search
-```
-
-## Bilibili (yt-dlp)
-
-```bash
-yt-dlp --dump-json "https://www.bilibili.com/video/BVxxx"
-yt-dlp --write-sub --write-auto-sub --sub-lang "zh-Hans,zh,en" --convert-subs vtt --skip-download -o "/tmp/%(id)s" "URL"
-```
-
-> Server IPs may get 412. Use `--cookies-from-browser chrome` or configure a proxy.
-
-## Reddit
-
-```bash
-curl -s "https://www.reddit.com/r/SUBREDDIT/hot.json?limit=10" -H "User-Agent: agent-reach/1.0"
-curl -s "https://www.reddit.com/search.json?q=QUERY&limit=10" -H "User-Agent: agent-reach/1.0"
-```
-
-> Server IPs may get 403. Search via Exa instead, or configure a proxy.
-
-## GitHub (gh CLI)
-
-```bash
+# GitHub search
 gh search repos "query" --sort stars --limit 10
-gh repo view owner/repo
-gh search code "query" --language python
-gh issue list -R owner/repo --state open
-gh issue view 123 -R owner/repo
-```
 
-## XiaoHongShu (mcporter)
+# YouTube subtitles (never use yt-dlp for Bilibili; retry chain in video.md)
+yt-dlp --write-sub --write-auto-sub --skip-download -o "/tmp/%(id)s" "URL"
 
-```bash
-mcporter call 'xiaohongshu.search_feeds(keyword: "query")'
-mcporter call 'xiaohongshu.get_feed_detail(feed_id: "xxx", xsec_token: "yyy")'
-mcporter call 'xiaohongshu.get_feed_detail(feed_id: "xxx", xsec_token: "yyy", load_all_comments: true)'
-mcporter call 'xiaohongshu.publish_content(title: "Title", content: "Body text", images: ["/path/img.jpg"], tags: ["tag"])'
-```
-
-> Requires login. Use Cookie-Editor to import cookies.
-
-> **Tip: Clean bloated output.** The XHS API returns large JSON with many unused fields.
-> Pipe through the formatter to save context:
-> ```bash
-> mcporter call 'xiaohongshu.search_feeds(keyword: "query")' | agent-reach format xhs
-> ```
-> This keeps only: title, content, author, engagement counts, image URLs, and tags.
-
-## Douyin (mcporter)
-
-```bash
-mcporter call 'douyin.parse_douyin_video_info(share_link: "https://v.douyin.com/xxx/")'
-mcporter call 'douyin.get_douyin_download_link(share_link: "https://v.douyin.com/xxx/")'
-```
-
-> No login needed.
-
-## WeChat Articles
-
-**Search** (`miku_ai`):
-```bash
-# miku_ai is installed inside the agent-reach Python environment.
-# Use the same interpreter that runs agent-reach (handles pipx / venv installs):
-AGENT_REACH_PYTHON=$(python3 -c "import agent_reach, sys; print(sys.executable)" 2>/dev/null || echo python3)
-$AGENT_REACH_PYTHON -c "
-import asyncio
-from miku_ai import get_wexin_article
-async def s():
-    for a in await get_wexin_article('query', 5):
-        print(f'{a[\"title\"]} | {a[\"url\"]}')
-asyncio.run(s())
-"
-```
-
-**Read** (Camoufox — bypasses WeChat anti-bot):
-```bash
-cd ~/.agent-reach/tools/wechat-article-for-ai && python3 main.py "https://mp.weixin.qq.com/s/ARTICLE_ID"
-```
-
-> WeChat articles cannot be read with Jina Reader or curl. Use Camoufox.
-
-## Weibo (mcporter)
-
-```bash
-# Trending topics
-mcporter call 'weibo.get_trendings(limit: 20)'
-
-# Search users
-mcporter call 'weibo.search_users(keyword: "Lei Jun", limit: 10)'
-
-# Get a user profile
-mcporter call 'weibo.get_profile(uid: "1195230310")'
-
-# Get a user's feed
-mcporter call 'weibo.get_feeds(uid: "1195230310", limit: 20)'
-
-# Get a user's hot posts
-mcporter call 'weibo.get_hot_feeds(uid: "1195230310", limit: 10)'
-
-# Search post content
-mcporter call 'weibo.search_content(keyword: "artificial intelligence", limit: 20)'
-
-# Search topics
-mcporter call 'weibo.search_topics(keyword: "AI", limit: 10)'
-
-# Get post comments
-mcporter call 'weibo.get_comments(mid: "5099916367123456", limit: 50)'
-
-# Get fans
-mcporter call 'weibo.get_fans(uid: "1195230310", limit: 20)'
-
-# Get followings
-mcporter call 'weibo.get_followers(uid: "1195230310", limit: 20)'
-```
-
-> Zero config. No login needed. Uses the mobile API with auto-generated visitor cookies.
-
-## Xiaoyuzhou Podcast (groq-whisper + ffmpeg)
-
-```bash
-# Transcribe a single podcast episode (outputs text to /tmp/)
-~/.agent-reach/tools/xiaoyuzhou/transcribe.sh "https://www.xiaoyuzhoufm.com/episode/EPISODE_ID"
-```
-
-> Requires `ffmpeg` and a Groq API key (free).
-> Configure the key with `agent-reach configure groq-key YOUR_KEY`.
-> On first run, install the tools with `agent-reach install --env=auto`.
-> Run `agent-reach doctor` to check status.
-> Output Markdown files are saved to `/tmp/` by default.
-
-## LinkedIn (mcporter)
-
-```bash
-mcporter call 'linkedin.get_person_profile(linkedin_url: "https://linkedin.com/in/username")'
-mcporter call 'linkedin.search_people(keyword: "AI engineer", limit: 10)'
-```
-
-Fallback: `curl -s "https://r.jina.ai/https://linkedin.com/in/username"`
-
-## V2EX (public API)
-
-```bash
-# Hot topics
+# V2EX hot topics
 curl -s "https://www.v2ex.com/api/topics/hot.json" -H "User-Agent: agent-reach/1.0"
 
-# Topics in a node (node_name examples: python, tech, jobs, qna)
-curl -s "https://www.v2ex.com/api/topics/show.json?node_name=python&page=1" -H "User-Agent: agent-reach/1.0"
-
-# Topic details (extract topic_id from URLs like https://www.v2ex.com/t/1234567)
-curl -s "https://www.v2ex.com/api/topics/show.json?id=TOPIC_ID" -H "User-Agent: agent-reach/1.0"
-
-# Topic replies
-curl -s "https://www.v2ex.com/api/replies/show.json?topic_id=TOPIC_ID&page=1" -H "User-Agent: agent-reach/1.0"
-
-# User profile
-curl -s "https://www.v2ex.com/api/members/show.json?username=USERNAME" -H "User-Agent: agent-reach/1.0"
+# Bilibili search (bili-cli, no login needed)
+bili search "query" --type video -n 5
 ```
 
-Python example (`V2EXChannel`):
+## Login-backed platforms (pick by doctor's active_backend)
 
-```python
-from agent_reach.channels.v2ex import V2EXChannel
+Twitter boundary: cookies saved by `agent-reach configure twitter-cookies`
+are used only by `doctor` to check whether explicit credentials are present.
+`doctor` does not run `twitter status` or configure the current shell. Before
+calling `twitter` directly, explicitly provide `TWITTER_AUTH_TOKEN` and
+`TWITTER_CT0` in the child-process environment without logging their values.
 
-ch = V2EXChannel()
+XiaoHongShu boundary: Agent Reach must not log the user in or read browser
+cookies. OpenCLI may use only an existing Chrome session explicitly controlled
+by the user. If none exists, do not automate login; use a manual Cookie-Editor
+export with xiaohongshu-mcp or a legacy tool instead.
 
-# Get hot topics (default 20 items)
-# Returned fields: id, title, url, replies, node_name, node_title, content(first 200 chars), created
-topics = ch.get_hot_topics(limit=10)
-for t in topics:
-    print(f"[{t['node_title']}] {t['title']} ({t['replies']} replies) {t['url']}")
-    print(f"  id={t['id']} created={t['created']}")
+```bash
+# Twitter search (twitter-cli preferred; retry chain in social.md)
+twitter search "query" -n 10
 
-# Get latest topics for a specific node
-# Returned fields: id, title, url, replies, node_name, node_title, content(first 200 chars), created
-node_topics = ch.get_node_topics("python", limit=5)
-for t in node_topics:
-    print(t["id"], t["title"], t["url"])
+# Reddit (NO zero-config path — OpenCLI or rdt-cli, login required)
+opencli reddit search "query" -f yaml   # desktop
+rdt search "query" --limit 10            # legacy/server
 
-# Get one topic plus replies
-# Returned fields: id, title, url, content, replies_count, node_name, node_title,
-#                  author, created, replies (list of {author, content, created})
-topic = ch.get_topic(1234567)
-print(topic["title"], "—", topic["author"])
-for r in topic["replies"]:
-    print(f"  {r['author']}: {r['content'][:80]}")
+# XiaoHongShu (desktop prefers OpenCLI)
+opencli xiaohongshu search "query" -f yaml
 
-# Get user info
-# Returned fields: id, username, url, website, twitter, psn, github, btc, location, bio, avatar, created
-user = ch.get_user("Livid")
-print(user["username"], user["bio"], user["github"])
-
-# Search (not supported by the public V2EX API; returns guidance instead)
-result = ch.search("asyncio")
-print(result[0]["error"])  # Use built-in site search or the Exa channel instead
+# Facebook / Instagram (desktop OpenCLI, browser session)
+opencli facebook search "query" -f yaml
+opencli facebook groups -f yaml
+opencli instagram search "query" -f yaml       # user search
+opencli instagram user USERNAME -f yaml        # recent posts from one user
 ```
 
-> No auth required. Results are public JSON. V2EX node names are listed at https://www.v2ex.com/planes
+## Environment check
 
-## Xueqiu (public API)
-
-```python
-from agent_reach.channels.xueqiu import XueqiuChannel
-
-ch = XueqiuChannel()
-
-# Get stock quotes (symbol examples: SH600519 mainland China, SZ000858 Shenzhen, AAPL US, 00700 HK)
-# Returned fields: symbol, name, current, percent, chg, high, low, open, last_close,
-#                  volume, amount, market_capital, turnover_rate, pe_ttm, timestamp
-quote = ch.get_stock_quote("AAPL")
-print(f"{quote['name']} ({quote['symbol']}): {quote['current']} ({quote['percent']}%)")
-
-# Search stocks
-# Returned fields: symbol, name, exchange
-stocks = ch.search_stock("Apple", limit=5)
-for s in stocks:
-    print(f"{s['name']} ({s['symbol']}) - {s['exchange']}")
-
-# Hot posts
-# Returned fields: id, title, text(first 200 chars), author, likes, url
-posts = ch.get_hot_posts(limit=10)
-for p in posts:
-    print(f"{p['author']}: {p['text'][:50]}... ({p['likes']} likes)")
-
-# Hot stocks (stock_type=10 popularity ranking, stock_type=12 watchlist ranking)
-# Returned fields: symbol, name, current, percent, rank
-hot = ch.get_hot_stocks(limit=10, stock_type=10)
-for s in hot:
-    print(f"#{s['rank']} {s['name']} ({s['symbol']}): {s['current']} ({s['percent']}%)")
+```bash
+# Channel availability + which backend serves each platform
+agent-reach doctor --json
 ```
 
-> No login required. Agent Reach auto-fetches session cookies, and all public APIs can be used directly.
+When the user asks “help me configure Boss Zhipin” / “帮我配 Boss直聘”, read the
+Boss section in `references/career.md`. After explicit install approval, run
+`agent-reach install --env=local --system --channels=boss`, launch the dedicated
+loopback-only Chrome profile for their OS, then **pause and have the user visually
+confirm** the window is logged in (avatar in the top-right); if not, have them log
+in manually. Then verify with `boss --cdp-url http://localhost:9222 login --cdp`
+and `agent-reach doctor`. Do not make the user assemble CDP flags.
+Keep reusing the dedicated Chrome profile; do not recreate it for every run or
+switch to the user's daily profile by default. Search with
+`boss --browser-source existing-browser --cdp-url http://localhost:9222 search ...`.
+On `ENVIRONMENT_RISK`, stop without refreshing, relogging, or retrying.
 
-## RSS (feedparser)
+**Do not trust `boss status` for CDP browser login state** — it only validates the
+local `~/.boss-agent/auth/session.enc` store, which does not represent the
+dedicated Chrome profile's cookies that `existing-browser` searches actually use. Use
+the browser `wt2` cookie probe in `agent-reach doctor` plus the user's visual
+confirmation. Never judge login state from the page URL: `security-check` /
+`zhipin-security` / `_security_check` pages are anti-bot challenges that appear
+even when logged in. `AUTH_EXPIRED` from a search is the ground truth for a
+logged-out browser — go straight to the login flow + `login --cdp` instead of
+interpreting it as a security check.
 
-```python
-python3 -c "
-import feedparser
-for e in feedparser.parse('FEED_URL').entries[:5]:
-    print(f'{e.title} — {e.link}')
-"
-```
+## Discovering OpenCLI adapters
 
-## Troubleshooting
+When the routing table lacks a needed platform or command, run `opencli list`,
+then inspect `opencli <platform> --help`. Discovery proves only that an adapter
+exists, not that authentication or target content works. Run read-only commands
+only when the user's task requires that platform, and require non-empty content.
 
-- **Channel not working?** Run `agent-reach doctor` — it shows status and fix instructions.
-- **Twitter fetch failed?** Ensure `undici` is installed: `npm install -g undici`. Configure a proxy if needed: `agent-reach configure proxy URL`.
+## Workspace rules
 
-## Setting Up a Channel ("help me configure XXX")
+**Never create files in the agent workspace.** Use `/tmp/` for temporary
+output and `~/.agent-reach/` for persistent data.
 
-If a channel needs setup (cookies, Docker, etc.), fetch the install guide:
+## Detailed references
+
+Read the matching file when you need specifics (commands above cover the
+common cases; references hold per-backend command groups, caveats, retry
+chains — note: reference docs are written in Chinese, commands are universal):
+
+- [Search](references/search.md) — Exa AI search
+- [Social](references/social.md) — XiaoHongShu, Twitter, Bilibili, V2EX, Reddit, Facebook, Instagram (multi-backend/login-backed groups)
+- [Career](references/career.md) — LinkedIn
+- [Dev](references/dev.md) — GitHub CLI
+- [Web](references/web.md) — Jina Reader, RSS
+- [Video](references/video.md) — YouTube, Bilibili, Xiaoyuzhou
+- [Finance](references/finance.md) — Xueqiu quotes, search and market content
+
+## Configure a channel
+
+If a channel needs setup, fetch the install guide:
 https://raw.githubusercontent.com/Panniantong/agent-reach/main/docs/install.md
 
-The user only provides cookies. Everything else is your job.
+The user only provides cookies / one extension click; the agent does the rest.

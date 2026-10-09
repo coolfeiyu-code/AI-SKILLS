@@ -7,6 +7,10 @@
  * suite, prompt validation, version parity, count consistency) and writes a
  * dated markdown report to  qa/site_review_YYYYMMDD.md.
  *
+ * Retention: only the newest RETENTION_DAYS reports are kept — older ones are
+ * deleted on every run, so qa/ never accumulates history (the CI job commits
+ * the deletions alongside the new report).
+ *
  * Usage:  node scripts/site-review.js        (npm run review)
  * CI:     .github/workflows/site-review.yml  (daily cron)
  *
@@ -19,6 +23,9 @@ const { execSync } = require('child_process');
 
 const ROOT = path.join(__dirname, '..');
 const QA_DIR = path.join(ROOT, 'qa');
+
+// How many daily reports to keep in qa/ (today's run included).
+const RETENTION_DAYS = 5;
 
 // ── Date stamp (UTC, so cron runs are deterministic) ─────────────────────────
 const now = new Date();
@@ -111,5 +118,16 @@ const outFile = path.join(QA_DIR, `site_review_${stamp}.md`);
 fs.writeFileSync(outFile, md);
 
 console.log(`✓ wrote qa/site_review_${stamp}.md — overall ${allOk ? 'PASS' : 'FAIL'}`);
+
+// ── Retention: keep only the newest RETENTION_DAYS reports ───────────────────
+// Filenames are site_review_YYYYMMDD.md, so a lexicographic sort is also
+// chronological. PROJECT-REVIEW.md and anything else in qa/ is left untouched.
+const reports = fs.readdirSync(QA_DIR).filter(f => /^site_review_\d{8}\.md$/.test(f)).sort();
+const stale = reports.slice(0, Math.max(0, reports.length - RETENTION_DAYS));
+for (const f of stale) fs.unlinkSync(path.join(QA_DIR, f));
+if (stale.length) {
+  console.log(`✓ pruned ${stale.length} report(s) beyond the ${RETENTION_DAYS}-day window: ${stale.join(', ')}`);
+}
+
 checks.forEach(c => console.log(`  ${c.ok ? '✅' : '❌'} ${c.name}: ${c.detail}`));
 process.exit(allOk ? 0 : 1);

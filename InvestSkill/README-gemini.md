@@ -8,7 +8,15 @@ Professional investment analysis prompts for Gemini CLI. 21 universal frameworks
 
 ## Quick Start
 
-### Installation
+### Installation — one command
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/yennanliu/InvestSkill/main/install.sh | bash -s -- -a gemini
+```
+
+Appends an InvestSkill block to `GEMINI.md` (your existing content is kept) and installs the frameworks into `.investskill/prompts/`.
+
+### Installation — clone the repo
 
 Gemini CLI automatically loads `GEMINI.md` when you run it in the project directory.
 

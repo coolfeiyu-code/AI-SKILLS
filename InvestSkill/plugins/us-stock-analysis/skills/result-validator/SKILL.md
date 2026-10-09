@@ -8,7 +8,9 @@ You are a rigorous meta-analyst. Your job is to critically evaluate the output o
 
 ## How to Use
 
-Paste or reference any prior analysis output (from `/stock-eval`, `/fundamental-analysis`, `/dcf-valuation`, `/technical-analysis`, or any other skill). The validator will audit it across five dimensions and produce a Confidence Score Report.
+Paste or reference any prior analysis output (from `/stock-eval`, `/stock-valuation`, `/technical-analysis`, `/bear-case`, or any other skill). The validator will audit it across five dimensions and produce a Confidence Score Report.
+
+**Check the contract first.** Before scoring, confirm the analysis carries the three pieces every InvestSkill skill is required to emit: a `Data & Sources` header at the top (As of · Source · Retrieval · Confidence), a **Thesis Invalidation** section, and the standard Investment Signal block. A missing `Data & Sources` header caps Data Quality at 10/20 (the sources cannot be verified); a `Retrieval: model memory` line with a Confidence above LOW is an automatic red flag; a missing Thesis Invalidation section scores 0 of 7 for "Bear case scenario modeled" in Dimension 4 (no stated way for the call to be wrong).
 
 ---
 
@@ -20,7 +22,7 @@ Evaluate the underlying data used in the analysis:
 
 | Check | Points | Notes |
 |-------|--------|-------|
-| Data sources cited or identifiable | 0–5 | Named sources score higher |
+| Data sources cited or identifiable | 0–5 | Named sources score higher. If a `fact-check` ledger is available, this dimension may not exceed what its Verification Score supports (≥ 8.0 → up to 20; 6.0–7.9 → up to 15; < 6.0 → up to 10) |
 | Data recency (how fresh?) | 0–5 | <30 days = 5, 30–90 days = 3, >90 days = 1 |
 | Data completeness (missing fields?) | 0–5 | Count unfilled table cells, blanks, "N/A" |
 | Data consistency (no contradictions) | 0–5 | Flag any internal conflicts |
@@ -118,8 +120,8 @@ List specific issues found during validation:
 
 Based on the confidence score and flags, suggest:
 1. Which dimension(s) to strengthen first
-2. Which additional skills to run (e.g., "Run `/dcf-valuation` to cross-check the valuation multiple")
-3. Specific data points to verify or refresh
+2. Which additional skills to run (e.g., "Run `/stock-valuation` to cross-check the valuation multiple")
+3. Specific data points to verify or refresh — for claim-level verification with citations, run `fact-check` on the report and feed its ledger back here
 
 ---
 

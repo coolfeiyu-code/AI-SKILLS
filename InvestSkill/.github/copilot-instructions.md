@@ -1,6 +1,6 @@
 # InvestSkill — GitHub Copilot Setup & Usage Guide
 
-This repository contains 25 professional investment analysis frameworks for US stock markets. When working in this workspace, Copilot automatically loads these analysis methodologies to provide institutional-quality investment analysis.
+This repository contains 30 professional investment analysis frameworks for US stock markets. When working in this workspace, Copilot automatically loads these analysis methodologies to provide institutional-quality investment analysis.
 
 ## Installation & Setup
 
@@ -21,7 +21,7 @@ GitHub Copilot automatically loads this file when you work in the InvestSkill re
 
 3. **Open Copilot Chat** (usually `Ctrl+K` or `Cmd+K`)
    - Copilot automatically loads `copilot-instructions.md`
-   - You now have access to all 25 analysis frameworks
+   - You now have access to all 30 analysis frameworks
 
 ### Verify Setup
 
@@ -34,17 +34,15 @@ If Copilot references the frameworks, setup is complete!
 
 ---
 
-## Available Analysis Frameworks (25 frameworks + 1 output tool)
+## Available Analysis Frameworks (30 frameworks + 3 aliases + 1 output tool)
 
-### Core Stock Analysis (6 frameworks)
+### Core Stock Analysis (4 frameworks)
 
 | Framework | File | Best For |
 |-----------|------|----------|
 | Stock Evaluation | `prompts/stock-eval.md` | Comprehensive stock quality scoring |
 | Stock Valuation | `prompts/stock-valuation.md` | Multi-method valuation (DCF + comps + EV) |
-| Fundamental Analysis | `prompts/fundamental-analysis.md` | Deep financial statement dive |
 | Technical Analysis | `prompts/technical-analysis.md` | Chart patterns and indicators |
-| DCF Valuation | `prompts/dcf-valuation.md` | Intrinsic value modeling |
 | Economics Analysis | `prompts/economics-analysis.md` | Macro outlook and recession risk |
 
 ### Financial Report Analysis (3 frameworks)
@@ -64,7 +62,7 @@ If Copilot references the frameworks, setup is complete!
 | Dividend Analysis | `prompts/dividend-analysis.md` | Dividend safety and sustainability |
 | Short Interest | `prompts/short-interest.md` | Squeeze potential and bearish thesis |
 
-### Advanced Analysis (8 frameworks)
+### Advanced Analysis (14 frameworks)
 
 | Framework | File | Best For |
 |-----------|------|----------|
@@ -76,25 +74,53 @@ If Copilot references the frameworks, setup is complete!
 | Stock Screener | `prompts/stock-screener.md` | Multi-ticker ranking across valuation, quality, momentum, sentiment, growth |
 | Catalyst Calendar | `prompts/catalyst-calendar.md` | Forward-looking 90-day event calendar, impact scoring |
 | Bear Case | `prompts/bear-case.md` | One-sided short thesis, downside target, counterevidence to a bull thesis |
+| Position Ladder | `prompts/position-ladder.md` | Staged entry ladder, share-count floor/ceiling, trim/re-add cost-basis cycle, wash-sale flags |
+| Thesis Tracker | `prompts/thesis-tracker.md` | Write, save, and re-check an investment thesis — KPIs with thresholds, invalidation triggers, catalysts, a pre-mortem, and a decision log; `--update` re-reads the saved file against new data and returns INTACT / WEAKENED / BROKEN |
+| ETF Analysis | `prompts/etf-analysis.md` | ETF / index-fund due diligence — expense ratio vs. category, tracking difference, liquidity, holdings concentration and tilt, overlap with your other positions, distribution and capital-gains history, structure warnings, and an ETF-vs-top-holdings comparison, scored as an ETF Fitness Score 0–10 |
+| Earnings Preview | `prompts/earnings-preview.md` | The before-earnings skill — consensus vs. whisper, 8-quarter beat rate and post-print move distribution, options-implied vs. realized move, what the current price already assumes, the KPIs to watch, and a three-scenario grid (beat-and-raise / beat-and-lower / miss) with expected reaction and a position rule for each |
+| Tax Lens | `prompts/tax-lens.md` | US tax mechanics for a position or portfolio — short- vs. long-term treatment, wash-sale window check, qualified-dividend holding-period test, lot selection (specific-ID vs. FIFO), tax-loss-harvesting pairs, account placement, estimated annual tax drag — plus a --non-us module (W-8BEN, dividend withholding and treaty rates, capital-gains treatment, US estate-tax exposure, UCITS alternatives). Educational only, never tax advice |
+| Risk Stress Test | `prompts/risk-stress-test.md` | Portfolio and position risk report — beta-weighted exposure, historical scenario replay (2008, March 2020, 2022 rate shock, 2025 tariff shock), parametric VaR / CVaR at 95 / 99 %, max-drawdown estimate, correlation-spike scenario, rate / USD / oil sensitivity, liquidity (days to exit at 20 % of ADV), and a Risk Budget Score 0–10 |
 
-### Full Research Bundle (2 frameworks)
+### Full Report (1 frameworks)
 
 | Framework | File | Best For |
 |-----------|------|----------|
-| Research Bundle | `prompts/research-bundle.md` | Comprehensive multi-framework analysis |
 | Full Report (HTML) | `prompts/full-report.md` | Runs all modules and saves a standalone HTML report |
 
-### Meta-Analysis & Visualization (3 frameworks)
+### Meta-Analysis & Visualization (5 frameworks)
 
 | Framework | File | Best For |
 |-----------|------|----------|
 | Result Validator | `prompts/result-validator.md` | Validate any analysis + confidence score (0–100) |
 | Chart Master | `prompts/chart-master.md` | Generate Mermaid/ASCII/HTML charts from financial data |
 | Report Generator | `prompts/report-generator.md` | Export analysis as a professional HTML/PDF report |
+| Learning Coach | `prompts/learning-coach.md` | Explains any InvestSkill output like a mentor — every metric in plain words, why it matters, its good / bad range, and the lesson that teaches it — then asks 3–5 Socratic questions and "what would change your mind?". --level beginner / intermediate, --lang zh-TW, and a --quiz mode that drills a Learning lesson |
+| Fact Check | `prompts/fact-check.md` | Claim-level verification of any report or data set — extract every figure and factual claim, check each against a primary source (SEC filing, company IR, FRED, exchange data, or the user's own document), recompute derived numbers, mark ✅ verified / ⚠️ mismatch / ❓ unverifiable, and re-issue the report with inline citations and a References section; Verification Score 0–10 |
+
+### Aliases (3 redirects — installed, not counted as frameworks)
+
+These stubs remain so old references keep working; each points at the framework that absorbed it.
+
+| Framework | File | Redirects to |
+|-----------|------|--------------|
+| Fundamental Analysis | `prompts/fundamental-analysis.md` | `prompts/stock-eval.md` |
+| DCF Valuation | `prompts/dcf-valuation.md` | `prompts/stock-valuation.md` |
+| Research Bundle | `prompts/research-bundle.md` | `prompts/full-report.md` |
+
 
 ---
 
 ## Usage Examples
+
+### Verify a Report Before You Trust It
+
+```text
+# Claim-level fact-check with citations — paste the report and its sources
+Verify every number in this report against the attached 10-K and add citations, using prompts/fact-check.md
+
+# Then score the reasoning
+Score the confidence of the corrected report using prompts/result-validator.md, with the fact-check ledger as evidence
+```
 
 ### Natural Language Queries
 
@@ -129,7 +155,7 @@ Reference specific prompt files for precise methodology:
 Use the framework in prompts/stock-valuation.md to analyze AAPL
 
 # Fundamental deep dive
-Apply prompts/fundamental-analysis.md to Microsoft's financials
+Apply prompts/stock-eval.md to Microsoft's financials
 
 # Technical analysis
 Reference prompts/technical-analysis.md for Tesla chart patterns
@@ -175,7 +201,7 @@ TSLA: 10%
 Compare AAPL and MSFT using the stock-valuation framework
 
 # Multiple stocks in one analysis
-Analyze AAPL, MSFT, and GOOGL using the research-bundle framework
+Analyze AAPL, MSFT, and GOOGL using the full-report framework
 
 # Sector comparison
 Compare valuations across tech stocks (AAPL, MSFT, NVDA, GOOGL, META)
@@ -192,6 +218,9 @@ What's the short squeeze potential in GME? Use the short-interest framework
 
 # Bear case / counterevidence
 Build the bear case against TSLA and give a downside target using the bear-case framework
+
+# Position plan for an existing holding
+I hold 20 AVGO at $128, now $122 — plan a 60–100 share ladder using the position-ladder framework
 
 # Options strategy
 Find bullish option strategies for AAPL earnings using the options-analysis framework
@@ -213,13 +242,13 @@ Which sectors should I rotate into? Use the sector-analysis framework
 
 ```
 # Comprehensive analysis (all frameworks combined)
-Provide a complete investment analysis on Apple using the research-bundle framework
+Provide a complete investment analysis on Apple using the full-report framework
 
 # Quick version
-Quick analysis on Microsoft using the research-bundle framework
+Quick analysis on Microsoft using the full-report framework
 
 # Multi-stock comparison
-Compare AAPL, MSFT, and GOOGL comprehensively using the research-bundle framework
+Compare AAPL, MSFT, and GOOGL comprehensively using the full-report framework
 ```
 
 ### Follow-Up Questions
@@ -339,7 +368,7 @@ What's the valuation in the:
 
 ```
 InvestSkill/
-├── prompts/                    # 25 analysis frameworks
+├── prompts/                    # 30 analysis frameworks (+ 3 aliases, 1 output tool)
 │   ├── stock-eval.md
 │   ├── stock-valuation.md
 │   ├── fundamental-analysis.md
@@ -358,9 +387,17 @@ InvestSkill/
 │   ├── portfolio-review.md
 │   ├── sector-analysis.md
 │   ├── bear-case.md
+│   ├── position-ladder.md
 │   ├── research-bundle.md
 │   ├── result-validator.md
 │   ├── chart-master.md
+│   ├── thesis-tracker.md
+│   ├── etf-analysis.md
+│   ├── earnings-preview.md
+│   ├── tax-lens.md
+│   ├── risk-stress-test.md
+│   ├── learning-coach.md
+│   ├── fact-check.md
 │   └── report-generator.md     # HTML/PDF report design system
 ├── plugins/                    # Claude Code plugin (optional)
 ├── .github/copilot-instructions.md  # This file (auto-loaded)
@@ -386,7 +423,7 @@ Use the framework in prompts/stock-valuation.md to analyze AAPL
 
 ```
 # Ask Copilot for more depth:
-Analyze AAPL using prompts/fundamental-analysis.md with:
+Analyze AAPL using prompts/stock-eval.md with:
 - Detailed balance sheet analysis
 - Cash flow quality assessment
 - Working capital trends
@@ -408,7 +445,7 @@ Use the stock-eval framework for MSFT, but format as:
 
 ## Project Overview
 
-- **25 Institutional-Quality Frameworks** — all tested and validated
+- **30 Institutional-Quality Frameworks** — all tested and validated (plus 3 aliases and 1 output tool)
 - **Works with Copilot Chat** — integrated into VS Code and JetBrains IDEs
 - **Universal Prompts** — also work with Gemini CLI, Cursor, and any AI tool
 - **Educational Focus** — for learning institutional analysis methods
@@ -419,7 +456,7 @@ Use the stock-eval framework for MSFT, but format as:
 ## Additional Resources
 
 - **README.md** — Complete setup guide for all platforms (Claude Code, Gemini, Cursor)
-- **prompts/** — All 25 analysis framework files
+- **prompts/** — All 30 analysis framework files (+ 3 aliases, 1 output tool)
 - **plugins/** — Claude Code plugin integration (optional)
 - **GitHub Issues** — Report problems or request features
 

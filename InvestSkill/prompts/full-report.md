@@ -20,31 +20,31 @@ Select how many modules to run with `--depth`:
 
 | # | Module | Focus |
 |---|--------|-------|
-| 1 | stock-eval | Company overview, competitive position, relative valuation |
-| 2 | technical-analysis | MA, RSI, MACD, volume, support/resistance |
-| 3 | dcf-valuation | DCF intrinsic value, bear/base/bull scenarios |
-| 4 | insider-trading | SEC Form 4 patterns, net insider sentiment |
-| 5 | earnings-call-analysis | Management tone, guidance quality, key themes |
+| 1 | `stock-eval` | Company overview, competitive position, relative valuation |
+| 2 | `technical-analysis` | MA, RSI, MACD, volume, support/resistance |
+| 3 | `stock-valuation` | DCF intrinsic value (bear/base/bull), P/E, EV/EBITDA, peer multiples |
+| 4 | `insider-trading` | SEC Form 4 patterns, net insider sentiment |
+| 5 | `earnings-call-analysis` | Management tone, guidance quality, key themes |
 
 ### Standard (10 modules — Quick + 5 more)
 
 | # | Module | Focus |
 |---|--------|-------|
-| 6 | institutional-ownership | 13F holdings, smart money flows |
-| 7 | competitor-analysis | Moat, market share, Porter's Five Forces |
-| 8 | sector-analysis | Sector rotation, relative strength |
-| 9 | options-analysis | IV, Put/Call ratio, max pain, strategies |
-| 10 | short-interest | Short ratio, squeeze risk, days-to-cover |
+| 6 | `institutional-ownership` | 13F holdings, smart money flows |
+| 7 | `competitor-analysis` | Moat, market share, Porter's Five Forces |
+| 8 | `sector-analysis` | Sector rotation, relative strength |
+| 9 | `options-analysis` | IV, Put/Call ratio, max pain, strategies |
+| 10 | `short-interest` | Short ratio, squeeze risk, days-to-cover |
 
 ### Comprehensive (15 modules — Standard + 5 more)
 
 | # | Module | Focus |
 |---|--------|-------|
-| 11 | fundamental-analysis | Income statement, balance sheet, cash flow |
-| 12 | stock-valuation | P/E, P/S, EV/EBITDA, peer multiples |
-| 13 | economics-analysis | Macro environment, rate sensitivity |
-| 14 | financial-report-analyst | 10-K/10-Q deep dive, risk factors |
-| 15 | dividend-analysis | Yield, payout ratio, sustainability |
+| 11 | `bear-case` | Short-seller red-team, Thesis-Killers, downside target |
+| 12 | `catalyst-calendar` | Dated events in the next 90 days and their expected impact |
+| 13 | `economics-analysis` | Macro environment, rate sensitivity |
+| 14 | `financial-report-analyst` | 10-K/10-Q deep dive, risk factors |
+| 15 | `dividend-analysis` | Yield, payout ratio, sustainability |
 
 ---
 
@@ -58,7 +58,6 @@ Establish qualitative and quantitative foundation before attempting valuation.
 
 - **stock-eval** — Company overview, competitive position, relative valuation vs. peers
 - **competitor-analysis** *(standard+)* — Moat depth, Porter's Five Forces, pricing power
-- **fundamental-analysis** *(comprehensive)* — Income statement, balance sheet, cash flow quality
 
 Output: **Business Quality Score (0–10)**
 Score reflects durability of competitive advantages, financial health, and consistency of returns.
@@ -67,8 +66,7 @@ Score reflects durability of competitive advantages, financial health, and consi
 
 Determine intrinsic and relative worth of the business.
 
-- **dcf-valuation** — Intrinsic value with Bull/Base/Bear scenarios
-- **stock-valuation** *(comprehensive)* — P/E, EV/EBITDA, P/S, P/FCF peer multiples
+- **stock-valuation** — DCF intrinsic value with Bull/Base/Bear scenarios, plus P/E, EV/EBITDA, P/S, P/FCF peer multiples
 
 Output: **Valuation Score (0–10)** — 10 = deep discount to intrinsic value; 5 = fair value; 0 = extreme overvaluation.
 
@@ -99,6 +97,8 @@ Quantify downside risks and positioning pressure.
 - **options-analysis** *(standard+)* — Implied volatility, put/call ratios, options flow
 - **economics-analysis** *(comprehensive)* — Macro environment, rate sensitivity
 - **financial-report-analyst** *(comprehensive)* — 10-K/10-Q risk factors
+- **bear-case** *(comprehensive)* — Short-seller red-team: Thesis-Killers and a downside target. Its downside target sets the Bear scenario in the Valuation Summary and Exit Strategy, its Thesis-Killers become the Bear Case section of the thesis narrative, and the Thesis Invalidation checks whether they are refuted
+- **catalyst-calendar** *(comprehensive)* — Dated events in the next 90 days and their expected price impact. High-impact binary events lower the Risk Profile score, and the dated events populate "next catalyst dates" in the Monitoring Plan
 
 Output: **Risk Profile Score (0–10)** — Inverse of risk: Low risk = high score (8–10), High risk = low score (0–3).
 
@@ -128,11 +128,11 @@ Composite Interpretation:
 ```
 
 Sub-score derivation:
-- Business Quality: average of moat score (competitor-analysis) + financial strength (fundamental-analysis / stock-eval)
+- Business Quality: average of moat score (competitor-analysis) + financial strength (stock-eval)
 - Valuation: 10 = deep discount to intrinsic value; 5 = at fair value; 0 = extreme overvaluation
 - Market Signals: weighted average of insider, institutional, and earnings call scores
 - Technical Setup: Strong=8–10, Moderate=4–7, Weak=0–3
-- Risk Profile: inverse of risk — Low risk = 8–10, High risk = 0–3
+- Risk Profile: inverse of risk — Low risk = 8–10, High risk = 0–3; at comprehensive depth this includes the `bear-case` downside severity and the `catalyst-calendar` event risk
 
 When running quick or standard depth, scores for missing modules default to neutral (5.0) and are flagged as "not assessed" in the scorecard.
 
@@ -227,7 +227,7 @@ Example: `output/AAPL_report_2025-06-19.html`
 
 ## Data Verification
 
-**Open the report with a `Data & Sources` header** so provenance is explicit:
+**Open the report with a `Data & Sources` header** (see [Data & Accuracy](https://yennanliu.github.io/InvestSkill/data-and-accuracy.html)) so provenance is explicit:
 
 ```
 Data & Sources
@@ -245,7 +245,29 @@ Before rendering the final report, verify:
 - Missing modules for quick/standard depth are flagged as "not assessed"
 - No data older than 90 days used without explicit warning
 
-**Then run `result-validator`** on the composite result and include its confidence score in the report footer — a composite thesis should never ship without this validation pass.
+**Then run `fact-check` on the composite** (every figure the modules produced, verified against the filing and market data, with citations), **and hand `result-validator` two separate things**: the *corrected composite* as the analysis to validate (so its "Original Score" is the investment score, not the Verification Score), and the fact-check *ledger and Verification Score* as evidence for its Data Quality dimension. Include both scores in the report footer, labelled — a composite thesis should never ship without this verification-and-validation pass.
+
+---
+
+## Thesis Invalidation
+
+The composite thesis is only as good as its weakest well-weighted module. After the final synthesis, state what would reverse the composite call:
+
+**If the composite is BULLISH — thesis breaks if:**
+- Any module weighted ≥ 15% flips from BULLISH to BEARISH at the next re-run (name the module and the metric that would flip it)
+- The `bear-case` module's Thesis-Killers are *not* refuted — a bull composite that cannot answer its own red-team is not bullish, it is unexamined
+- Price rises far enough that the valuation modules' fair-value range is exceeded while the fundamental modules are unchanged (multiple expansion doing all the work)
+
+**If the composite is BEARISH — thesis breaks if:**
+- The specific deterioration that drove the low-scoring modules reverses (margins re-expand, guidance is raised, insider selling stops)
+- Valuation falls below the bear-case downside target with fundamentals stable (the bad news is priced)
+- Two or more independent modules (e.g. `insider-trading` + `institutional-ownership`) turn positive together
+
+**Re-run this report when:**
+- [ ] Next earnings release (every module's inputs change)
+- [ ] Price moves ±15% from the level in the `Data & Sources` header
+- [ ] Any single module's signal flips
+- [ ] 90 days have elapsed
 
 ---
 

@@ -8,7 +8,15 @@ Professional investment analysis plugin for Claude Code. 18 analysis frameworks 
 
 ## Quick Start
 
-### Installation
+### Installation — one command
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/yennanliu/InvestSkill/main/install.sh | bash -s -- -a claude
+```
+
+Installs every skill into `.claude/skills/` (add `-g` for `~/.claude/skills/`), so slash commands work immediately.
+
+### Installation — plugin marketplace
 
 ```bash
 # Open Claude Code
@@ -348,12 +356,7 @@ All analyses include:
 
 ## Model Support
 
-Works with all Claude Code supported models:
-- Claude Opus 4.6 (most capable)
-- Claude Sonnet 4.6 (balanced)
-- Claude Haiku 4.5 (fastest)
-
-**Recommendation**: Use Sonnet 4.6 for best balance of quality and speed.
+Works with whichever model your Claude Code session runs (`/model` shows and switches it). Multi-module runs such as `full-report --depth comprehensive` benefit most from the most capable model available to you.
 
 ---
 

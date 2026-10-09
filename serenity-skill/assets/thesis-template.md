@@ -1,81 +1,45 @@
-# Serenity.skill Thesis Template
+# 投资研究备忘录
 
-Use this template when the user asks for a structured memo. For normal chat, answer in prose.
+按研究问题选用以下部分。普通对话可以直接用自然语言回答；无需为填满模板补写未知信息。
 
-## Direct view
+## 先说判断
 
-Priority: Low / Medium / High / Top priority
+研究日期：
+市场／主题／公司：
+研究优先级及理由：
+最关键的证据：
+目前最影响判断的缺口：
 
-Confidence: Low / Medium / High
+## 产业链与公司位置
 
-Time horizon: 3 months / 12 months / multi-year
+什么需求或技术变化正在发生：
+可能受约束的环节及原因：
+公司实际提供的产品或服务：
+客户有哪些替代供应商或技术路线：
 
-## Trend
+## 证据与推理
 
-What demand wave is forcing the change?
-
-## System change
-
-What technical or economic constraint is becoming harder to scale?
-
-## Value-chain map
-
-```text
-End demand -> system -> module -> component -> process -> equipment/material -> infrastructure
-```
-
-## Candidate position
-
-Company:
-Ticker:
-Market:
-Layer:
-Plain-language role:
-
-## Evidence
-
-| Evidence | Source | Strength | What it supports | What still needs checking |
+| 要判断的事 | 已确认的披露及期间 | 来源、日期、页码／章节 | 我的推断 | 还不能证明什么 |
 |---|---|---|---|---|
 
-## What the market may be missing
+## 从业务到利润
 
-Current market category:
+产品处于什么商业阶段：
+相关业务收入、订单或占比披露：
+毛利率、现金流及资本开支意味着什么：
+融资、客户议价或业务替代会怎样影响股东收益：
+估值依据及行情日期；无法核验的部分：
 
-Possible new category:
+## 比较与反方理由
 
-Why investors may be slow:
+与其他方向或公司的主要差别：
+最有力的反方证据或替代解释：
+什么新事实会让我降低或提高研究优先级：
 
-## Financial quality
+## 下一步查什么
 
-Revenue mix:
+写出具体文件、数据或未来披露，以及它会怎样改变判断。
 
-Gross margin:
+## 资料范围
 
-Cash flow:
-
-Capex need:
-
-Financing risk:
-
-Customer concentration:
-
-Inventory/receivables:
-
-## What could make the market reprice it
-
-| Event | Expected window | Evidence to monitor | Confidence |
-|---|---|---|---|
-
-## What could weaken the view
-
-1.
-2.
-3.
-
-## Next research actions
-
-1.
-2.
-3.
-4.
-5.
+列明使用的信息截止日期、无法取得的重要资料和结论的适用范围。首次引用时直接链接原始材料，长报告注明页码或章节。

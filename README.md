@@ -61,10 +61,7 @@
 
 ## 🔄 更新记录
 
-<<<<<<< Updated upstream
-=======
 - **2026-08-08** 新增 `dotnet-mod-recon`（自建，非 GitHub 来源；由分析 The Bazaar 的 BazaarPlusPlus V5 插件的实战流程沉淀而来），.NET / Unity BepInEx Mod 无反编译器只读逆向勘察技能，含 #Strings/#US 双堆符号提取、Hook 点定位、只读 SQLite 取证；纯 Markdown 指导，零脚本
->>>>>>> Stashed changes
 - **2026-07-30** 新增 `grill-me`（来源: github.com/mattpocock/skills，移植为 WorkBuddy 自包含 skill，合并 grill-me + grilling 逻辑），需求拷问/反追问技能，用于编码·产品·方案任务前的边界厘清；安全审计 P2（纯提示词）。已同步安装至 `~/.workbuddy/skills/grill-me/`，副本在本目录 `grill-me/`
 - **2026-07-24** 新增 `ian-xiaohei-illustrations`（来源: github.com/helloianneo/ian-xiaohei-illustrations），中文文章小黑怪诞手绘配图技能，纯白线稿+红橙蓝批注+16:9横版，安全审计 P2 通过（纯 Markdown 指导，零脚本）
 - **2026-07-20** 新增 5 个 GitHub 热门 UI 设计 skill（安全审计 P2 通过）：`frontend-design`（Anthropic 官方，277K+ 安装）、`ui-ux-pro-max` / `ui-styling` / `design-system`（nextlevelbuilder，#1 社区 88.7k★）、`interface-design`（Dammyjay93，5k★）；并新增 `gh-skill-installer`（GitHub 技能搜索→克隆→审计→安装复用流程）。来源：github.com/anthropics/skills、github.com/nextlevelbuilder/ui-ux-pro-max-skill、github.com/Dammyjay93/interface-design

@@ -10,12 +10,30 @@ Before running any analysis, always retrieve the latest market data for the tick
 
 1. **Fetch current price** — use web search or ask the user for the live price, 52-week range, and market cap. Never assume a price from training data.
 2. **Confirm key figures** — recent earnings, revenue, key ratios (P/E, P/S, etc.) as applicable to this skill.
-3. **State your data source** — note where the numbers came from (e.g., "Google Finance, June 19 2026") at the top of the output.
+3. **State your data source** — fill in the `Data & Sources` header (next section) so the origin, as-of date, retrieval path, and confidence of every figure are explicit at the top of the output.
 4. **Flag stale data explicitly** — if live data is unavailable, display this warning before proceeding:
 
 > ⚠️ **Live data unavailable.** The following analysis uses training-data estimates which may be significantly out of date. Verify all prices and metrics before making any decisions.
 
 Never silently substitute training-data estimates for current prices. When in doubt, ask the user to paste the latest quote.
+
+---
+
+## 📋 Data & Sources Header — Open Every Output With It
+
+The first thing in the output is this provenance block, filled in — never left as placeholders. It is the standard documented on the [Data & Accuracy](https://yennanliu.github.io/InvestSkill/data-and-accuracy.html) page and the first thing `result-validator` looks for:
+
+```
+Data & Sources
+  As of:      <date the figures represent, e.g. 2026-06-30>
+  Source:     <primary docs — SEC EDGAR 10-K/10-Q, company IR, FRED, exchange data …>
+  Retrieval:  <pasted by user | web/tool retrieval | model memory>
+  Confidence: <HIGH | MEDIUM | LOW>
+```
+
+- `Retrieval: model memory` must be paired with `Confidence: LOW` — memory is a placeholder until confirmed against a primary source.
+- Mixed sources: list each with its own as-of date rather than blending them.
+- Data the user pasted is reported as `pasted by user`; do not upgrade its confidence beyond what the user's own source supports.
 
 ---
 
@@ -37,10 +55,10 @@ Provide current snapshot of institutional holdings:
 **Ownership Trend (4 Quarters)**
 ```
 Quarter        Institutional %    # of Holders    Change from Prior
-Q4 2024            73.2%              850              +1.5%
-Q3 2024            71.7%              832              +0.8%
-Q2 2024            70.9%              815              -0.3%
-Q1 2024            71.2%              809              +2.1%
+[Qn YYYY]          [%]                [N]              [±%]
+[Qn-1 YYYY]        [%]                [N]              [±%]
+[Qn-2 YYYY]        [%]                [N]              [±%]
+[Qn-3 YYYY]        [%]                [N]              [±%]
 ```
 
 **Trend Interpretation**
@@ -239,11 +257,11 @@ Analyze relationship between ownership changes and stock performance:
 
 **Performance During Institutional Activity**
 ```
-Period: Q4 2024
-Institutional Change: +2.5% ownership (net buying)
-Stock Price Change: +18.5%
-S&P 500 Change: +8.2%
-Outperformance: +10.3%
+Period: [Qn YYYY]
+Institutional Change: [±%] ownership (net buying / selling)
+Stock Price Change: [±%]
+S&P 500 Change: [±%]
+Outperformance: [±%]
 ```
 
 **Historical Pattern Analysis**
@@ -269,7 +287,7 @@ Outperformance: +10.3%
 Reference the following sources for institutional ownership data:
 
 **Primary Source - SEC 13F Filings**
-- **What**: Quarterly reports of equity holdings >$100M AUM
+- **What**: Quarterly holdings reports required of institutional investment managers exercising investment discretion over **≥ $100 million in Section 13(f) securities** (the test is 13(f) securities under management, not the firm's total AUM)
 - **Who**: Institutional investment managers
 - **When**: Filed within 45 days of quarter-end
 - **Where**: https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&type=13F
@@ -289,12 +307,13 @@ Reference the following sources for institutional ownership data:
 
 **Schedule 13D/G Filings** (>5% ownership)
 - **13D**: Activist investors with intent to influence
-  - Filed within 10 days of crossing 5%
-  - Amendments for >1% changes
+  - Initial filing within **5 business days** of crossing 5% (SEC rule effective 2024-02-05; previously 10 calendar days)
+  - Amendments for material changes (≥ 1%) within **2 business days**
   - Includes plans and intentions
 
 - **13G**: Passive investors, no control intent
-  - Filed within 45 days (or 10 days if >20%)
+  - Deadlines depend on filer type (revised schedule in force since 2024-09-30): qualified institutional investors — 45 days after the quarter-end in which they cross 5%, or 5 business days after month-end once above 10%; passive investors — 5 business days after crossing 5%; exempt investors — 45 days after quarter-end
+  - Verify the current deadline on sec.gov before dating a filing as late
   - Simplified reporting for passive positions
 
 **Aggregator Services**
@@ -455,40 +474,31 @@ Stock performance during periods of institutional buying/selling
 ```
 User: /institutional-ownership NVDA
 
-Claude: Analyzes latest 13F filings (Q4 2024), identifies:
-- Institutional ownership increased to 65% (from 62%)
-- ARK Invest added $500M position (new holding)
-- Berkshire added to existing position (+15%)
-- 45 new institutional buyers
-- Signal: Bullish, Confidence: High
+Claude: Reads the latest quarter's 13F filings and reports the change in
+institutional ownership, new and exited holders, and the largest adds and
+trims by named manager, then closes with the signal block.
 ```
 
 ### Example 2: Smart Money Tracking
 ```
 User: /institutional-ownership META --smart-money
 
-Claude: Focuses on notable investors:
-- Soros Fund Management initiated $2B position
-- Baupost Group increased 40%
-- No major exits by top holders
-- Signal: Bullish based on smart money activity
+Claude: Restricts the holder analysis to the smart-money list above and
+reports each manager's position change for the quarter.
 ```
 
 ### Example 3: Comparative Analysis
 ```
 User: /institutional-ownership AAPL MSFT GOOGL --compare
 
-Claude: Compares institutional trends across three stocks:
-- AAPL: Stable ownership, slight decline
-- MSFT: Growing ownership, smart money accumulating
-- GOOGL: Decreasing ownership, some notable exits
-- Relative signal: MSFT > AAPL > GOOGL
+Claude: Runs the same ownership-trend and smart-money checks on each ticker
+and ranks them by net institutional accumulation.
 ```
 
 ## Integration Notes
 
 - Combine with /insider-trading for complete ownership analysis
-- Use with /fundamental-analysis for comprehensive due diligence
+- Use with /stock-eval for comprehensive due diligence
 - Feed to /report-generator for visual ownership trend charts
 - Best used quarterly after 13F filing deadlines (May, Aug, Nov, Feb)
 - Particularly valuable for small-mid cap stocks where institutional buying can be catalyst
@@ -504,14 +514,12 @@ All analysis concludes with this standardized block:
 After delivering the analysis signal, specify what would reverse it:
 
 **If signal is BULLISH — thesis breaks if:**
-- Price closes below the MA200 / key support level identified in this analysis on above-average volume
 - top 3 holders reduce positions by >20% in a single quarter
-- Macro regime shift: Fed pivots hawkish unexpectedly, recession probability >60%
+- [One or two more triggers drawn from this analysis's own drivers, each with a threshold]
 
 **If signal is BEARISH — thesis breaks if:**
-- Price closes above key resistance / MA200 level with volume confirmation
 - 2+ top-tier institutions (BlackRock, Vanguard, Fidelity) initiate new positions
-- Fundamental improvement: surprise earnings beat >20% with guidance raise
+- [One or two more triggers drawn from this analysis's own drivers, each with a threshold]
 
 **Re-run this analysis when:**
 - [ ] Next earnings release
@@ -535,3 +543,5 @@ After delivering the analysis signal, specify what would reverse it:
 **Score Guide**: 8.0–10.0 Strongly Bullish | 6.0–7.9 Moderately Bullish | 4.0–5.9 Neutral | 2.0–3.9 Moderately Bearish | 0.0–1.9 Strongly Bearish
 **Confidence**: HIGH (strong data, clear signals) | MEDIUM (mixed signals) | LOW (limited data, conflicting signals)
 **Horizon**: SHORT-TERM (1 week–3 months) | MEDIUM-TERM (3 months–1 year) | LONG-TERM (1+ years)
+
+**Disclaimer:** Educational analysis only. Not financial advice.

@@ -1,66 +1,51 @@
 # Serenity.skill Prompt Pack
 
-Use these prompts when you want to start quickly.
+Use these after installing the Skill in a host agent with search or filing access.
 
-## Deep theme research
+## A-share theme scan
 
 ```text
-Use serenity-skill to deeply research [market] [theme].
-Map the value chain, investigate current sources, find the scarce layers,
-build a broad candidate universe, rank the top research priorities, explain what each company constrains,
-explain the evidence, and say what could prove each idea wrong.
+用 serenity-skill 研究现在 A 股 AI 半导体产业链。
+先比较哪些环节有实际扩产约束，再给出通常 3–5 家值得继续研究的公司。
+说明具体产品、商业进展、利润如何兑现、估值压力、证据和最有力的反方理由。
+把原始来源链接放在对应判断旁，并写清资料日期。证据不够时可以少给公司。
 ```
 
-## A-share scan
+## Company challenge
 
 ```text
-用 serenity-skill 深度调研现在 A 股 [行业/主题]。
-请联网查公告、财报、问询函、互动易、招投标、环评/能评、专利、客户认证和财务质量，
-先排产业链层级，再找 5 个最值得优先研究的标的，并说明卡住的环节、产业链位置、证据、排序理由和主要风险。
+用 serenity-skill 挑战 [公司/代码] 是“CPO 核心供应商”的说法。
+分别查它提供什么、产品进展、生态合作方和销售客户、相关收入及替代供应商。
+哪些说法已被披露支持，哪些只是推断？什么新事实会改变研究优先级？
 ```
 
-## Hong Kong scan
+## Candidate comparison
 
 ```text
-用 serenity-skill 研究港股 [主题]。
-重点过滤流动性、配售融资、关联交易、内地政策暴露、南向资金和估值重新定价条件。
-给出优先研究排序和下一步核验路径。
+用 serenity-skill 比较 [A]、[B]、[C]。
+用可比期间的资料解释产业链位置、相关业务占比、利润与现金流、
+估值和下一步该查什么。给研究排序并解释差别，不用数字打分。
 ```
 
-## US scan
+## Research memo
 
 ```text
-Use serenity-skill to research US-listed [theme] companies.
-Check SEC filings, transcripts, customer concentration, financing risk, margin evidence,
-and the parts of the value chain investors may be underpricing.
+用 serenity-skill 的研究备忘录模板整理 [主题/公司]。
+直接链接已核对的原始材料，区分披露事实、我的推断和仍缺的证据。
 ```
 
-## Single-company challenge
+## Other markets
 
 ```text
-Use serenity-skill to challenge [company/ticker].
-Where does it sit in the value chain? Does it control a scarce layer?
-What evidence supports the idea, what evidence is missing, and what would weaken the judgment?
+Use serenity-skill to research [theme] in [market].
+Compare relevant supply-chain layers, then company exposure, earnings and valuation.
+Use local disclosures and relevant global counterparties. Cite dated sources,
+identify the strongest alternative explanation, and explain what would change the ranking.
 ```
 
-## Compare candidates
+## Guided learning
 
 ```text
-Use serenity-skill to compare [A], [B], and [C].
-Rank them by supply-chain position, evidence quality, customer urgency, valuation pressure,
-main risk, and next verification step.
-```
-
-## Research partner mode
-
-```text
-用 serenity-skill 陪我讨论 [主题/公司]。
-不要直接写报告，每轮先给判断，再问我一个最关键的问题，带我从故事拆到产业链卡点和证据。
-```
-
-## Scorecard
-
-```text
-Use serenity-skill's local scorecard to score [company].
-Explain every rating in plain language and mark the evidence as strong, medium, weak, or needs checking.
+带我学习 Serenity 式产业链研究方法，每轮只问一个关键问题。
+从 [主题] 的系统变化出发，逐步讨论卡点、公司、利润、证据和反方条件。
 ```

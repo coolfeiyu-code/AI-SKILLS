@@ -1,186 +1,168 @@
+<div align="center">
+
 # Serenity.skill
 
-**Turn your investment agent into a supply-chain bottleneck hunter.**
+### Turn your investment agent into a supply-chain bottleneck hunter.
 
-Give it a market theme. It investigates live sources, maps the value chain, finds scarce constraints, ranks public-company research priorities, and writes the strongest reasons the idea could fail before you chase the story.
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
+  <a href="SKILL.md"><img src="https://img.shields.io/badge/Agent%20Skill-SKILL.md-black" alt="Agent Skill"></a>
+  <a href="README.md"><img src="https://img.shields.io/badge/README-%E4%B8%AD%E6%96%87-red" alt="Chinese README"></a>
+  <a href="README.en.md"><img src="https://img.shields.io/badge/English-README.en.md-lightgrey" alt="English README"></a>
+</p>
 
-[中文 README](README.md)
+<p align="center">
+  <a href="https://github.com/muxuuu/serenity-skill/stargazers"><img src="https://img.shields.io/github/stars/muxuuu/serenity-skill?logo=github" alt="GitHub Stars"></a>
+  <a href="https://github.com/muxuuu/serenity-skill/forks"><img src="https://img.shields.io/github/forks/muxuuu/serenity-skill?logo=github" alt="GitHub Forks"></a>
+  <a href="https://skills.sh/muxuuu/serenity-skill"><img src="https://skills.sh/b/muxuuu/serenity-skill" alt="skills.sh installs"></a>
+  <a href="https://deepwiki.com/muxuuu/serenity-skill"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a>
+  <a href="https://olud.ai/project/muxuuu-serenity-skill.html"><img src="https://olud.ai/badge.php?tool=muxuuu-serenity-skill" alt="olud.ai directory rank"></a>
+</p>
+
+<p align="center"><a href="https://trendshift.io/repositories/47219"><img src="https://trendshift.io/api/badge/trendshift/repositories/47219/daily" alt="TrendShift #22 Repository of the Day across all languages" width="250" height="55"></a></p>
+
+</div>
+
+Serenity.skill turns the supply-chain research patterns observed in public [Serenity / @aleabitoreddit](https://x.com/aleabitoreddit) material into a workflow for ordinary investment research. Start with a technology theme, map the system and its constrained inputs, investigate companies, and return research priorities with evidence and counterarguments.
+
+The primary use case is an A-share technology or advanced-manufacturing theme scan. The same method also supports a company challenge, a comparison, or guided learning, and adapts to other requested markets. Funds and ETFs are an extension when requested.
+
+## What the research covers
+
+- What demand or technical change is putting pressure on the system?
+- Which layers are difficult to expand or substitute?
+- What does each company sell, and is the relevant product being developed, qualified, delivered or recognized as revenue?
+- How can that business affect margins, cash flow and shareholder earnings?
+- What expectations are already reflected in a dated valuation?
+- What evidence would change the research priority?
+
+The host agent supplies web search, browsing or filing access. This repository supplies the method and reference material, not a real-time data service or market-data account.
+
+## Try it
 
 ```text
-market story -> system change -> required parts -> supply-chain layers
--> scarce constraints -> public companies -> evidence -> repricing path
--> what could prove the idea wrong
+Use serenity-skill to research A-share AI semiconductors.
+Compare the relevant supply-chain layers before ranking company research priorities.
+Explain commercial progress, earnings, valuation pressure and the strongest counterargument.
+Link material claims to dated original sources. Return fewer candidates if evidence is insufficient.
 ```
 
-## What It Does
-
-Serenity.skill is an Agent Skill for tool-using investment research agents.
-
-It helps an agent move from broad market narratives to evidence-backed research priorities:
-
-- Deep theme research across AI infrastructure, semiconductors, CPO, advanced packaging, power equipment, robotics, materials, testing, and other supply-chain-heavy sectors.
-- Cross-market candidate discovery for US, Hong Kong, A-share, Taiwan, Japan, Korea, and Europe.
-- Single-company thesis challenges: exact chain position, evidence quality, customer dependence, substitution risk, financing risk, and what the market may be missing.
-- Research partner conversations that push ideas from story to proof.
-- Local scoring through a standard-library Python scorecard.
-
-The Skill works best when the host agent has web search, browser, filings, market-data, and Python access. Local scripts use only local inputs.
-
-## Quick Start
-
-### Codex / OpenAI Agent Skills / Generic Agent Skills Clients
-
-User-level install:
-
-```bash
-SKILL_DIR="$HOME/.agents/skills/serenity-skill"
-mkdir -p "$SKILL_DIR"
-cp -R SKILL.md LICENSE references assets scripts examples agents "$SKILL_DIR"/
+```text
+Use serenity-skill to challenge the claim that [company/ticker] is a core CPO supplier.
+Separate its product role, delivery status, ecosystem partners, direct customers,
+attributable revenue and competing suppliers. Explain what is established and what is still unknown.
 ```
 
-Project-level install:
+```text
+Teach me the Serenity-inspired supply-chain method, one focused question at a time.
+```
+
+More starting questions are in the [prompt pack](assets/research-prompt-pack.md).
+
+## Worked cases
+
+- [A-share AI semiconductor scan](examples/a-share-ai-semiconductor-demo.md): five-company initial comparison with three research priorities.
+- [TFC CPO company challenge](examples/cpo-company-challenge.md): what production, customer and financial evidence actually supports.
+- [Learning conversation](examples/demo-conversation.md): a fictional teaching example.
+
+The first two cases are in Chinese and use public materials checked as of September 14, 2026. They include financial periods, source links and unresolved questions. They are archived research examples, not continuously updated market recommendations.
+
+## Installation
+
+You need an Agent Skills-compatible host with its own search, browser or filing tools for current research. Research does not require Python. The optional maintainer structure check requires Python 3.
+
+First obtain the repository:
 
 ```bash
-SKILL_DIR=".agents/skills/serenity-skill"
-mkdir -p "$SKILL_DIR"
-cp -R SKILL.md LICENSE references assets scripts examples agents "$SKILL_DIR"/
+git clone https://github.com/muxuuu/serenity-skill.git
+cd serenity-skill
+```
+
+Alternatively, download and extract the repository ZIP, then open a terminal in the folder containing `SKILL.md`. Run the following commands from that folder.
+
+### Codex
+
+User-level installation:
+
+```bash
+SERENITY_DIR="$HOME/.agents/skills/serenity-skill"
+mkdir -p "$SERENITY_DIR"
+cp -R SKILL.md LICENSE references assets examples agents "$SERENITY_DIR"/
+```
+
+Invoke in Codex:
+
+```text
+$serenity-skill Research this investment theme with dated evidence and counterarguments.
 ```
 
 ### Claude Code
 
-User-level install:
+User-level installation:
 
 ```bash
-SKILL_DIR="$HOME/.claude/skills/serenity-skill"
-mkdir -p "$SKILL_DIR"
-cp -R SKILL.md LICENSE references assets scripts examples agents "$SKILL_DIR"/
+SERENITY_DIR="$HOME/.claude/skills/serenity-skill"
+mkdir -p "$SERENITY_DIR"
+cp -R SKILL.md LICENSE references assets examples agents "$SERENITY_DIR"/
 ```
 
-Project-level install:
-
-```bash
-SKILL_DIR=".claude/skills/serenity-skill"
-mkdir -p "$SKILL_DIR"
-cp -R SKILL.md LICENSE references assets scripts examples agents "$SKILL_DIR"/
-```
-
-### Hermes Agent
-
-```bash
-SKILL_DIR="$HOME/.hermes/skills/research/serenity-skill"
-mkdir -p "$SKILL_DIR"
-cp -R SKILL.md LICENSE references assets scripts examples agents "$SKILL_DIR"/
-```
-
-### OpenClaw / Other AgentSkills-Compatible Clients
-
-Place `SKILL.md`, `LICENSE`, `references/`, `assets/`, `scripts/`, `examples/`, and `agents/` in the client's `serenity-skill/` directory. README and project-maintenance docs are for the GitHub repository and do not need to be installed into the runtime skill directory.
-
-## Try It
+Invoke in Claude Code:
 
 ```text
-Use serenity-skill to deeply research A-share AI semiconductor opportunities.
-Map the value chain, investigate current sources, rank the top research priorities,
-explain the evidence, and say what could prove each idea wrong.
+/serenity-skill Challenge this company's CPO supplier thesis.
 ```
 
-```text
-Use serenity-skill to challenge this company's CPO supplier thesis.
-Where does it sit in the chain, what evidence supports it, and what would weaken the idea?
-```
+For project-only use, change `SERENITY_DIR` to the absolute destination path:
 
-```text
-用 serenity-skill 深度调研现在 A 股 AI 半导体产业链，
-找 5 个最值得优先研究的标的，给出产业链位置、证据、排序理由和主要风险。
-```
+| Client | Directory inside the target project |
+|---|---|
+| Codex | `<project path>/.agents/skills/serenity-skill` |
+| Claude Code | `<project path>/.claude/skills/serenity-skill` |
 
-## Example Output Style
+Start a new session after installation and confirm the skill is available. See the [Codex documentation](https://developers.openai.com/codex/skills) and [Claude Code documentation](https://code.claude.com/docs/en/skills). Other compatible clients use the same skill; consult their documentation for discovery paths and available research tools.
 
-The Skill aims for normal research-partner language:
+Verification scope, September 14, 2026: Codex CLI 0.147.0 loaded the revised skill and completed an offline company-claim exercise. The Claude Code directory and package structure were checked, but model invocation has not been verified. This is not an end-to-end validation of every client, model or live data source.
 
-```text
-I would prioritize advanced packaging equipment, optical-interconnect upstream materials,
-and AI server power components. They sit closer to real expansion constraints than the
-obvious AI ticker basket.
+For an upgrade, first move the old installed `serenity-skill` directory outside the host's skill search paths as a backup, then copy the new package. Copying over an existing version leaves retired files behind; leaving a backup inside a skill search path can also load a duplicate. Repository READMEs, maintenance documents and `scripts/validate_skill.py` are not needed in the runtime directory.
 
-The first group ranks higher because capacity qualification and customer validation
-can take time, and public markets often recognize the downstream demand before they
-price the upstream constraint.
+## Research memo and local check
 
-The main thing that would weaken this view is simple: if customers can qualify alternate
-suppliers faster than expected, the scarce-layer logic fades.
-```
+Use the [memo template](assets/thesis-template.md) for a structured report, translating its Chinese labels when needed. It covers business position, evidence, gaps, earnings, valuation, alternatives and conditions that would change the view. Explain research priorities in words rather than a composite numerical score.
 
-Chinese outputs use the same style:
-
-```text
-我会优先看三层：先进封装设备、光通信上游材料、AI 服务器电源链。
-原因是它们更接近真实扩产约束，市场也更容易先定价下游故事，再回头找上游卡点。
-
-第一优先级要查的是客户认证和产能证据。故事之外还需要订单、认证、毛利率或收入结构变化，
-否则这个标的只能算线索。
-```
-
-## Local Scorecard
-
-Generate a template:
+From the repository folder:
 
 ```bash
-python scripts/serenity_scorecard.py --template > my-company.json
+python3 scripts/validate_skill.py .
 ```
 
-Run a score:
+This checks the skill name, description and directory, not investment conclusions.
 
-```bash
-python scripts/serenity_scorecard.py --format md my-company.json
-```
-
-Validate the Skill package:
-
-```bash
-python scripts/validate_skill.py .
-```
-
-## Repository Layout
+## Repository layout
 
 ```text
 serenity-skill/
 ├── SKILL.md
 ├── README.md
 ├── README.en.md
-├── README.zh-CN.md
 ├── LICENSE
-├── agents/
-│   └── openai.yaml
+├── agents/openai.yaml
 ├── references/
-│   ├── deep-research-workflow.md
-│   ├── evidence-ladder.md
-│   ├── market-source-playbook.md
-│   ├── serenity-dialogue-protocol.md
-│   ├── output-style-and-language.md
-│   ├── public-profile-and-evaluation.md
-│   ├── research-sources.md
-│   └── risk-and-compliance.md
 ├── assets/
-│   ├── bottleneck-scorecard.json
 │   ├── research-prompt-pack.md
 │   └── thesis-template.md
-├── scripts/
-│   ├── serenity_scorecard.py
-│   └── validate_skill.py
+├── scripts/validate_skill.py
 ├── examples/
 │   ├── a-share-ai-semiconductor-demo.md
-│   ├── ai-infrastructure-chokepoint-demo.md
+│   ├── cpo-company-challenge.md
 │   └── demo-conversation.md
-└── evals/
-    └── test-cases.md
+└── evals/test-cases.md
 ```
 
-## Boundary
+## Research boundary
 
-This is an independent public-methodology project inspired by public [Serenity / @aleabitoreddit](https://x.com/aleabitoreddit) research patterns. It supports research, ranking, and reasoning. It has zero broker access, zero wallet access, and zero trade execution.
+This is an independent interpretation of public research material, with no official affiliation or endorsement. [Method sources](references/public-profile-and-evaluation.md) distinguish the inspiration from this project's own workflow.
 
-Company facts should come from filings, exchange documents, company announcements, transcripts, regulatory/project records, patents, standards, reputable media, and specialist analysis.
+The Skill provides research priorities, evidence, risks and next checks. It does not execute trades or operate accounts. Final investment decisions remain with the user. Company statements, technical evidence and financial data should support the particular claims being made.
 
 ## License
 

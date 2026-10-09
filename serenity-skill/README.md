@@ -2,12 +2,24 @@
 
 # Serenity.skill
 
-### 让 AI 用 Serenity 式投研方法，筛出上涨逻辑更清楚的股票和基金方向
+### 让 Agent 用 Serenity 式投研方法，筛出上涨逻辑更清楚的股票和基金方向
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Agent Skill](https://img.shields.io/badge/Agent%20Skill-SKILL.md-black)](SKILL.md)
-[![中文优先](https://img.shields.io/badge/README-%E4%B8%AD%E6%96%87%E4%BC%98%E5%85%88-red)](README.md)
-[![English](https://img.shields.io/badge/English-README.en.md-lightgrey)](README.en.md)
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
+  <a href="SKILL.md"><img src="https://img.shields.io/badge/Agent%20Skill-SKILL.md-black" alt="Agent Skill"></a>
+  <a href="README.md"><img src="https://img.shields.io/badge/README-%E4%B8%AD%E6%96%87-red" alt="中文"></a>
+  <a href="README.en.md"><img src="https://img.shields.io/badge/English-README.en.md-lightgrey" alt="English"></a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/muxuuu/serenity-skill/stargazers"><img src="https://img.shields.io/github/stars/muxuuu/serenity-skill?logo=github" alt="GitHub Stars"></a>
+  <a href="https://github.com/muxuuu/serenity-skill/forks"><img src="https://img.shields.io/github/forks/muxuuu/serenity-skill?logo=github" alt="GitHub Forks"></a>
+  <a href="https://skills.sh/muxuuu/serenity-skill"><img src="https://skills.sh/b/muxuuu/serenity-skill" alt="skills.sh installs"></a>
+  <a href="https://deepwiki.com/muxuuu/serenity-skill"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a>
+  <a href="https://olud.ai/project/muxuuu-serenity-skill.html"><img src="https://olud.ai/badge.php?tool=muxuuu-serenity-skill" alt="serenity-skill 在 olud.ai 的目录徽章"></a>
+</p>
+
+<p align="center"><a href="https://trendshift.io/repositories/47219"><img src="https://trendshift.io/api/badge/trendshift/repositories/47219/daily" alt="TrendShift 全语言日榜第 22 名" width="250" height="55"></a></p>
 
 </div>
 
@@ -51,7 +63,7 @@ Serenity.skill 复用的是这套公开方法论中的研究路径：
 ```text
 用 serenity-skill 深度调研现在 A 股 AI 半导体产业链。
 请联网查公告、财报、问询函、互动易、招投标、环评/能评、专利、客户认证和财务质量，
-先排产业链层级，再找 5 个最值得优先研究的标的，
+先排产业链层级，再给出通常 3–5 个值得优先研究的标的；证据不足时可以少给，
 并说明卡住的环节、产业链位置、证据、排序理由和主要风险。
 ```
 
@@ -93,92 +105,81 @@ Serenity.skill 复用的是这套公开方法论中的研究路径：
 
 完整示例：
 
-- [A 股 AI 半导体扫描](examples/a-share-ai-semiconductor-demo.md)
-- [AI 基建瓶颈研究](examples/ai-infrastructure-chokepoint-demo.md)
-- [研究伙伴式对话](examples/demo-conversation.md)
+- [A 股 AI 半导体初筛：五家公司，三条优先研究线索](examples/a-share-ai-semiconductor-demo.md)
+- [天孚通信 CPO 挑战：量产、客户与利润分别证明到哪一步](examples/cpo-company-challenge.md)
+- [研究方法教学对话（虚构示例）](examples/demo-conversation.md)
+
+前两篇是截至 2026-09-14 的真实公开资料研究，含来源、财务期间和未完成的核验项，供查看方法如何使用；不作为持续更新的行情或买入清单。
 
 ## 安装
 
-### Codex / OpenAI Agent Skills / 通用 Agent Skills 客户端
+需要一个能读取 Skill 文件的 Agent 客户端，以及它自己的联网搜索、浏览器或公告数据工具。Serenity.skill 提供研究方法，不附带实时行情服务或数据账号。研究本身不依赖 Python；下方维护用结构检查需要 Python 3。
 
-已通过以下命令完成安装：
+先取得仓库并进入目录：
 
 ```bash
-python3 install-skill-from-github.py --repo muxuuu/serenity-skill --path . --name serenity-skill
+git clone https://github.com/muxuuu/serenity-skill.git
+cd serenity-skill
 ```
 
-安装路径：`~/.codex/skills/serenity-skill`
+也可以下载仓库 ZIP、解压后，在终端进入其中包含 `SKILL.md` 的目录。以下命令均从这个目录执行。
 
-安装后重启 Codex 即可在对话中使用此技能。
-
-如需在其他 Agent Skills 客户端手动安装：
+### Codex
 
 用户级安装：
 
 ```bash
-SKILL_DIR="$HOME/.agents/skills/serenity-skill"
-mkdir -p "$SKILL_DIR"
-cp -R SKILL.md LICENSE references assets scripts examples agents "$SKILL_DIR"/
+SERENITY_DIR="$HOME/.agents/skills/serenity-skill"
+mkdir -p "$SERENITY_DIR"
+cp -R SKILL.md LICENSE references assets examples agents "$SERENITY_DIR"/
 ```
 
-项目级安装：
+在 Codex 中调用：
 
-```bash
-SKILL_DIR=".agents/skills/serenity-skill"
-mkdir -p "$SKILL_DIR"
-cp -R SKILL.md LICENSE references assets scripts examples agents "$SKILL_DIR"/
+```text
+$serenity-skill 研究现在 A 股 AI 半导体产业链，说明优先研究方向、证据和反方理由。
 ```
-
 
 ### Claude Code
 
 用户级安装：
 
 ```bash
-SKILL_DIR="$HOME/.claude/skills/serenity-skill"
-mkdir -p "$SKILL_DIR"
-cp -R SKILL.md LICENSE references assets scripts examples agents "$SKILL_DIR"/
+SERENITY_DIR="$HOME/.claude/skills/serenity-skill"
+mkdir -p "$SERENITY_DIR"
+cp -R SKILL.md LICENSE references assets examples agents "$SERENITY_DIR"/
 ```
 
-项目级安装：
+在 Claude Code 中调用：
+
+```text
+/serenity-skill 挑战天孚通信是 CPO 核心供应商的说法，逐项核对原始披露。
+```
+
+只希望在某个项目使用时，把上述 `SERENITY_DIR` 改为目标项目的绝对路径：
+
+| 客户端 | 项目内目录 |
+|---|---|
+| Codex | `<项目路径>/.agents/skills/serenity-skill` |
+| Claude Code | `<项目路径>/.claude/skills/serenity-skill` |
+
+安装后新开一个会话，确认能找到并调用 `serenity-skill`。目录规则见 [Codex 官方文档](https://developers.openai.com/codex/skills)和 [Claude Code 官方文档](https://code.claude.com/docs/en/skills)。其他兼容客户端使用同一份 Skill，安装位置和联网工具以各客户端文档为准。
+
+验证范围（2026-09-14）：Codex CLI 0.147.0 已实际加载新版，并完成离线材料下的公司主张辨析；Claude Code 的目录与包结构已核对，模型调用尚未实测。这不代表所有客户端、模型和联网数据源已经完成端到端验证。
+
+已有旧版本时，先把旧 `serenity-skill` 安装目录移到 Skill 搜索目录以外备份，再复制新版。直接覆盖不会移除旧版已退役的文件；在同一搜索目录留着旧副本还可能重复加载。仓库内的 README、维护文档和 `scripts/validate_skill.py` 不需要复制到运行目录。
+
+## 研究备忘录
+
+需要完整报告时，可以让 Agent 使用 [研究模板](assets/thesis-template.md)，整理产业链位置、已确认事实、缺失证据、利润与估值、替代路线和失效条件。研究优先级由证据和推理解释，不使用综合数字评分。
+
+维护者可在仓库目录检查 Skill 的基本结构：
 
 ```bash
-SKILL_DIR=".claude/skills/serenity-skill"
-mkdir -p "$SKILL_DIR"
-cp -R SKILL.md LICENSE references assets scripts examples agents "$SKILL_DIR"/
+python3 scripts/validate_skill.py .
 ```
 
-### Hermes Agent
-
-```bash
-SKILL_DIR="$HOME/.hermes/skills/research/serenity-skill"
-mkdir -p "$SKILL_DIR"
-cp -R SKILL.md LICENSE references assets scripts examples agents "$SKILL_DIR"/
-```
-
-### OpenClaw / 其他 AgentSkills-compatible 客户端
-
-把 `SKILL.md`、`LICENSE`、`references/`、`assets/`、`scripts/`、`examples/`、`agents/` 放进对应客户端的 `serenity-skill/` 目录即可。README 和项目维护文档只用于 GitHub 展示，不需要安装到运行目录。
-
-## 本地瓶颈打分
-
-生成模板：
-
-```bash
-python scripts/serenity_scorecard.py --template > my-company.json
-```
-
-运行评分：
-
-```bash
-python scripts/serenity_scorecard.py --format md my-company.json
-```
-
-校验 Skill：
-
-```bash
-python scripts/validate_skill.py .
-```
+这条命令检查名称、描述和目录，不验证投资结论。
 
 ## 仓库结构
 
@@ -187,7 +188,6 @@ serenity-skill/
 ├── SKILL.md
 ├── README.md
 ├── README.en.md
-├── README.zh-CN.md
 ├── references/
 │   ├── deep-research-workflow.md
 │   ├── evidence-ladder.md
@@ -195,15 +195,13 @@ serenity-skill/
 │   ├── public-profile-and-evaluation.md
 │   └── risk-and-compliance.md
 ├── assets/
-│   ├── bottleneck-scorecard.json
 │   ├── research-prompt-pack.md
 │   └── thesis-template.md
 ├── scripts/
-│   ├── serenity_scorecard.py
 │   └── validate_skill.py
 ├── examples/
 │   ├── a-share-ai-semiconductor-demo.md
-│   ├── ai-infrastructure-chokepoint-demo.md
+│   ├── cpo-company-challenge.md
 │   └── demo-conversation.md
 └── evals/
     └── test-cases.md

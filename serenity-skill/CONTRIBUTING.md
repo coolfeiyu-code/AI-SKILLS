@@ -22,7 +22,7 @@ Serenity.skill accepts contributions that improve research discipline, source qu
 
 ## Suggested PR checklist
 
-- [ ] `python scripts/validate_skill.py .` passes.
+- [ ] `python3 scripts/validate_skill.py .` passes (package structure only).
 - [ ] New files are referenced from README or SKILL.md when useful.
-- [ ] Company-specific examples include uncertainty and what would weaken the view.
+- [ ] Company-specific examples give a research date, link material claims to sources, and explain what would change the view.
 - [ ] No API keys, secrets, wallet addresses, or private data.

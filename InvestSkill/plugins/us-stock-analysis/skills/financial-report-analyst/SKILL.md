@@ -1,5 +1,5 @@
 ---
-description: Analyze company financial reports (10-K, 10-Q, annual reports) and extract actionable investment insights
+description: Analyze company financial reports (10-K, 10-Q, annual reports) and extract actionable investment insights — statement quality, red flags, and a signal. For a structured section-by-section summary document of a 10-K rather than an investment call, use 10k-digest
 ---
 
 # Financial Report Analyst
@@ -10,12 +10,30 @@ Before running any analysis, always retrieve the latest market data for the tick
 
 1. **Fetch current price** — use web search or ask the user for the live price, 52-week range, and market cap. Never assume a price from training data.
 2. **Confirm key figures** — recent earnings, revenue, key ratios (P/E, P/S, etc.) as applicable to this skill.
-3. **State your data source** — note where the numbers came from (e.g., "Google Finance, June 19 2026") at the top of the output.
+3. **State your data source** — fill in the `Data & Sources` header (next section) so the origin, as-of date, retrieval path, and confidence of every figure are explicit at the top of the output.
 4. **Flag stale data explicitly** — if live data is unavailable, display this warning before proceeding:
 
 > ⚠️ **Live data unavailable.** The following analysis uses training-data estimates which may be significantly out of date. Verify all prices and metrics before making any decisions.
 
 Never silently substitute training-data estimates for current prices. When in doubt, ask the user to paste the latest quote.
+
+---
+
+## 📋 Data & Sources Header — Open Every Output With It
+
+The first thing in the output is this provenance block, filled in — never left as placeholders. It is the standard documented on the [Data & Accuracy](https://yennanliu.github.io/InvestSkill/data-and-accuracy.html) page and the first thing `result-validator` looks for:
+
+```
+Data & Sources
+  As of:      <date the figures represent, e.g. 2026-06-30>
+  Source:     <primary docs — SEC EDGAR 10-K/10-Q, company IR, FRED, exchange data …>
+  Retrieval:  <pasted by user | web/tool retrieval | model memory>
+  Confidence: <HIGH | MEDIUM | LOW>
+```
+
+- `Retrieval: model memory` must be paired with `Confidence: LOW` — memory is a placeholder until confirmed against a primary source.
+- Mixed sources: list each with its own as-of date rather than blending them.
+- Data the user pasted is reported as `pasted by user`; do not upgrade its confidence beyond what the user's own source supports.
 
 ---
 
@@ -47,6 +65,19 @@ Provide the report in one of these ways:
 # Comparative: compare current vs prior period filing
 /financial-report-analyst GOOGL --compare-prior
 ```
+
+### Retrieving the filing — the keyless EDGAR path
+
+When the user names a ticker instead of pasting text, this skill still fetches nothing by itself. If the host can fetch URLs, get the primary document from SEC EDGAR (free, no API key) and mark `Retrieval: web/tool retrieval`:
+
+1. **Ticker → CIK:** `https://www.sec.gov/files/company_tickers.json` — match `ticker` (`BRK-B` for `BRK.B`), zero-pad `cik_str` to 10 digits.
+2. **Filings index:** `https://data.sec.gov/submissions/CIK##########.json` — in `filings.recent`, the arrays `form` · `filingDate` · `reportDate` · `accessionNumber` · `primaryDocument` line up by index. Pick the newest row whose `form` is the one asked for: `10-K` (annual; `20-F` for foreign private issuers), `10-Q` (quarterly; `6-K` for foreign issuers), `8-K` (earnings release is usually Exhibit 99.1 in the filing folder), `DEF 14A` (proxy).
+3. **Document:** `https://www.sec.gov/Archives/edgar/data/<CIK without leading zeros>/<accessionNumber without dashes>/<primaryDocument>` — the full filing as HTML. The folder's `<accessionNumber>-index.htm` lists every exhibit.
+4. **Statement facts (to cross-check Item 8):** `https://data.sec.gov/api/xbrl/companyfacts/CIK##########.json`.
+
+Identify yourself with a `User-Agent` header (`Name email`) and stay under 10 requests per second. For `--compare-prior`, take the second-newest row of the same form. Cite accession number and filing date in the `Data & Sources` header.
+
+If the host cannot fetch, ask the user to paste the sections — or, from the InvestSkill repository, to run `node scripts/fetch-edgar.js <TICKER> --form 10-Q` (saves the filing as text plus a `.json` with the header fields) or `node scripts/fetch-fundamentals.js <TICKER>` (a reconciled statement pack from the XBRL facts) — and mark `Retrieval: pasted by user`. With neither, proceed only under the ⚠️ warning above with `Confidence: LOW`.
 
 ---
 
@@ -479,14 +510,12 @@ All analysis concludes with this standardized block:
 After delivering the analysis signal, specify what would reverse it:
 
 **If signal is BULLISH — thesis breaks if:**
-- Price closes below the MA200 / key support level identified in this analysis on above-average volume
 - auditor issues going concern warning OR material restatement announced
-- Macro regime shift: Fed pivots hawkish unexpectedly, recession probability >60%
+- [One or two more triggers drawn from this analysis's own drivers, each with a threshold]
 
 **If signal is BEARISH — thesis breaks if:**
-- Price closes above key resistance / MA200 level with volume confirmation
 - new auditor clears all concerns AND restatement resolved favorably
-- Fundamental improvement: surprise earnings beat >20% with guidance raise
+- [One or two more triggers drawn from this analysis's own drivers, each with a threshold]
 
 **Re-run this analysis when:**
 - [ ] Next earnings release
@@ -510,3 +539,5 @@ After delivering the analysis signal, specify what would reverse it:
 Score Guide: 8.0–10.0 Strongly Bullish | 6.0–7.9 Moderately Bullish | 4.0–5.9 Neutral | 2.0–3.9 Moderately Bearish | 0.0–1.9 Strongly Bearish
 Confidence: HIGH (strong data, clear signals) | MEDIUM (mixed signals) | LOW (limited data, conflicting signals)
 Horizon: SHORT-TERM (1 week–3 months) | MEDIUM-TERM (3 months–1 year) | LONG-TERM (1+ years)
+
+**Disclaimer:** Educational analysis only. Not financial advice.

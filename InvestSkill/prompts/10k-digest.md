@@ -12,17 +12,71 @@ Before running the digest, confirm the filing details:
 
 ---
 
+## 📋 Data & Sources Header — Open Every Output With It
+
+The first thing in the output is this provenance block, filled in — never left as placeholders. It is the standard documented on the [Data & Accuracy](https://yennanliu.github.io/InvestSkill/data-and-accuracy.html) page and the first thing `result-validator` looks for:
+
+```
+Data & Sources
+  As of:      <date the figures represent, e.g. 2026-06-30>
+  Source:     <primary docs — SEC EDGAR 10-K/10-Q, company IR, FRED, exchange data …>
+  Retrieval:  <pasted by user | web/tool retrieval | model memory>
+  Confidence: <HIGH | MEDIUM | LOW>
+```
+
+- `Retrieval: model memory` must be paired with `Confidence: LOW` — memory is a placeholder until confirmed against a primary source.
+- Mixed sources: list each with its own as-of date rather than blending them.
+- Data the user pasted is reported as `pasted by user`; do not upgrade its confidence beyond what the user's own source supports.
+
+---
+
 Produce a clean, structured markdown document that distills a company's 10-K annual report into an abstract, per-section summaries, a digest of key metrics, and full source references. Designed for quick comprehension — not trading signals. Output language is selectable: English or Traditional Chinese (繁體中文).
+
+## 🔎 Retrieving the Filing — the Keyless EDGAR Path
+
+This skill fetches nothing by itself. When the user gives only a ticker, obtain the 10-K in one of three ways and record which one in the `Data & Sources` header:
+
+**A. The host can fetch URLs** → `Retrieval: web/tool retrieval`. Every step is free and needs no API key:
+
+1. **Ticker → CIK** — `https://www.sec.gov/files/company_tickers.json`: find the entry whose `ticker` matches (write `BRK-B` for `BRK.B`) and zero-pad its `cik_str` to 10 digits.
+2. **Filings index** — `https://data.sec.gov/submissions/CIK##########.json`: inside `filings.recent` the arrays `form`, `filingDate`, `reportDate`, `accessionNumber` and `primaryDocument` are aligned by index. Take the newest row whose `form` is `10-K` (foreign private issuers file `20-F` instead; a `10-K/A` is an amendment). The top-level `fiscalYearEnd` is `MMDD`.
+3. **The document** — `https://www.sec.gov/Archives/edgar/data/<CIK without leading zeros>/<accessionNumber without dashes>/<primaryDocument>`: the complete filing as HTML (inline XBRL). The filing's index page is the same folder plus `<accessionNumber>-index.htm`; cite that URL and the accession number in the References.
+4. **Structured statement data (optional)** — `https://data.sec.gov/api/xbrl/companyfacts/CIK##########.json`: every US-GAAP fact the company has tagged, by concept and period. Use it to confirm the figures read from Item 8.
+5. **Full-text search (optional)** — `https://www.sec.gov/edgar/search/#/q=%22<phrase>%22&forms=10-K` when a filing has to be located by phrase rather than ticker.
+
+Send a `User-Agent` header that identifies the requester (the SEC requires it, e.g. `Name email@example.com`) and stay under 10 requests per second. Never substitute a summary site for the filing itself.
+
+**B. The host cannot fetch** → `Retrieval: pasted by user`. Ask the user to paste the sections needed — or, if they have the InvestSkill repository, to run
+
+```
+node scripts/fetch-edgar.js <TICKER> --form 10-K        # → data/filings/<TICKER>/*.txt + .json (accession, dates, URL)
+node scripts/fetch-fundamentals.js <TICKER>             # → data/fixtures/<TICKER>.md — reconciled statements from the XBRL facts
+```
+
+and paste the result. Both helpers are optional, keyless, and live outside the plugin.
+
+**C. Neither** → show the ⚠️ *Source unavailable* warning, set `Retrieval: model memory` and `Confidence: LOW`, and digest only what the user provided.
+
+---
 
 ## How to Use
 
-Provide input in any of these ways:
+```
+# Analyze by ticker (retrieves the latest 10-K via the EDGAR path above, or asks you to paste it)
+10k-digest AAPL
 
-- **By ticker**: `AAPL` — fetches the latest 10-K from SEC EDGAR
-- **With fiscal year**: `MSFT FY2024`
-- **Pasted text**: paste 10-K sections directly into the prompt
-- **Language flag**: add `--lang zh-TW` to output in Traditional Chinese (繁體中文)
-- **File output**: add `--output <filename>.md` to save the digest as a markdown file
+# Paste 10-K text directly
+10k-digest [paste 10-K sections here]
+
+# Specify fiscal year
+10k-digest MSFT FY2024
+
+# Output in Traditional Chinese
+10k-digest NVDA --lang zh-TW
+
+# Save output to file
+10k-digest GOOGL --output googl-10k-digest.md
+```
 
 ---
 
@@ -135,7 +189,65 @@ Note below the table: data source (filing section and page number if available).
 
 ---
 
-### 5. Notable Disclosures
+### 5. Highlights & Concerns
+
+Two short lists that give the reader the "so what" without leaving the digest. Draw every item directly from the filing and cite the source Item.
+
+**Highlights** — up to 5 of the strongest positives disclosed this year (e.g., record revenue, margin expansion, new products/segments, strong FCF conversion, new buyback authorization, market-share gains). Format: `- **[Headline]** — [one sentence] *(Item X)*`
+
+**Concerns** — up to 5 of the most material negatives or warning signs (e.g., decelerating growth, margin compression, rising leverage, customer/supplier concentration, new risk factors, active litigation, going-concern language). Format: `- **[Headline]** — [one sentence] *(Item X)*`
+
+---
+
+### 6. Management Outlook & Forward Guidance
+
+Capture every forward-looking commitment made in the filing. Present as a table.
+
+```
+| Guidance Item              | What Management Said                | Time Horizon | Source     |
+|----------------------------|-------------------------------------|--------------|------------|
+| Revenue growth             | [target / range / directional]      | [FY / multi] | Item 7     |
+| Margin target              | [gross / operating target]          | [horizon]    | Item 7     |
+| Capex / capacity           | [planned spend or expansion]        | [horizon]    | Item 7     |
+| Capital allocation         | [dividend / buyback / debt / M&A]   | [horizon]    | Item 7/8   |
+| Strategic priorities       | [product roadmap, new markets]      | [horizon]    | Item 1/7   |
+```
+
+Only include rows the filing actually addresses. If the 10-K gives no explicit guidance (common — 10-Ks are backward-looking), state that and summarize any qualitative forward statements instead.
+
+---
+
+### 7. Prior-Year Promise Tracker
+
+An accountability audit: take the forward-looking statements, targets, and stated priorities from **last year's** 10-K (Item 7 MD&A) and score whether they materialized in this year's results. This is the single most differentiating part of the digest — it measures management credibility over time.
+
+```
+| Prior-Year Commitment (FY[N-1] 10-K)   | FY[N] Actual Result          | Verdict     | Notes            |
+|-----------------------------------------|------------------------------|-------------|------------------|
+| [what management said they would do]    | [what actually happened]     | ✅ Delivered | [brief context]  |
+| [e.g., "expand operating margin"]       | [e.g., "margin +120 bps"]    | 🟡 Partial  | [brief context]  |
+| [e.g., "launch product X in H2"]        | [e.g., "slipped to next FY"] | ❌ Missed    | [brief context]  |
+```
+
+Verdict legend: ✅ Delivered · 🟡 Partial · ❌ Missed · ⏳ Too early to judge.
+
+Close with a one-line **Management Credibility read**: e.g., "4/5 prior commitments delivered — high follow-through." If the prior-year 10-K is unavailable, state `N/A — prior filing not retrieved` and skip the table.
+
+---
+
+### 8. Bull vs. Bear Synthesis
+
+A lightweight face-off built strictly from evidence in this filing — not a full valuation call (defer to `bear-case`, `stock-eval`, and `stock-valuation` for that).
+
+**Bull case** — 3–4 strongest points from this filing supporting the stock.
+
+**Bear case** — 3–4 strongest points from this filing arguing against it.
+
+**Net read** — one sentence weighing the two, consistent with the Investment Signal below.
+
+---
+
+### 9. Notable Disclosures
 
 Bullet list of up to 8 items that are worth investor attention but don't fit neatly into section summaries:
 - New segment or business unit disclosures
@@ -149,7 +261,7 @@ Bullet list of up to 8 items that are worth investor attention but don't fit nea
 
 ---
 
-### 6. Source References
+### 10. Source References
 
 List all sources cited in this digest. Format:
 
@@ -181,6 +293,8 @@ When `--lang zh-TW` is specified, output the **entire document** in Traditional 
 - All tables with Chinese column headers
 - Cover block language field: `語言：繁體中文`
 - Keep ticker symbols, financial figures, and SEC item numbers in their original form
+
+Suggested Traditional Chinese headings for the interpretation sections: 亮點與隱憂 (Highlights & Concerns), 管理層展望 (Management Outlook & Forward Guidance), 上年度承諾兌現 (Prior-Year Promise Tracker), 多空對決 (Bull vs. Bear Synthesis).
 
 English mode is the default when no `--lang` flag is given.
 
@@ -222,3 +336,5 @@ After delivering the digest, note what would make this document stale:
 Score Guide: 8.0–10.0 Strongly Bullish | 6.0–7.9 Moderately Bullish | 4.0–5.9 Neutral | 2.0–3.9 Moderately Bearish | 0.0–1.9 Strongly Bearish
 Confidence: HIGH (strong data, clear signals) | MEDIUM (mixed signals) | LOW (limited data, conflicting signals)
 Horizon: SHORT-TERM (1 week–3 months) | MEDIUM-TERM (3 months–1 year) | LONG-TERM (1+ years)
+
+**Disclaimer:** Educational analysis only. Not financial advice.

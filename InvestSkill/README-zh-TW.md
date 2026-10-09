@@ -4,8 +4,11 @@
 
 ### 美股市場專業投資分析工具
 
-**25 個 AI 驅動分析框架 · 全平台支援 · 完全開源**
+**30 個 AI 驅動分析框架 · 全平台支援 · 完全開源**
 
+**無需 API 金鑰 · 無需訂閱 · 完全免費**
+
+[![Cost: $0](https://img.shields.io/badge/%E8%B2%BB%E7%94%A8-%240%20%C2%B7%20%E7%84%A1%E9%A0%88%20API%20%E9%87%91%E9%91%B0-22c55e?style=for-the-badge)](#-無需-api-金鑰完全免費)
 [![GitHub License](https://img.shields.io/badge/license-MIT-blue.svg?style=for-the-badge)](LICENSE)
 [![GitHub Stars](https://img.shields.io/github/stars/yennanliu/InvestSkill?style=for-the-badge&color=gold)](https://github.com/yennanliu/InvestSkill/stargazers)
 [![GitHub Release](https://img.shields.io/github/v/release/yennanliu/InvestSkill?style=for-the-badge&color=green)](https://github.com/yennanliu/InvestSkill/releases)
@@ -19,7 +22,9 @@
 
 ## 🎯 什麼是 InvestSkill？
 
-InvestSkill 是企業級投資分析工具包，為各 AI 平台帶來機構級分析框架。透過 25 個完整框架進行專業股票分析——無需金融執照，無需 API 費用。
+InvestSkill 是企業級投資分析工具包，為各 AI 平台帶來機構級分析框架。透過 30 個完整框架進行專業股票分析——無需金融執照，無需 API 費用。
+
+**不用註冊，也不用付費。** 沒有 API 金鑰、沒有資料商訂閱、不必設定帳單——你只要用手上已有的 AI 助理（免費方案或本機模型都可以），InvestSkill 本身就只是 markdown 提示詞。詳見 [無需 API 金鑰，完全免費](#-無需-api-金鑰完全免費)。
 
 > **適合用於**：投資研究 · 盡職調查 · 投資組合管理 · 金融教育 · 股票評估
 
@@ -27,7 +32,7 @@ InvestSkill 是企業級投資分析工具包，為各 AI 平台帶來機構級�
   <span class="home-card-icon">🎓</span>
   <div class="home-card-body">
     <div class="home-card-title">投資新手？從學習指南開始</div>
-    <p>六堂課的實戰指南，用白話講清楚每一項技能背後的概念——從讀懂資產負債表、為一門生意估值，到持有一個投資組合。提供繁體中文與英文，不需財金背景。</p>
+    <p>十三堂課的實戰指南，提供繁體中文與英文：第一部用白話講清楚每一項技能背後的概念——讀懂資產負債表、為一門生意估值、持有一個投資組合；第二部是實務基礎——帳戶與下單、ETF 核心、稅（含非美國投資人）、財報季，以及保護計畫的心理學。不需財金背景。</p>
     <p><a class="home-card-cta" href="https://yennanliu.github.io/InvestSkill/learning-zh-tw.html">開始學習 →</a></p>
   </div>
 </div>
@@ -36,12 +41,13 @@ InvestSkill 是企業級投資分析工具包，為各 AI 平台帶來機構級�
   <tr>
     <td width="50%">
 
-### ✨ 25 個專業框架
-- 6 個核心分析框架
+### ✨ 30 個專業框架
+- 4 個核心分析框架
 - 3 個財務報告分析
 - 4 個市場監控工具
-- 8 個進階研究工具
-- 5 個自動化元技能與輸出（含 report-generator 輸出工具）
+- 14 個進階研究工具
+- 5 個自動化元技能，加上 report-generator 輸出工具
+- 另有 3 個別名（轉址至吸收它們的技能，不計入框架數）
 
     </td>
     <td width="50%">
@@ -62,7 +68,33 @@ InvestSkill 是企業級投資分析工具包，為各 AI 平台帶來機構級�
 
 ## 🚀 快速開始（30 秒）
 
-### Claude Code（推薦）
+### 一行指令安裝（推薦）
+
+在[官網選擇你的 AI 工具](https://yennj12.js.org/InvestSkill/#install)，或直接執行：
+
+```bash
+# Claude Code
+curl -fsSL https://raw.githubusercontent.com/yennanliu/InvestSkill/main/install.sh | bash -s -- -a claude
+
+# 換成你的工具：cursor · copilot · gemini · codex · opencode · any
+curl -fsSL https://raw.githubusercontent.com/yennanliu/InvestSkill/main/install.sh | bash -s -- -a cursor
+```
+
+安裝腳本會把所有框架複製到 `.investskill/prompts/`，並接上該工具自己的入口設定：
+
+| `-a` | 工具 | 安裝位置 |
+|------|------|----------|
+| `claude` | Claude Code | `.claude/skills/<skill>/SKILL.md`（斜線指令） |
+| `cursor` | Cursor | `.cursor/rules/investskill.mdc` |
+| `copilot` | GitHub Copilot | `.github/copilot-instructions.md` |
+| `gemini` | Gemini CLI | `GEMINI.md` |
+| `codex` | Codex | `AGENTS.md` |
+| `opencode` | OpenCode | `AGENTS.md` |
+| `any` | ChatGPT、Claude.ai、Ollama… | 只安裝 `.investskill/prompts/`，複製貼上即用 |
+
+加上 `-g` 可安裝到使用者層級（而非單一專案）、`-d DIR` 指定目錄、`-h` 查看所有選項。既有的指令檔只會**附加**、不會覆蓋，重複執行不會產生重複內容。不想直接 pipe 到 `bash`？先看過腳本：[install.sh](install.sh)。
+
+### Claude Code（外掛市集）
 ```bash
 claude
 /plugin marketplace add yennanliu/InvestSkill
@@ -84,6 +116,26 @@ cd /path/to/InvestSkill
 gemini
 > @prompts/stock-eval.md 評估蘋果公司
 ```
+
+---
+
+## 💸 無需 API 金鑰，完全免費
+
+使用 InvestSkill **完全免費**——沒有任何東西要購買、註冊或設定。
+
+| | |
+|---|---|
+| **API 金鑰** | **不需要。** 不用 OpenAI / Anthropic / Alpha Vantage / Polygon 金鑰。這個外掛從不呼叫任何 API——因為它根本沒有可執行的程式碼。 |
+| **訂閱費用** | **不需要。** 沒有付費方案、沒有席次授權、沒有用量計費、不用開帳號。 |
+| **行情資料費** | **不需要。** 不用 Bloomberg、不用付費資料源。AI 讀取公開申報文件與免費來源——或由你自己把數字貼進去。 |
+| **安裝與執行環境** | **不需要。** 每個技能都只是純 markdown 提示詞。本機沒有任何程式在跑，也就不會回傳任何資料。 |
+| **授權** | **MIT。** 可自由使用、分支修改，個人或商業用途皆可。 |
+
+**你唯一需要的，是手上已經在用的 AI 助理。** 可以是付費方案（Claude Code、Cursor、Copilot）、免費方案（ChatGPT、Gemini、Claude.ai），也可以是透過 [Ollama](README-ollama.md) 完全離線的本機模型——用後者跑完所有框架，總成本就是 0。
+
+> 因為沒有 API，也就沒有任何遙測：InvestSkill 不會看到你的股票代號、你的持股，或你的分析內容。數字實際從何而來，請見[資料與準確性](site/content/DATA-AND-ACCURACY-zh-TW.md)。
+
+**自備資料。** 申報文件類技能（`10k-digest`、`financial-report-analyst`、`fact-check`）內建一份無金鑰的 SEC EDGAR 取檔步驟，具工具能力的助理可自行照做。若你的助理無法上網，倉庫另附兩支可選、零相依的腳本替你抓取第一手來源供貼上——`node scripts/fetch-edgar.js AAPL --form 10-K` 把文件存成純文字，`node scripts/fetch-fundamentals.js AAPL` 從 SEC 的 XBRL 數據產生已對帳的財報資料包。兩者都不屬於外掛本體。詳見[資料與準確性](site/content/DATA-AND-ACCURACY-zh-TW.md#自備資料無金鑰的-edgar-路徑)頁。
 
 ---
 
@@ -138,16 +190,33 @@ gemini
 
 ---
 
-## 📋 25 個框架總覽
+## 📋 30 個框架總覽
 
 | 類別 | 框架 | 用途 |
 |------|------|------|
-| **核心分析** (6) | stock-eval · fundamental-analysis · technical-analysis · economics-analysis · dcf-valuation · stock-valuation | 全方位股票評估 |
+| **核心分析** (4) | stock-eval · technical-analysis · economics-analysis · stock-valuation | 全方位股票評估 |
 | **財務報告** (3) | financial-report-analyst · 10k-digest · earnings-call-analysis | 深度文件分析 |
 | **市場監控** (4) | insider-trading · institutional-ownership · dividend-analysis · short-interest | 活動與情緒追蹤 |
-| **進階分析** (8) | competitor-analysis · **industry-map** · options-analysis · portfolio-review · sector-analysis · **stock-screener** · **catalyst-calendar** · **bear-case** | 專項研究角度 |
-| **元技能與輸出** (5) | research-bundle · full-report · report-generator · chart-master · result-validator | 自動化與綜合輸出 |
+| **進階分析** (14) | competitor-analysis · **industry-map** · options-analysis · portfolio-review · sector-analysis · **stock-screener** · **catalyst-calendar** · **bear-case** · **position-ladder** · **thesis-tracker** · **etf-analysis** · **earnings-preview** · **tax-lens** · **risk-stress-test** | 專項研究角度 |
+| **元技能與輸出** (5 + 1 輸出工具) | full-report · chart-master · result-validator · **fact-check** · **learning-coach** · report-generator（輸出工具，不計入框架） | 自動化與綜合輸出 |
+| **別名** (3，不計入框架) | fundamental-analysis → stock-eval · dcf-valuation → stock-valuation · research-bundle → full-report | 舊名稱仍可用，會轉址到吸收它的技能 |
 
+> **v1.12.0 新功能：**
+> - **無金鑰的 SEC EDGAR 取檔路徑** — `10k-digest`、`financial-report-analyst`、`fact-check` 內建具工具能力的助理可自行照做的取檔步驟（代號 → CIK → 申報索引 → 文件本體 → XBRL 數據）；助理無法上網時，兩支可選、零相依的腳本 `scripts/fetch-edgar.js`（申報文件存成純文字）與 `scripts/fetch-fundamentals.js`（由 XBRL 產生已對帳的財報資料包）替你抓第一手來源供貼上。不屬於外掛本體、離線測試涵蓋
+> - `install.sh` — 一行 `curl` 指令把全部框架安裝到任何 AI 代理（Claude Code、Cursor、Copilot、Gemini CLI、Codex、OpenCode 或任何 LLM）；文件網站全面改版；學習專區新增第二部（第 9–13 課與「答案是不」案例）
+> - `fact-check`（事實查核）— 對任何報告做**逐條陳述層級**的查核：抽出每個數字與事實陳述、逐一對照第一手來源（SEC 申報、IR 新聞稿、FRED、發行商資料或你貼上的文件）、重算衍生數字，標示 ✅ 已查核／⚠️ 不符／❓ 無法查核／🕒 過時，並重新產出**附行內引用與參考文獻章節**的修正版報告；查核分數 0–10 供 `result-validator` 的資料品質維度使用。絕不捏造來源
+> - `etf-analysis`（ETF 分析）— ETF／指數基金盡職調查：費用率 vs. 同類、追蹤差異、流動性、持股集中度與傾斜、與你其他持股的重疊 %、配息與資本利得分配紀錄、結構警示（槓桿／反向／合成／ETN），以及「買 ETF vs. 直接買前五大成分股」比較；產出 ETF 適配分數 0–10
+> - `earnings-preview`（財報前瞻）— 財報**前**的技能：共識 vs. 耳語、過去 8 季超預期比率與財報後漲跌、選擇權隱含波動 vs. 實際波動、目前股價已反映什麼、要看的 KPI，以及三情境矩陣（超預期且上修／超預期但下修／未達預期）與每個情境的部位規則
+> - `tax-lens`（稅務視角）— 美國稅務機制：短期 vs. 長期、洗售窗口檢查、合格股息持有期間測試、批次選擇、稅損收割配對、帳戶配置、年度稅務拖累估計；`--non-us` 模組涵蓋 W-8BEN、30% 預扣稅（或協定稅率；台灣無協定）、非居民資本利得的一般處理、6 萬美元以上美國境內資產的遺產稅曝險、愛爾蘭 UCITS 替代方案。僅供教育，非稅務建議
+> - `risk-stress-test`（風險壓力測試）— 貝他加權曝險、歷史情境重演（2008、2020 年 3 月、2022 升息、2025 關稅）、95／99% VaR 與 CVaR、最大回撤估計、相關性飆升情境、利率／美元／油價敏感度、流動性（以 20% 日均量出清所需天數）；風險預算分數 0–10
+> - `learning-coach`（學習教練）— 把任何 InvestSkill 輸出當成教材：每個指標的白話意義、為何重要、好壞區間、對應課程，接著 3–5 個蘇格拉底式問題與「什麼會改變你的看法？」；`--level`、`--lang zh-TW`、`--quiz <課程>` 模式
+> - `thesis-tracker`（論點追蹤）— 把一份分析變成「與未來自己的契約」：一段可被證偽的論點、3–5 個附門檻的 KPI、失效觸發條件（從各技能的「論點失效條件」與 `bear-case` 的論點反證匯入）、催化劑日期、事前驗屍與決策日誌，存成 `output/thesis/<TICKER>.md`；`--update` 以新資料重新檢查並回傳 **INTACT / WEAKENED / BROKEN** 與具體改變的那一行
+> - `fundamental-analysis`、`dcf-valuation`、`research-bundle` 重新歸類為**別名**（轉址存根）：仍可安裝與使用，但不再計入框架數（當時的組成：24 框架 + 3 別名 + 1 輸出工具）
+> - 每個分析技能都必須輸出 `Data & Sources` 表頭、資料驗證關卡與論點失效條件，由 `scripts/check-skill-contract.js` 在 `npm test` 中強制執行
+>
+> **v1.11.0 新功能：**
+> - `position-ladder`（分批建倉與降成本）— 單一持股的執行計畫：先控倉（設定持股下限／上限與集中度上限），再分批布局（依 ATR／百分比／支撐位設定加碼階梯），並在股價高於平均成本時賣出成本最高的批次、低於平均成本時再買回，於區間內循環降低整體成本。內含稅務批次選擇（FIFO vs. 指定批次）、洗售規則（wash sale）警示、總報酬 vs. 買進持有的誠實對照，以及「論點破損就停止加碼」的出場閘門
+>
 > **v1.10.0 新功能：**
 > - `industry-map`（產業地圖）— 以有向圖繪製產業供應／價值鏈（上游→下游）：定位公司所處環節、找出瓶頸卡位（收費站）與利潤池、預判價值移轉方向，並產出各層級的二階投資點子
 >
@@ -196,7 +265,7 @@ gemini
 <summary><b>🔍 深度財報分析</b></summary>
 
 ```bash
-/us-stock-analysis:fundamental-analysis TICKER --visual
+/us-stock-analysis:stock-eval TICKER --visual
 /us-stock-analysis:earnings-call-analysis TICKER
 [貼上電話會議記錄]
 → 管理層語調、業績指引、風險與機會
@@ -230,6 +299,16 @@ gemini
 ---
 
 ## 🛠️ 安裝方式
+
+### curl 一行安裝（所有工具通用）
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/yennanliu/InvestSkill/main/install.sh | bash -s -- -a AGENT
+# AGENT = claude | cursor | copilot | gemini | codex | opencode | any
+curl -fsSL https://raw.githubusercontent.com/yennanliu/InvestSkill/main/install.sh | bash -s -- -l   # 查看各工具安裝位置
+```
+
+詳細對照表見上方[快速開始](#-快速開始30-秒)。
 
 ### Claude Code（一般使用者推薦）
 
@@ -290,8 +369,7 @@ Copilot 會自動載入 `.github/copilot-instructions.md`
 ### 工作流程 2：完整盡職調查
 ```bash
 # 完整機構級分析
-/stock-eval AAPL
-/fundamental-analysis AAPL --visual
+/stock-eval AAPL --visual
 /technical-analysis AAPL --chart
 /stock-valuation AAPL --methods all
 /competitor-analysis AAPL --moat
@@ -302,7 +380,7 @@ Copilot 會自動載入 `.github/copilot-instructions.md`
 ### 工作流程 3：財報季研究
 ```bash
 # 30 分鐘財報研究流程
-/fundamental-analysis TICKER --visual  # 財報前基準線
+/stock-eval TICKER --visual  # 財報前基準線
 /earnings-call-analysis TICKER [貼上電話會議記錄]  # 財報後分析
 /technical-analysis TICKER --chart  # 技術面設置
 /options-analysis TICKER --earnings  # 波動率預期
@@ -321,7 +399,7 @@ Copilot 會自動載入 `.github/copilot-instructions.md`
 
 | 功能 | InvestSkill | 通用 AI |
 |------|------------|---------|
-| **25 個精選框架** | ✅ 內建 | ❌ 需手動設定 |
+| **30 個精選框架** | ✅ 內建 | ❌ 需手動設定 |
 | **信號區塊** | ✅ 標準化格式 | ❌ 格式不一致 |
 | **全平台支援** | ✅ 原生支援 | ❌ 需要變通方案 |
 | **零 API 費用** | ✅ 免費 | ❌ 需付費 API |
@@ -333,11 +411,11 @@ Copilot 會自動載入 `.github/copilot-instructions.md`
 
 ## 📊 專案狀態
 
-**目前版本：** 1.10.0
-**技能框架：** 25 個
-**通用提示詞：** 26 個
+**目前版本：** 1.12.0
+**技能框架：** 30 個（另有 3 個別名、1 個輸出工具）
+**通用提示詞：** 34 個
 **支援平台：** 6 個
-**測試數量：** 294+ 個（全數通過）✅
+**測試：** 全數通過 ✅（結構、提示詞同步、技能契約、數量一致性、安裝腳本）
 
 ---
 
