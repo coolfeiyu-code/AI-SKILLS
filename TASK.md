@@ -12,7 +12,7 @@
 - 仓库根即技能库：31 个 skill 目录**直接放在根下**（不嵌套 `skills/`）。
 - 远程：`origin = https://github.com/coolfeiyu-code/AI-SKILLS.git`，默认分支 `main`。
 - 工具链：**Python 3.11+**（建议 3.13）。跨平台靠 Python + `pathlib`，不用平台专属命令。
-- 版本：`VERSION` 文件（`1.5.2`），语义化；`CHANGELOG.md` 记录大/中/小版本。
+- 版本：`VERSION` 文件（`1.6.0`），语义化；`CHANGELOG.md` 记录大/中/小版本。
 - 无垃圾公约：运行时产物一律写仓库外系统缓存；`.gitignore` 已覆盖常见垃圾。
 - 位置与同步：仓库现位于同步盘 `C:/AI 云同步/AGENT-SKILLS`（Syncthing/极空间同步）。`.gitignore` 已忽略 `.workbuddy/`；目录级 `.stignore` 已排除 `.git` / `.workbuddy` / 缓存，避免仓库内部与本地 agent 状态被同步到极空间。旧路径 `C:/AI-SKILLS` 为指向本目录的交接点。
 - 文档：`README.md`（项目复用+工具指向+公约）、`CATALOG.md`（技能清单）、本文件。
@@ -25,7 +25,7 @@
 | `skillsync_web.py` | 零依赖 Web 仪表盘（仅 stdlib + git，所有机器可用，无需 tkinter）；`skillsync-web.bat` 一键启动。v1.2.0 的 Tkinter GUI 已于 v1.3.1 移除 |
 | `config/interests.json` | `discover` 的兴趣主题（决定搜什么） |
 | `config/sources.json` | 每个 skill → GitHub repo + 子路径(subpath) + `pinned` 标志（内嵌于 `skillsync.py` 的 `SOURCES` 为兜底） |
-| `tools/` | 给其他 Coding 软件的符号链接/配置脚本（`.sh` + `.ps1`） |
+| `tools/link.py` | 统一连接器: 把技能库以 junction/symlink 连到本机各 coding 工具(`--all/--status/--remove/--prompt`); 根目录 `连接技能.bat`/`.command` 为双击启动器 |
 | `CATALOG.md` | 技能清单（功能/命令/更新记录） |
 
 ## 3. 常用命令

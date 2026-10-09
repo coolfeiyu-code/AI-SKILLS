@@ -10,6 +10,16 @@
 
 > **重要约定**：日常 `skillsync update` 刷新技能内容属于运维动作，**不一定**触发版本号步进；只有项目本体（脚本 / 结构 / 约定）变更才按上表 bump。技能自身的版本（如 `a-stock-data` v3.2.2）与本项目版本互不影响，分别记录于各自 `SKILL.md` 与下方的技能更新记录。
 
+## [1.6.0] - 2026-10-09 · 统一连接器：多机多 Coding 工具一键接入
+
+### 新增
+- **`tools/link.py`**（零依赖跨平台）取代旧 `tools/link.sh` / `link.ps1`（已移除）：
+  - **自动探测**：已知 19 类工具（WorkBuddy/Claude Code/CodeBuddy/Codex/Cursor/Trae/Windsurf/Cline/Roo/OpenCode/Crush/Grok CLI/zcode/pi/commandcode/dsh/Gemini/Qwen/iFlow）+ 启发式扫描任何 `~/.<工具>/skills` 目录，未知工具自动纳入；
+  - **一键连接**：`--all` 为每个工具的 skills 目录按技能建 Junction(Windows)/Symlink(macOS/Linux)，幂等可重复；工具侧已有同名真实目录自动跳过；
+  - **配套**：`--status` 连接矩阵 / `--remove` 一键撤销(只撤指向本仓库的链接) / `--to DIR` 自定义目标(记于 `~/.skillsync-links.json`, 不进仓库) / `--prompt` 生成"自连接提示词"（方案B：粘给任意 coding 工具让它自己连）。
+- **`连接技能.bat` / `连接技能.command`**：双击即完成本机全部连接并显示矩阵。
+- 无污染公约落地：链接只建在工具侧，仓库零写入；本机实测 19 工具 × 28 技能 = **532 条链接，0 失败 0 冲突**，运行后 `git status` 保持干净。
+
 ## [1.5.2] - 2026-10-09 · 全面去弹窗化 · 一步同步
 
 ### 修复

@@ -2,7 +2,7 @@
 
 > 一个**带版本号、可一键更新、可自动发现高星技能、可同步到 GitHub** 的本地 AI 技能库。macOS / Windows 双端通用；并指导 Cursor / Claude Code / Codex / WorkBuddy / Cline / Windsurf 等把技能库指向此处，且**运行时不污染本仓库**。
 
-**当前版本：`1.5.2`**（版本定义见 [`VERSION`](./VERSION)，更新说明见 [`CHANGELOG.md`](./CHANGELOG.md)）。
+**当前版本：`1.6.0`**（版本定义见 [`VERSION`](./VERSION)，更新说明见 [`CHANGELOG.md`](./CHANGELOG.md)）。
 
 ---
 
@@ -68,21 +68,31 @@ AI-SKILLS/
 
 > 版本说明：v1.2.0 曾提供 Tkinter 桌面管理器，因依赖 tcl/tk 在实际环境无法启动，已于 v1.3.1 移除；技能管理统一使用 Web 仪表盘或 CLI。
 
-## 5. 给其他 Coding 软件：把技能库指向此处
+## 5. 如何让各 Coding 工具用上技能库（多机 · 多工具方案）
 
-默认情况下，各 AI 编码工具在自己的目录（如 `~/.workbuddy/skills`、`~/.claude/skills`）读取技能。**推荐做法是把该目录软链（symlink）到本仓库根**，或逐技能软链，让所有工具共享同一份受管技能库：
+**核心机制**：在【工具侧】创建目录链接（Windows Junction / macOS-Linux Symlink）指向技能库，链接建在工具自己的目录里——**仓库内零写入**。绝大多数 agent CLI 遵循 `~/.<工具>/skills` 约定，未知工具出现后会被自动识别。
 
-| 工具 | 技能/规则目录（示意） | 指向方式 |
-| :--- | :--- | :--- |
-| **WorkBuddy** | `~/.workbuddy/skills/` | 软链整个目录到本仓库根，或逐技能软链到各 skill 子目录 |
-| **Claude Code** | `~/.claude/skills/` 或项目 `.claude/skills/` | 同上 |
-| **Cursor** | `.cursor/rules` 或 `~/.cursor/rules` | 软链规则目录引用本仓库（规则类技能） |
-| **Codex / ChatGPT** | 项目 `agents/` 或 `commands/` | 引用本仓库对应技能 |
-| **Cline / Roo** | 项目 `.clinerules` 或技能目录 | 引用本仓库 |
-| **Windsurf** | `.windsurf/rules` 或技能目录 | 引用本仓库 |
+### 方案 A（推荐）：本机一键探测连接
 
-- **跨平台软链脚本**放在 `tools/`（含 `.sh` 与 `.ps1`），按工具一键生成软链。
-- ⚠️ **只读引用**：工具应把本仓库当作技能**来源**，不要在本仓库内写入中间文件 / 缓存 / 日志。
+每台机器拿到技能库后（git clone 或同步盘同步），只需跑一次：
+
+- **Windows**：双击 **`连接技能.bat`**（或 `python tools/link.py --all`）
+- **macOS / Linux**：`./连接技能.command`（或 `python3 tools/link.py --all`）
+
+自动探测并连接：WorkBuddy / Claude Code / CodeBuddy / Codex / Cursor / Trae / Windsurf / Cline / Roo / OpenCode / Crush / **Grok CLI / zcode / pi / commandcode / dsh** / Gemini / Qwen / iFlow 等——以及任何遵循 `~/.<工具>/skills` 的工具。幂等可重复执行，新装工具后再跑一次即可。自定义目录用 `--to <dir>`（记住在本机 `~/.skillsync-links.json`，不进仓库）。
+
+配套：`--status` 连接矩阵 · `--remove` 一键撤销 · `--detect` 只探测不连接。
+
+### 方案 B（补充）：提示词自连接
+
+不方便跑脚本的场景：`python tools/link.py --prompt` 打印一段提示词，粘贴给任意 coding 工具，让它自己完成连接（提示词内含 junction/ln -s 具体命令、同名跳过规则与只读红线）。
+
+### 无污染保证
+
+- 链接只建在【工具侧】，仓库内零写入（跑完 `git status` 应保持干净）。
+- 工具侧已有同名**真实目录** → 自动跳过并报告，绝不覆盖。
+- `--remove` 只撤销指向本仓库的链接，不碰工具的真实目录与自带内容。
+- 本机实测（Win）：19 个工具 × 28 技能 = 532 条链接，0 失败 0 冲突。
 
 ## 6. 无垃圾公约（No-Garbage Pact）
 
