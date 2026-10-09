@@ -10,6 +10,13 @@
 
 > **重要约定**：日常 `skillsync update` 刷新技能内容属于运维动作，**不一定**触发版本号步进；只有项目本体（脚本 / 结构 / 约定）变更才按上表 bump。技能自身的版本（如 `a-stock-data` v3.2.2）与本项目版本互不影响，分别记录于各自 `SKILL.md` 与下方的技能更新记录。
 
+## [1.4.1] - 2026-10-09 · 安装流程免疫 GitHub API 限流
+
+### 修复
+- **"无法访问仓库 … HTTP 403: rate limit exceeded"**：安装流程原先必须先调 GitHub API 拿默认分支，匿名 API 每小时 60 次的限额被 status/discover 耗尽后安装即被卡死。现改为：默认分支优先复用 `skillsync` 的 `api_get`（带 1 小时缓存 + `GITHUB_TOKEN` 支持），**API 失败自动绕过，按 `main`/`master` 直接下载 codeload tarball**（下载端点不受 API 限流影响）。
+- **子路径自动识别**：仓库根无 SKILL.md 时，在一/两层子目录内自动探测技能位置（多候选时优先与仓库名同名者，如 `skills/<name>`），识别结果写入 `sources.json` 供后续 update 使用；无法唯一确定才提示手动填子路径。
+- `skillsync-web.bat` 增加可选 `GITHUB_TOKEN` 注释行，填入 PAT 可将 API 限额提升至 5000 次/小时。
+
 ## [1.4.0] - 2026-10-09 · 素雅淡色主题 · 技能分类展示
 
 ### 变更

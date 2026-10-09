@@ -137,6 +137,9 @@ CATEGORIES = {
         "find-skills", "gh-skill-installer", "output-skill",
         "yao-meta-skill", "grill-me", "dotnet-mod-recon",
     ],
+    "游戏·攻略": [
+        "wanxiang-build",
+    ],
 }
 CAT_ORDER = list(CATEGORIES.keys()) + ["其他"]
 
@@ -200,10 +203,32 @@ def sanitize_folder(name):
     return s.strip("-")
 
 
+def _detect_skill_subdir(root, repo):
+    """仓库根无 SKILL.md 时, 在一/两层子目录中找含 SKILL.md 的技能目录;
+    多候选时优先与仓库名同名的那个, 仍不唯一则返回 None。"""
+    cands = []
+    for dirpath, dirnames, filenames in os.walk(root):
+        rel = os.path.relpath(dirpath, root)
+        depth = 0 if rel == "." else rel.count(os.sep) + 1
+        if depth >= 2:
+            dirnames[:] = []
+        if rel != "." and "SKILL.md" in filenames:
+            cands.append(rel.replace(os.sep, "/"))
+    if not cands:
+        return None
+    if len(cands) == 1:
+        return cands[0]
+    name = repo.split("/")[-1].lower()
+    for c in cands:
+        if c.lower() == name or c.lower().endswith("/" + name):
+            return c
+    return None
+
+
 def install_skill(folder, repo, subpath, pinned):
-    """安装技能: GitHub API 取默认分支 -> codeload tarball -> 解压复制 subpath。
-    与 skillsync update 同一机制(纯 urllib, 免 git clone, 规避代理/schannel 问题)。
-    安装成功后才写入 sources.json。"""
+    """安装技能: 默认分支优先复用 skillsync 的 API(带 1h 缓存 + GITHUB_TOKEN);
+    API 失败(如 403 限流)则按 main/master 直接下载 codeload tarball(不受 API 限流)。
+    根目录无 SKILL.md 时自动探测技能子路径。安装成功后才写入 sources.json。"""
     folder = sanitize_folder(folder)
     if not folder:
         return False, "文件夹名无效"
@@ -212,36 +237,67 @@ def install_skill(folder, repo, subpath, pinned):
     data = load_sources()
     if any(s["folder"] == folder for s in data):
         return False, f"技能目录 {folder} 已存在"
+
+    # 1) 默认分支: 走带缓存的 API; 失败不阻塞, 稍后按常见分支猜
+    branch = None
+    note = ""
     try:
-        api = json.loads(_fetch_bytes(
-            f"https://api.github.com/repos/{repo}", timeout=30).decode("utf-8"))
-        branch = api.get("default_branch", "main")
+        import skillsync as ss
+        info = ss.api_get(f"https://api.github.com/repos/{repo}")
+        if isinstance(info, dict):
+            branch = info.get("default_branch")
     except Exception as e:  # noqa: BLE001
-        return False, f"无法访问仓库 {repo}: {e}"
+        note = f"(GitHub API 暂不可用[{e}], 已绕过 API 直接下载)"
+
+    # 2) 下载 tarball: 依次尝试 API 给出的分支与常见默认分支
+    branches = [b for b in [branch, "main", "master"] if b]
+    raw = None
+    last = None
+    for b in branches:
+        try:
+            raw = _fetch_bytes(
+                f"https://codeload.github.com/{repo}/tar.gz/refs/heads/{b}")
+            branch = b
+            break
+        except Exception as e:  # noqa: BLE001
+            last = e
+    if raw is None:
+        return False, f"下载 tarball 失败({repo}): {last} {note}"
+
     tmp = tempfile.mkdtemp(prefix="skillinstall_")
     try:
         tgz = os.path.join(tmp, "repo.tgz")
         with open(tgz, "wb") as f:
-            f.write(_fetch_bytes(
-                f"https://codeload.github.com/{repo}/tar.gz/refs/heads/{branch}"))
+            f.write(raw)
         ex = os.path.join(tmp, "ex")
         os.makedirs(ex)
         shutil.unpack_archive(tgz, ex)
-        top = next(d for d in os.listdir(ex) if os.path.isdir(os.path.join(ex, d)))
-        src = os.path.join(ex, top, subpath) if subpath else os.path.join(ex, top)
-        if not os.path.isdir(src):
-            return False, f"子路径不存在: {subpath or '(根)'}"
+        root = next(os.path.join(ex, d) for d in os.listdir(ex)
+                    if os.path.isdir(os.path.join(ex, d)))
+        sub = (subpath or "").strip().strip("/")
+        src = os.path.join(root, *sub.split("/")) if sub else root
+        detected = ""
+        if not os.path.isfile(os.path.join(src, "SKILL.md")):
+            if sub:
+                return False, f"子路径 {sub} 下没有 SKILL.md, 请核对后重试"
+            rel = _detect_skill_subdir(root, repo)
+            if rel is None:
+                return False, ("仓库根目录及两层子目录内未能唯一确定 SKILL.md 位置, "
+                               "请在'子路径'中填写技能所在目录(如 skills/<name>)")
+            sub = rel
+            src = os.path.join(root, *rel.split("/"))
+            detected = f", 子路径自动识别: {rel}"
         dest = os.path.join(REPO, folder)
         shutil.copytree(src, dest,
                         ignore=shutil.ignore_patterns(".git", ".gitignore", "node_modules"))
         if not os.path.isfile(os.path.join(dest, "SKILL.md")):
             shutil.rmtree(dest, ignore_errors=True)
-            return False, "该仓库/子路径下未找到 SKILL.md, 不是技能目录, 已回滚"
+            return False, "复制后未找到 SKILL.md, 已回滚"
         data.append({"folder": folder, "repo": repo,
-                     "subpath": subpath or "", "pinned": bool(pinned)})
+                     "subpath": sub, "pinned": bool(pinned)})
         save_sources(data)
         subprocess.run(["git", "add", "-A", folder], cwd=REPO)
-        return True, f"已安装 {folder}(来自 {repo}{'/' + subpath if subpath else ''}), 待提交"
+        return True, f"已安装 {folder}(来自 {repo}{'/' + sub if sub else ''}){detected}, 待提交 {note}"
     except Exception as e:  # noqa: BLE001
         return False, f"安装失败: {e}"
     finally:

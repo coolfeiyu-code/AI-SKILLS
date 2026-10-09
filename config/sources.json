@@ -1,16 +1,92 @@
 [
-  {"folder": "a-stock-data",                 "repo": "simonlin1212/a-stock-data",                 "subpath": "",                  "pinned": false},
-  {"folder": "agent-reach",                  "repo": "Panniantong/Agent-Reach",                  "subpath": "agent_reach/skill", "pinned": false},
-  {"folder": "frontend-design",              "repo": "anthropics/skills",                        "subpath": "skills/frontend-design", "pinned": false},
-  {"folder": "grill-me",                     "repo": "mattpocock/skills",                        "subpath": "",                  "pinned": true},
-  {"folder": "Humanizer-zh",                 "repo": "op7418/Humanizer-zh",                     "subpath": "",                  "pinned": false},
-  {"folder": "impeccable",                   "repo": "pbakaus/impeccable",                      "subpath": "",                  "pinned": false},
-  {"folder": "InvestSkill",                  "repo": "yennanliu/InvestSkill",                    "subpath": "",                  "pinned": false},
-  {"folder": "last30days",                   "repo": "mvanhorn/last30days-skill",               "subpath": "",                  "pinned": false},
-  {"folder": "last30days-cn",                "repo": "Jesseovo/last30days-skill-cn",            "subpath": "",                  "pinned": false},
-  {"folder": "serenity-skill",               "repo": "muxuuu/serenity-skill",                   "subpath": "",                  "pinned": false},
-  {"folder": "ui-ux-pro-max",                "repo": "nextlevelbuilder/ui-ux-pro-max-skill",    "subpath": "",                  "pinned": false},
-  {"folder": "trading-skills",               "repo": "marian2js/trading-skills",                 "subpath": "",                  "pinned": true},
-  {"folder": "interface-design",             "repo": "Dammyjay93/interface-design",              "subpath": "",                  "pinned": true},
-  {"folder": "gauss314-skills",              "repo": "gauss314/skills",                          "subpath": "",                  "pinned": true}
+  {
+    "folder": "a-stock-data",
+    "repo": "simonlin1212/a-stock-data",
+    "subpath": "",
+    "pinned": false
+  },
+  {
+    "folder": "agent-reach",
+    "repo": "Panniantong/Agent-Reach",
+    "subpath": "agent_reach/skill",
+    "pinned": false
+  },
+  {
+    "folder": "frontend-design",
+    "repo": "anthropics/skills",
+    "subpath": "skills/frontend-design",
+    "pinned": false
+  },
+  {
+    "folder": "grill-me",
+    "repo": "mattpocock/skills",
+    "subpath": "",
+    "pinned": true
+  },
+  {
+    "folder": "Humanizer-zh",
+    "repo": "op7418/Humanizer-zh",
+    "subpath": "",
+    "pinned": false
+  },
+  {
+    "folder": "impeccable",
+    "repo": "pbakaus/impeccable",
+    "subpath": "",
+    "pinned": false
+  },
+  {
+    "folder": "InvestSkill",
+    "repo": "yennanliu/InvestSkill",
+    "subpath": "",
+    "pinned": false
+  },
+  {
+    "folder": "last30days",
+    "repo": "mvanhorn/last30days-skill",
+    "subpath": "",
+    "pinned": false
+  },
+  {
+    "folder": "last30days-cn",
+    "repo": "Jesseovo/last30days-skill-cn",
+    "subpath": "",
+    "pinned": false
+  },
+  {
+    "folder": "serenity-skill",
+    "repo": "muxuuu/serenity-skill",
+    "subpath": "",
+    "pinned": false
+  },
+  {
+    "folder": "ui-ux-pro-max",
+    "repo": "nextlevelbuilder/ui-ux-pro-max-skill",
+    "subpath": "",
+    "pinned": false
+  },
+  {
+    "folder": "trading-skills",
+    "repo": "marian2js/trading-skills",
+    "subpath": "",
+    "pinned": true
+  },
+  {
+    "folder": "interface-design",
+    "repo": "Dammyjay93/interface-design",
+    "subpath": "",
+    "pinned": true
+  },
+  {
+    "folder": "gauss314-skills",
+    "repo": "gauss314/skills",
+    "subpath": "",
+    "pinned": true
+  },
+  {
+    "folder": "wanxiang-build",
+    "repo": "Cjy-CN/wanxiang-build",
+    "subpath": "skills/wanxiang-build",
+    "pinned": false
+  }
 ]
