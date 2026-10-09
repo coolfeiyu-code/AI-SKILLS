@@ -30,6 +30,7 @@ CLI = os.path.join(REPO, "skillsync.py")
 SOURCES = os.path.join(REPO, "config", "sources.json")
 CATALOG = os.path.join(REPO, "CATALOG.md")
 VERSION_FILE = os.path.join(REPO, "VERSION")
+START_TS = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
 
 
 # ───────────────────────── 元数据提取 ─────────────────────────
@@ -381,7 +382,7 @@ PAGE_HTML = """<!doctype html>
 <div class="wrap">
   <header>
     <h1>AI-SKILLS 技能管理</h1>
-    <span class="sub">仓库: __REPO__ · 版本 __VERSION__ · 零依赖 Web 仪表盘(所有机器可用)</span>
+    <span class="sub">仓库: __REPO__ · 版本 __VERSION__ · 服务启动于 __START__ · 零依赖 Web 仪表盘(所有机器可用)</span>
   </header>
 
   <div class="card">
@@ -452,6 +453,7 @@ def render_page():
             .replace("__ROWS__", render_rows(skills))
             .replace("__REPO__", html.escape(REPO))
             .replace("__VERSION__", html.escape(read_version()))
+            .replace("__START__", html.escape(START_TS))
             .replace("__COUNT__", str(len(skills))))
 
 
@@ -462,6 +464,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_response(code)
         self.send_header("Content-Type", ctype)
         self.send_header("Content-Length", str(len(data)))
+        self.send_header("Cache-Control", "no-store")
         self.end_headers()
         self.wfile.write(data)
 
@@ -509,8 +512,19 @@ def main():
     ap.add_argument("--host", default="127.0.0.1")
     ap.add_argument("--port", type=int, default=8765)
     args = ap.parse_args()
-    srv = HTTPServer((args.host, args.port), Handler)
+    try:
+        srv = HTTPServer((args.host, args.port), Handler)
+    except OSError as e:
+        print(f"[!] 端口 {args.port} 已被占用: {e}")
+        print("    很可能有旧的 skillsync_web 实例仍在运行(内存里是旧代码)。")
+        print("    请关闭旧的仪表盘窗口后重试, 或换端口: python skillsync_web.py --port %d" % (args.port + 1))
+        try:
+            input("按回车键退出...")
+        except (EOFError, KeyboardInterrupt):
+            pass
+        sys.exit(1)
     print(f"AI-SKILLS 仪表盘已启动: http://{args.host}:{args.port}  (Ctrl+C 退出)")
+    print(f"(本服务进程启动于 {START_TS}; 页面顶部显示的启动时间即当前进程, 可用于确认非旧实例)")
     try:
         srv.serve_forever()
     except KeyboardInterrupt:
