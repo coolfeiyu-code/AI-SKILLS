@@ -325,7 +325,9 @@ def run_cli(action):
     if action not in allowed:
         return "不允许的操作"
     # 强制子进程 UTF-8 输出: 中文 Windows 下管道默认 GBK, ⭐/✓ 会令子进程编码崩溃
-    env = dict(os.environ, PYTHONUTF8="1", PYTHONIOENCODING="utf-8")
+    # GIT_TERMINAL_PROMPT=0: 推送无凭据时快速报错而非挂起等待输入
+    env = dict(os.environ, PYTHONUTF8="1", PYTHONIOENCODING="utf-8",
+               GIT_TERMINAL_PROMPT="0", GCM_INTERACTIVE="NEVER")
     try:
         r = subprocess.run([sys.executable, CLI, action.replace("syncpush", "sync"),
                             *allowed[action]], cwd=REPO,
@@ -389,10 +391,17 @@ input[type=text]:focus{outline:none;border-color:var(--blue);}
 font-family:Consolas,Menlo,monospace;font-size:12px;color:var(--text);white-space:pre-wrap;
 max-height:300px;overflow:auto;min-height:60px;margin:12px 0;}
 #result.err{color:var(--danger);}
+.hint{color:var(--muted);font-size:12px;margin:-6px 0 10px;}
+.disc-item{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);}
+.disc-item:last-child{border-bottom:0;}
+.disc-item .d-repo{font-family:Consolas,Menlo,monospace;color:var(--blue);font-size:12.5px;white-space:nowrap;}
+.disc-item .d-stars{color:var(--warn);font-size:12px;white-space:nowrap;}
+.disc-item .d-desc{color:#6f6c63;font-size:12.5px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.disc-item button{padding:4px 10px;font-size:12px;flex:none;}
 .empty{color:var(--muted);padding:20px;text-align:center;}
 """
 
-PAGE_JS = """
+PAGE_JS = r"""
 function showErr(msg){
   const box = document.getElementById('result');
   box.classList.add('err');
@@ -427,10 +436,80 @@ document.querySelectorAll('[data-action]').forEach(b=>{
   b.addEventListener('click', ()=>act(b.dataset.action, b));
 });
 
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')
+  .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+function parseRepo(v){
+  v = String(v||'').trim();
+  if(!v) return '';
+  v = v.replace(/^https?:\/\/(www\.)?github\.com\//i, '')
+       .replace(/\.git$/i, '').replace(/\/+$/, '');
+  const parts = v.split('/').filter(Boolean);
+  return parts.length >= 2 ? parts[0] + '/' + parts[1] : '';
+}
+
+const fRepo = document.getElementById('f_repo');
+const fFolder = document.getElementById('f_folder');
+fFolder.dataset.auto = '1';
+fRepo.addEventListener('input', ()=>{
+  const r = parseRepo(fRepo.value);
+  if(r && fFolder.dataset.auto === '1'){ fFolder.value = r.split('/')[1]; }
+});
+fFolder.addEventListener('input', ()=>{ fFolder.dataset.auto = '0'; });
+
+async function doDiscover(btn){
+  const box = document.getElementById('result');
+  box.classList.remove('err');
+  box.textContent = '正在搜索 GitHub 高星技能…';
+  box.scrollIntoView({behavior:'smooth', block:'nearest'});
+  btn.disabled = true; btn.dataset.old = btn.textContent; btn.textContent = '搜索中…';
+  try{
+    const d = await post('/api/discover', {});
+    if(!d.ok){ showErr(d.msg); return; }
+    const wrap = document.getElementById('discWrap');
+    const list = document.getElementById('discList');
+    wrap.style.display = '';
+    if(!d.items.length){
+      list.innerHTML = '<div class="muted" style="padding:8px 0">没有发现新的相关技能(可能都已安装)</div>';
+    }else{
+      list.innerHTML = d.items.map(it =>
+        '<div class="disc-item">'
+        + '<span class="d-repo">' + esc(it.repo) + '</span>'
+        + '<span class="d-stars">⭐' + esc(it.stars) + '</span>'
+        + '<span class="d-desc" title="' + esc(it.desc) + '">' + esc(it.desc) + '</span>'
+        + '<button data-install="' + esc(it.repo) + '">安装</button>'
+        + '</div>').join('');
+      list.querySelectorAll('[data-install]').forEach(b=>{
+        b.addEventListener('click', ()=>installRepo(b.dataset.install, b));
+      });
+    }
+    box.textContent = '发现 ' + d.items.length + ' 个候选技能(已过滤非技能仓库与已安装项)';
+  }catch(e){
+    showErr('请求失败: ' + e);
+  }finally{
+    btn.disabled = false; btn.textContent = btn.dataset.old;
+  }
+}
+
+async function installRepo(repo, btn){
+  btn.disabled = true; btn.textContent = '安装中…';
+  try{
+    const d = await post('/api/add', {folder: repo.split('/')[1], repo: repo,
+                                      subpath: '', pinned: false});
+    alert(d.msg);
+    if(d.ok){ location.reload(); }
+    else { btn.disabled = false; btn.textContent = '安装'; }
+  }catch(e){
+    btn.disabled = false; btn.textContent = '安装'; showErr(e);
+  }
+}
+
+document.getElementById('discBtn').addEventListener('click', e=>doDiscover(e.currentTarget));
+
 document.querySelectorAll('.del').forEach(b=>{
   b.addEventListener('click', async ()=>{
     const f = b.dataset.folder;
-    if(!confirm('确认删除技能目录: '+f+' ?\\n将从仓库移除并提交删除(需另行同步)')) return;
+    if(!confirm('确认删除技能目录: '+f+' ?\n将从仓库移除并提交删除(需另行同步)')) return;
     b.disabled = true; b.dataset.old = b.textContent; b.textContent = '删除中…';
     try{
       const d = await post('/api/delete', {folder: f});
@@ -443,13 +522,14 @@ document.querySelectorAll('.del').forEach(b=>{
 
 document.getElementById('addForm').addEventListener('submit', async e=>{
   e.preventDefault();
+  const repo = parseRepo(fRepo.value);
+  if(!repo){ alert('来源仓库请填写 GitHub 链接或 owner/name'); return; }
   const p = {
-    folder:  document.getElementById('f_folder').value.trim(),
-    repo:    document.getElementById('f_repo').value.trim(),
+    folder:  fFolder.value.trim() || repo.split('/')[1],
+    repo:    repo,
     subpath: document.getElementById('f_sub').value.trim(),
     pinned:  document.getElementById('f_pin').checked
   };
-  if(!p.folder || !p.repo){ alert('文件夹名与来源仓库为必填'); return; }
   const btn = document.getElementById('addBtn');
   btn.disabled = true; btn.dataset.old = btn.textContent; btn.textContent = '安装中…';
   try{
@@ -479,15 +559,34 @@ PAGE_HTML = """<!doctype html>
   </header>
 
   <div class="card">
+    <h2>安装新技能</h2>
+    <form id="addForm">
+      <label>来源仓库(粘贴 GitHub 链接或 owner/name)<input type="text" id="f_repo" placeholder="https://github.com/Cjy-CN/wanxiang-build"></label>
+      <label>文件夹名(粘贴后自动填, 可改)<input type="text" id="f_folder" placeholder="自动生成"></label>
+      <label>子路径(留空 = 自动识别)<input type="text" id="f_sub" placeholder="如 skills/<name>"></label>
+      <label class="check"><input type="checkbox" id="f_pin"> 固定(pinned, 跳过自动更新)</label>
+      <div class="form-actions">
+        <button class="primary" type="submit" id="addBtn">安装并登记</button>
+        <span class="muted">自动下载 tarball、识别技能子路径并登记到 config/sources.json</span>
+      </div>
+    </form>
+    <div id="discWrap" style="display:none">
+      <h2 style="margin-top:18px">发现的高星技能(点「安装」直接入库)</h2>
+      <div id="discList"></div>
+    </div>
+  </div>
+
+  <div class="card">
     <h2>技能总览(__COUNT__ 个)</h2>
     <div class="toolbar">
-      <button data-action="status">状态</button>
-      <button class="primary" data-action="update">检查更新</button>
-      <button data-action="discover">发现新技能</button>
-      <button data-action="sync">提交本地</button>
-      <button class="primary" data-action="syncpush">推送远端</button>
-      <button class="neutral" data-action="version">版本</button>
+      <button data-action="status" title="列出各技能本地基线 / 上游最新 / 是否需要更新">状态</button>
+      <button class="primary" data-action="update" title="把有上游更新的技能更新到本地并提交">检查更新</button>
+      <button id="discBtn" title="搜索 GitHub 高星相关技能, 在列表内可直接安装">发现新技能</button>
+      <button data-action="sync" title="把库里改动(新增/删除/更新)记入本地 git 历史, 不影响 GitHub">提交本地</button>
+      <button class="primary" data-action="syncpush" title="把本地提交同步到 GitHub 远端, 其他机器 git pull 即得">推送远端</button>
+      <button class="neutral" data-action="version" title="显示当前版本号与最近更新内容">版本</button>
     </div>
+    <div class="hint">提交本地 = 改动记入本地 git 历史(不影响 GitHub) · 推送远端 = 同步到 GitHub(其他机器拉取即得) · GitHub API 每小时限 60 次, 在 bat 内配置 GITHUB_TOKEN 可提升至 5000 次</div>
     <div id="result">点击上方按钮, 输出会显示在这里。</div>
     <table>
       <thead><tr>
@@ -496,20 +595,6 @@ PAGE_HTML = """<!doctype html>
       </tr></thead>
       <tbody>__ROWS__</tbody>
     </table>
-  </div>
-
-  <div class="card">
-    <h2>新增技能</h2>
-    <form id="addForm">
-      <label>文件夹名(必填)<input type="text" id="f_folder" placeholder="my-new-skill"></label>
-      <label>来源仓库 owner/name(必填)<input type="text" id="f_repo" placeholder="op7418/Humanizer-zh"></label>
-      <label>子路径(可选, 技能在仓库内的目录)<input type="text" id="f_sub" placeholder="skills/foo 或留空取根"></label>
-      <label class="check"><input type="checkbox" id="f_pin"> 固定(pinned, 跳过自动更新)</label>
-      <div class="form-actions">
-        <button class="primary" type="submit" id="addBtn">安装并登记</button>
-        <span class="muted">会自动下载、复制到技能库并写入 config/sources.json</span>
-      </div>
-    </form>
   </div>
 </div>
 <script>__JS__</script>
@@ -555,6 +640,70 @@ def render_page():
             .replace("__COUNT__", str(len(skills))))
 
 
+def version_report():
+    """版本号 + 最近两节更新说明(取自 CHANGELOG.md)。"""
+    head = read_version()
+    try:
+        with open(os.path.join(REPO, "CHANGELOG.md"), encoding="utf-8") as f:
+            text = f.read()
+        sections = re.findall(r"(?ms)^## \[.*?(?=^## \[|\Z)", text)
+        recent = "\n\n".join(s.strip() for s in sections[:2])
+        if len(recent) > 2400:
+            recent = recent[:2400] + "\n…(完整内容见 CHANGELOG.md)"
+    except Exception as e:  # noqa: BLE001
+        recent = f"(CHANGELOG 读取失败: {e})"
+    return f"当前版本 {head}\n\n{recent}"
+
+
+def discover_candidates(top=15, min_stars=50):
+    """结构化发现: 复用 skillsync 的 topic 搜索/兴趣匹配/SKILL.md 校验。
+    全部 topic 都失败(如限流)时抛 RuntimeError, 由前端给出明确提示。"""
+    import skillsync as ss
+    existing_repos = {s["repo"].lower() for s in load_sources()}
+    existing_folders = set(list_skill_dirs())
+    seen = set()
+    cands = []
+    errors = 0
+    for t in ss.DISCOVER_TOPICS:
+        try:
+            data = ss.api_get(
+                f"https://api.github.com/search/repositories"
+                f"?q=topic:{t}+stars:%3E{min_stars}&sort=stars&order=desc&per_page=30")
+        except Exception:
+            errors += 1
+            continue
+        for it in data.get("items", []):
+            full = it["full_name"]
+            if full in seen or full.lower() in existing_repos:
+                continue
+            nm = it["name"].lower()
+            if nm in ("claude-code", "cursor", "claude", "codex"):
+                continue
+            if nm in existing_folders:
+                continue
+            seen.add(full)
+            hay = f"{full} {it.get('description') or ''}".lower()
+            if ss.matches_interests(hay):
+                cands.append({"repo": full, "stars": it["stargazers_count"],
+                              "desc": it.get("description") or "",
+                              "url": it["html_url"]})
+    if errors == len(ss.DISCOVER_TOPICS):
+        raise RuntimeError("GitHub API 不可用(可能已限流 403): 请稍后再试, "
+                           "或在 skillsync-web.bat 中取消 GITHUB_TOKEN 注释并填入 PAT")
+    cands.sort(key=lambda c: -c["stars"])
+    out = []
+    for c in cands[:max(top * 2, 20)]:
+        try:
+            ok = ss.repo_has_skill_md(c["repo"], c["desc"])
+        except Exception:
+            ok = True
+        if ok:
+            out.append(c)
+        if len(out) >= top:
+            break
+    return out
+
+
 # ───────────────────────── HTTP 服务 ─────────────────────────
 class Handler(BaseHTTPRequestHandler):
     def _send(self, code, body, ctype="text/html; charset=utf-8"):
@@ -594,8 +743,18 @@ class Handler(BaseHTTPRequestHandler):
             self._send(200, json.dumps({"ok": ok, "msg": msg}, ensure_ascii=False),
                        "application/json; charset=utf-8")
         elif path == "/api/action":
-            self._send(200, json.dumps({"ok": True, "msg": run_cli(data.get("action", ""))},
-                                       ensure_ascii=False), "application/json; charset=utf-8")
+            a = data.get("action", "")
+            msg = version_report() if a == "version" else run_cli(a)
+            self._send(200, json.dumps({"ok": True, "msg": msg},
+                                       ensure_ascii=False),
+                       "application/json; charset=utf-8")
+        elif path == "/api/discover":
+            try:
+                payload = {"ok": True, "items": discover_candidates()}
+            except Exception as e:  # noqa: BLE001
+                payload = {"ok": False, "msg": str(e)}
+            self._send(200, json.dumps(payload, ensure_ascii=False),
+                       "application/json; charset=utf-8")
         else:
             self._send(404, json.dumps({"ok": False, "msg": "unknown"}, ensure_ascii=False),
                        "application/json; charset=utf-8")
