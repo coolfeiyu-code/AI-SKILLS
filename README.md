@@ -2,13 +2,15 @@
 
 > 一个**带版本号、可一键更新、可自动发现高星技能、可同步到 GitHub** 的本地 AI 技能库。macOS / Windows 双端通用；并指导 Cursor / Claude Code / Codex / WorkBuddy / Cline / Windsurf 等把技能库指向此处，且**运行时不污染本仓库**。
 
-**当前版本：`1.0.0`**（版本定义见 [`VERSION`](./VERSION)，更新说明见 [`CHANGELOG.md`](./CHANGELOG.md)）。
+**当前版本：`1.1.1`**（版本定义见 [`VERSION`](./VERSION)，更新说明见 [`CHANGELOG.md`](./CHANGELOG.md)）。
 
 ---
 
 ## 1. 这是什么
 
-`C:/AI-SKILLS`（GitHub: [`coolfeiyu-code/AI-SKILLS`](https://github.com/coolfeiyu-code/AI-SKILLS)）既是技能仓库，也是被管理的项目。库内 31 个 skill 目录直接放在仓库根下，覆盖：投研（A股/美股/产业链/交易纪律）、前端设计（Anthropic 官方 + 一整套反套路/审查/组件技能）、内容（中文人性化、配图）、研究（多平台热点）、效率（需求拷问、技能自举）、以及 `.NET` Mod 逆向。
+`C:/AI 云同步/AGENT-SKILLS`（GitHub: [`coolfeiyu-code/AI-SKILLS`](https://github.com/coolfeiyu-code/AI-SKILLS)）既是技能仓库，也是被管理的项目。库内 31 个 skill 目录直接放在仓库根下，覆盖：投研（A股/美股/产业链/交易纪律）、前端设计（Anthropic 官方 + 一整套反套路/审查/组件技能）、内容（中文人性化、配图）、研究（多平台热点）、效率（需求拷问、技能自举）、以及 `.NET` Mod 逆向。
+
+> 本地路径说明：仓库本体在同步盘 `C:/AI 云同步/AGENT-SKILLS`；旧路径 `C:/AI-SKILLS` 已改为指向它的**交接点（Junction）**，旧引用仍可用。`.workbuddy/` 与 `.git` 已被忽略/排除，不会同步到极空间。
 
 项目提供一套工具（`skillsync`），把「人工逐个去 GitHub 比对更新」变成一条命令，并能在 GitHub 上发现你可能感兴趣的高星技能、一键同步到远端。
 
@@ -26,6 +28,8 @@ AI-SKILLS/
 ├── tools/           # 给其他 Coding 软件的符号链接/配置脚本
 ├── .gitignore       # 已覆盖常见垃圾文件
 └── <31 个 skill 目录>/
+
+> 实际本地根目录为 `C:/AI 云同步/AGENT-SKILLS`；`C:/AI-SKILLS` 为指向它的交接点。
 ```
 
 ## 3. 快速开始（Mac / Win）

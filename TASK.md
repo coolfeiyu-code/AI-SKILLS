@@ -1,18 +1,20 @@
 # TASK.md — AI 接手手册
 
-> 给「下一个接手本项目的 AI / 协作者」的快速上手。读完即可安全维护 `C:/AI-SKILLS` 技能库。
+> 给「下一个接手本项目的 AI / 协作者」的快速上手。读完即可安全维护 `C:/AI 云同步/AGENT-SKILLS` 技能库（旧路径 `C:/AI-SKILLS` 为指向它的交接点）。
 
 ## 0. 一句话目标
 
-把 `C:/AI-SKILLS`（GitHub: `coolfeiyu-code/AI-SKILLS`）这个本地 AI 技能库，管理成一个**版本化、双端（macOS/Win）、可一键更新、可自动发现高星技能、可同步 GitHub** 的项目，且运行时不污染仓库。
+把 `C:/AI 云同步/AGENT-SKILLS`（GitHub: `coolfeiyu-code/AI-SKILLS`）这个本地 AI 技能库，管理成一个**版本化、双端（macOS/Win）、可一键更新、可自动发现高星技能、可同步 GitHub** 的项目，且运行时不污染仓库。
+> 注：旧路径 `C:/AI-SKILLS` 已改为指向本目录的**交接点（Junction）**，旧引用继续可用。
 
 ## 1. 关键事实（先读）
 
 - 仓库根即技能库：31 个 skill 目录**直接放在根下**（不嵌套 `skills/`）。
 - 远程：`origin = https://github.com/coolfeiyu-code/AI-SKILLS.git`，默认分支 `main`。
 - 工具链：**Python 3.11+**（建议 3.13）。跨平台靠 Python + `pathlib`，不用平台专属命令。
-- 版本：`VERSION` 文件（`1.1.0`），语义化；`CHANGELOG.md` 记录大/中/小版本。
+- 版本：`VERSION` 文件（`1.1.1`），语义化；`CHANGELOG.md` 记录大/中/小版本。
 - 无垃圾公约：运行时产物一律写仓库外系统缓存；`.gitignore` 已覆盖常见垃圾。
+- 位置与同步：仓库现位于同步盘 `C:/AI 云同步/AGENT-SKILLS`（Syncthing/极空间同步）。`.gitignore` 已忽略 `.workbuddy/`；目录级 `.stignore` 已排除 `.git` / `.workbuddy` / 缓存，避免仓库内部与本地 agent 状态被同步到极空间。旧路径 `C:/AI-SKILLS` 为指向本目录的交接点。
 - 文档：`README.md`（项目复用+工具指向+公约）、`CATALOG.md`（技能清单）、本文件。
 
 ## 2. 架构 / 文件职责

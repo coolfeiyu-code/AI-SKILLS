@@ -69,3 +69,8 @@ build/
 /*_report.*
 /scan-*/
 /holdings-*/
+
+# 本地 agent 工作区状态(不进 GitHub;此仓库现位于同步盘内)
+.workbuddy/
+# Syncthing 目录级忽略文件(本地同步配置, 不进 GitHub)
+.stignore
