@@ -74,3 +74,8 @@ build/
 .workbuddy/
 # Syncthing 目录级忽略文件(本地同步配置, 不进 GitHub)
 .stignore
+
+# 本地/自制技能(可能含敏感配置, 不进 GitHub)
+/ai-model-vault/
+/commandcode-proxy-grok-setup/
+/wxq-lineups-update/

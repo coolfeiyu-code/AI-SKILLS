@@ -76,5 +76,29 @@
     "repo": "gauss314/skills",
     "subpath": "",
     "pinned": true
+  },
+  {
+    "folder": "ai-model-vault",
+    "repo": "",
+    "subpath": "",
+    "pinned": false,
+    "local": true,
+    "category": "自制SKILL"
+  },
+  {
+    "folder": "commandcode-proxy-grok-setup",
+    "repo": "",
+    "subpath": "",
+    "pinned": false,
+    "local": true,
+    "category": "自制SKILL"
+  },
+  {
+    "folder": "wxq-lineups-update",
+    "repo": "",
+    "subpath": "",
+    "pinned": false,
+    "local": true,
+    "category": "自制SKILL"
   }
 ]

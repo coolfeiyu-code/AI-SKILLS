@@ -149,11 +149,16 @@ CATEGORIES = {
     "游戏·攻略": [
         "wanxiang-build",
     ],
+    "自制SKILL": [],
 }
 CAT_ORDER = list(CATEGORIES.keys()) + ["其他"]
 
 
 def category_of(folder):
+    # 每技能可在 sources.json 用 category 字段自定义分类(本地/自制技能用)
+    for s in load_sources():
+        if s.get("folder") == folder and s.get("category"):
+            return s["category"]
     for cat, folders in CATEGORIES.items():
         if folder in folders:
             return cat
@@ -348,6 +353,64 @@ def delete_skill(folder):
         except Exception:
             pass
     return True, f"已删除 {folder}, 待提交/同步"
+
+
+def _ensure_gitignored(folder):
+    """把本地/自制技能加入 .gitignore, 避免含敏感配置(如明文密钥)被提交到 GitHub。"""
+    gi = os.path.join(REPO, ".gitignore")
+    line = f"/{folder}/"
+    try:
+        existing = open(gi, encoding="utf-8").read() if os.path.exists(gi) else ""
+        if line not in existing:
+            with open(gi, "a", encoding="utf-8") as f:
+                f.write(f"\n# 本地/自制技能(可能含敏感配置, 不进 GitHub)\n{line}")
+    except Exception:  # noqa: BLE001
+        pass
+
+
+def install_local_skill(folder, local_path, category="", pinned=False):
+    """从本机任意目录安装技能: 复制进仓库、登记到 sources.json、加入 .gitignore。
+    与 install_skill(GitHub) 不同, 本地技能不自动 git add, 防止明文密钥进版本库。"""
+    folder = sanitize_folder(folder)
+    if not folder:
+        # 未给文件夹名时, 用本地路径末段自动推导
+        folder = sanitize_folder(os.path.basename(os.path.abspath(local_path).rstrip("/\\")))
+    if not folder:
+        return False, "文件夹名无效(也无法从路径推导)"
+    data = load_sources()
+    if any(s["folder"] == folder for s in data):
+        return False, f"技能目录 {folder} 已存在"
+    src = os.path.abspath(local_path)
+    if not os.path.isdir(src) or not os.path.isfile(os.path.join(src, "SKILL.md")):
+        return False, f"本地路径不存在或内部无 SKILL.md: {local_path}"
+    dest = os.path.join(REPO, folder)
+    if os.path.exists(dest):
+        return False, f"目标目录已存在: {folder}"
+    try:
+        shutil.copytree(src, dest,
+                        ignore=shutil.ignore_patterns(".git", ".gitignore", "node_modules"))
+    except Exception as e:  # noqa: BLE001
+        return False, f"复制失败: {e}"
+    if not os.path.isfile(os.path.join(dest, "SKILL.md")):
+        shutil.rmtree(dest, ignore_errors=True)
+        return False, "复制后未找到 SKILL.md, 已回滚"
+    entry = {"folder": folder, "repo": "", "subpath": "", "pinned": bool(pinned), "local": True}
+    if category:
+        entry["category"] = category
+    data.append(entry)
+    save_sources(data)
+    # 本地/自制技能可能含敏感配置, 默认不纳入 git(避免 push 到 GitHub 泄露)
+    _ensure_gitignored(folder)
+    level, hits = risk_scan(folder)
+    warn = ""
+    if level == "high":
+        warn = (f"\n⚠ 安全扫描: 发现 {sum(1 for h in hits if h[0] == '高危')}"
+                f" 处高危模式(如明文密钥), 已加入 .gitignore, 不会进 GitHub")
+    elif level == "warn":
+        warn = f"\n安全扫描: {len(hits)} 处提示级匹配, 建议查看内容确认"
+    return True, (f"已本地安装 {folder}(来自 {src}), 已登记"
+                  + (f", 分类={category}" if category else "")
+                  + ", 并加入 .gitignore(不进 GitHub)" + warn)
 
 
 def remove_link_safe(p):
@@ -788,6 +851,32 @@ document.getElementById('addForm').addEventListener('submit', async e=>{
     btn.disabled = false; btn.textContent = btn.dataset.old; showErr(err);
   }
 });
+
+document.getElementById('f_lpath').addEventListener('input', e=>{
+  const p = e.target.value.replace(/[\\/]+$/, '').split(/[\\/]/);
+  const last = p[p.length - 1];
+  if(last) document.getElementById('f_lfolder').value = last;
+});
+document.getElementById('localForm').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const p = {
+    folder:   document.getElementById('f_lfolder').value.trim(),
+    local_path: document.getElementById('f_lpath').value.trim(),
+    category: document.getElementById('f_lcat').value.trim() || '自制SKILL',
+    pinned:   document.getElementById('f_lpin').checked
+  };
+  if(!p.local_path){ showErr('请填写本机文件夹路径'); return; }
+  if(!p.folder){ showErr('文件夹名无效, 请检查路径末段'); return; }
+  const btn = document.getElementById('localBtn');
+  btn.disabled = true; btn.dataset.old = btn.textContent; btn.textContent = '安装中…';
+  try{
+    const d = await post('/api/add-local', p);
+    if(d.ok){ location.reload(); }
+    else { btn.disabled = false; btn.textContent = btn.dataset.old; showErr(d.msg); }
+  }catch(err){
+    btn.disabled = false; btn.textContent = btn.dataset.old; showErr(err);
+  }
+});
 """
 
 PAGE_HTML = """<!doctype html>
@@ -817,6 +906,21 @@ PAGE_HTML = """<!doctype html>
         <span class="muted">自动下载 tarball、识别技能子路径并登记到 config/sources.json</span>
       </div>
     </form>
+
+    <div class="local-install">
+      <h3 style="margin-top:18px">从本机安装技能</h3>
+      <form id="localForm">
+        <label>本机文件夹路径(绝对路径)<input type="text" id="f_lpath" placeholder="C:/路径/到/技能目录"></label>
+        <label>文件夹名(自动取路径末段, 可改)<input type="text" id="f_lfolder" placeholder="自动生成"></label>
+        <label>分类<input type="text" id="f_lcat" value="自制SKILL" placeholder="如 自制SKILL"></label>
+        <label class="check"><input type="checkbox" id="f_lpin"> 固定(跳过自动更新)</label>
+        <div class="form-actions">
+          <button class="primary" type="submit" id="localBtn">安装(本地)</button>
+          <span class="muted">复制本机目录进仓库并登记; 含敏感配置自动加入 .gitignore(不进 GitHub)</span>
+        </div>
+      </form>
+    </div>
+
     <div id="discWrap" style="display:none">
       <h2 style="margin-top:18px">发现的高星技能(点「安装」直接入库)</h2>
       <div id="discList"></div>
@@ -1219,6 +1323,12 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/api/add":
             ok, msg = install_skill(data.get("folder", ""), data.get("repo", ""),
                                     data.get("subpath", ""), data.get("pinned", False))
+            self._send(200, json.dumps({"ok": ok, "msg": msg}, ensure_ascii=False),
+                       "application/json; charset=utf-8")
+        elif path == "/api/add-local":
+            ok, msg = install_local_skill(
+                data.get("folder", ""), data.get("local_path", ""),
+                data.get("category", ""), data.get("pinned", False))
             self._send(200, json.dumps({"ok": ok, "msg": msg}, ensure_ascii=False),
                        "application/json; charset=utf-8")
         elif path == "/api/delete":
