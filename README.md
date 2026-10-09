@@ -24,8 +24,10 @@ AI-SKILLS/
 ├── VERSION          # 语义化版本号（1.0.0）
 ├── CHANGELOG.md     # 大/中/小版本更新说明
 ├── skillsync*       # 跨平台 CLI（update / discover / sync / status）
-├── skillsync_gui.py # 零依赖 Tkinter 桌面管理器（图形界面）
-├── skillsync-gui.bat# 一键启动图形界面（双击即用）
+├── skillsync_gui.py # 零依赖 Tkinter 桌面管理器（图形界面，需 tcl/tk）
+├── skillsync-gui.bat# 一键启动桌面图形界面（双击即用）
+├── skillsync_web.py # 零依赖 Web 仪表盘（任意机器可用，无需 tkinter）
+├── skillsync-web.bat# 一键启动 Web 仪表盘并打开浏览器
 ├── config/          # discover 的兴趣主题配置
 ├── tools/           # 给其他 Coding 软件的符号链接/配置脚本
 ├── .gitignore       # 已覆盖常见垃圾文件
@@ -62,6 +64,19 @@ AI-SKILLS/
 - **一键更新全部**：自动完成「检查更新 → 更新非 pinned 技能 → 提交并推送」，两步串行，中途出错即停止。
 - 另有 `状态` / `检查更新` / `发现新技能` / `推送同步` / `版本` / `打开目录` 按钮，带实时滚动日志。
 - 要求运行它的 Python 含 tcl/tk（`skillsync-gui.bat` 已自动定位本机带 tcl/tk 的 CPython；若直接双击 `.py` 而默认 Python 无 tkinter，会提示改用启动器）。
+
+## 4.2 Web 仪表盘（推荐：所有机器直接复用 · 增删技能可视化）
+
+想要**在任意机器零配置**管理技能库（表格看全部、网页里增删技能）？用 Web 版——它**只依赖 Python 标准库 + git，不需要 tkinter、不需要装任何包**：
+
+- **Windows**：双击 **`skillsync-web.bat`** → 自动开浏览器到 `http://localhost:8765`。
+- **macOS / Linux**：`python3 skillsync_web.py`（或 `python skillsync_web.py`）→ 浏览器打开 `http://localhost:8765`。
+- **表格总览**：目录 / 名称 / 作用 / 版本号 / 最后更新 / 来源仓库 / 固定 / 操作，数据来自 `SKILL.md` + `CATALOG.md` + `sources.json` + `git`。
+- **新增技能**：填 文件夹名 + 来源仓库(owner/name) + 可选子路径 + 是否固定 → 自动克隆安装并登记到 `config/sources.json`。
+- **删除技能**：每行「删除」按钮（二次确认）→ 从仓库移除并提交删除。
+- **一键**：状态 / 检查更新 / 发现新技能 / 提交本地 / 推送远端 / 版本。
+
+> 与桌面版（`skillsync_gui.py`，需 tcl/tk）并存：Web 版主打「任意机器零依赖复用」，桌面版主打本机有 tcl/tk 的快捷操作。
 
 ## 5. 给其他 Coding 软件：把技能库指向此处
 

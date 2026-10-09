@@ -22,7 +22,8 @@
 | 文件 | 职责 |
 | :--- | :--- |
 | `skillsync*` | CLI：`update` / `discover` / `sync` / `status` / `version` |
-| `skillsync_gui.py` | 零依赖 Tkinter 桌面管理器（图形界面）；`skillsync-gui.bat` 为双击启动器 |
+| `skillsync_gui.py` | 零依赖 Tkinter 桌面管理器（图形界面，需 tcl/tk）；`skillsync-gui.bat` 为双击启动器 |
+| `skillsync_web.py` | 零依赖 Web 仪表盘（仅 stdlib + git，所有机器可用，无需 tkinter）；`skillsync-web.bat` 一键启动 |
 | `config/interests.json` | `discover` 的兴趣主题（决定搜什么） |
 | `config/sources.json` | 每个 skill → GitHub repo + 子路径(subpath) + `pinned` 标志（内嵌于 `skillsync.py` 的 `SOURCES` 为兜底） |
 | `tools/` | 给其他 Coding 软件的符号链接/配置脚本（`.sh` + `.ps1`） |
@@ -43,6 +44,19 @@ python skillsync.py status             # 各技能 本地基线 vs 上游最新 
 双击仓库内 **`skillsync-gui.bat`** 即可弹出桌面管理器，按钮对应上述命令；「一键更新全部」= `update` → `sync --push`（串行，失败即止）。
 
 > 注意：GUI 需要**带 tcl/tk 的 CPython**（本机为 `C:\Users\13588\AppData\Local\Python\pythoncore-3.14-64\python.exe`）；`skillsync-gui.bat` 已自动定位。CLI（`skillsync.py`）无此限制，任意 3.11+ Python 皆可运行。
+
+### Web 仪表盘（推荐：所有机器零依赖复用）
+
+`skillsync_web.py` 仅用 Python 标准库 `http.server` + git，**不需要 tkinter、不需要 pip 安装**，因此可在任意装有 Python 3.11+ 与 git 的机器上直接运行：
+
+- **Windows**：双击 `skillsync-web.bat` → 打开 `http://localhost:8765`。
+- **macOS / Linux**：`python3 skillsync_web.py` → 打开 `http://localhost:8765`。
+- 表格总览（目录/名称/作用/版本号/最后更新/来源仓库/固定/操作），数据聚合自 `SKILL.md` frontmatter + `CATALOG.md` + `config/sources.json` + `git log`。
+- **新增**：填 文件夹名 + 来源仓库(owner/name) + 可选子路径 + 是否 pinned → 自动 `git clone --depth 1` + 复制 subpath（排除 `.git`）+ 写入 `sources.json` + `git add`。
+- **删除**：每行「删除」按钮（浏览器二次确认）→ `git rm -r -f` + 从 `sources.json` 移除。
+- **一键**：状态 / 检查更新 / 发现新技能 / 提交本地(sync) / 推送远端(sync --push) / 版本。
+
+> 与桌面 GUI 并存：Web 版主打「任意机器零配置复用」，桌面版主打本机有 tcl/tk 的快捷操作。
 
 ## 4. 数据来源（sources 映射，维护要点）
 

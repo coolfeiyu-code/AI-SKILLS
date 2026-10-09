@@ -10,6 +10,22 @@
 
 > **重要约定**：日常 `skillsync update` 刷新技能内容属于运维动作，**不一定**触发版本号步进；只有项目本体（脚本 / 结构 / 约定）变更才按上表 bump。技能自身的版本（如 `a-stock-data` v3.2.2）与本项目版本互不影响，分别记录于各自 `SKILL.md` 与下方的技能更新记录。
 
+## [1.3.0] - 2026-10-09 · Web 仪表盘（跨机器复用 · 增删技能可视化）
+
+> 触发条件（对照步进表）：新增 `skillsync_web.py` 零依赖 Web 仪表盘，支持技能表格化浏览与新增/删除 → 向后兼容新功能 → MINOR。
+
+### 新增
+- **`skillsync_web.py`**：零依赖 Web 仪表盘（仅用 Python 标准库 `http.server`，**无需 tkinter、无需 pip 安装**），满足「所有机器可直接使用」：
+  - **表格总览**：自动扫描含 `SKILL.md` 的目录，聚合 `SKILL.md` frontmatter（名称/作用/版本号）、`CATALOG.md`（中文标签/功用）、`config/sources.json`（来源仓库/subpath/pinned）、`git log`（最后更新），展示列：目录 / 名称 / 作用 / 版本号 / 最后更新 / 来源仓库 / 固定 / 操作。
+  - **新增技能**：填 文件夹名 + 来源仓库(owner/name) + 可选子路径 + 是否 pinned → 自动 `git clone --depth 1` + 复制 subpath（排除 `.git`）+ 写入 `config/sources.json` + `git add`。
+  - **删除技能**：按钮触发 `git rm -r -f` 并从 `sources.json` 移除（删除前浏览器二次确认）。
+  - **一键操作**：状态 / 检查更新 / 发现新技能 / 提交本地(sync) / 推送远端(sync --push) / 版本，输出回显到页面。
+- **`skillsync-web.bat`**：一键启动 Web 仪表盘并打开浏览器（Windows）；macOS/Linux 运行 `python3 skillsync_web.py` 后访问 `http://localhost:8765`。
+- 与 `skillsync_gui.py`（桌面，需 tcl/tk）并存：Web 版面向「任意机器零配置复用」，桌面版面向本机有 tcl/tk 的快捷操作。
+
+### 说明
+- 元数据解析为轻量实现：`SKILL.md` 仅取顶层 `key: value`；版本号取 `version:` 字段（缺省显示 `—`）；最后更新取该目录 `git log -1`（非 git 跟踪则回退 `SKILL.md` 修改时间）。
+
 ## [1.2.0] - 2026-10-09 · 图形界面（Tkinter 桌面管理器）
 
 > 触发条件（对照步进表）：新增 `skillsync_gui.py` 图形界面 + `skillsync-gui.bat` 一键启动器，属向后兼容的新功能 → MINOR。
