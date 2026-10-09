@@ -10,6 +10,17 @@
 
 > **重要约定**：日常 `skillsync update` 刷新技能内容属于运维动作，**不一定**触发版本号步进；只有项目本体（脚本 / 结构 / 约定）变更才按上表 bump。技能自身的版本（如 `a-stock-data` v3.2.2）与本项目版本互不影响，分别记录于各自 `SKILL.md` 与下方的技能更新记录。
 
+## [1.4.0] - 2026-10-09 · 素雅淡色主题 · 技能分类展示
+
+### 变更
+- **淡色主题**：深墨色界面整体换为素雅淡色（宣纸暖白底 `#f6f4ef` + 墨色文字 + 灰绿点缀），卡片白底轻阴影，错误提示色随主题适配。
+- **技能分类展示**：表格按类别分组，组头行显示「类别 · 数量」。归纳（未命中归入"其他"）：
+  - **前端设计**（15）：frontend-design, brandkit, design-system, gpt-tasteskill, soft-skill(即 high-end-visual-design), interface-design, image-to-code-skill, imagegen-frontend-mobile, imagegen-frontend-web, minimalist-skill, redesign-skill, taste-skill, ui-styling, ui-ux-pro-max, impeccable
+  - **投研·交易**（2）：a-stock-data, serenity-skill（trading-skills / gauss314-skills / InvestSkill 为多技能合集仓库，无根 SKILL.md，不在表中逐行列出）
+  - **内容·研究**（4）：Humanizer-zh, last30days, last30days-cn, agent-reach
+  - **工程·效率**（6）：find-skills, gh-skill-installer, output-skill, yao-meta-skill, grill-me, dotnet-mod-recon
+  - 类别映射维护于 `skillsync_web.py` 的 `CATEGORIES`；新增技能若未归类会出现在"其他"组。
+
 ## [1.3.3] - 2026-10-09 · 旧实例防护（"改了没生效"根因）
 
 ### 修复

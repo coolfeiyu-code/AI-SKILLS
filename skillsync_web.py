@@ -117,6 +117,37 @@ def git_last_updated(folder):
     return "—"
 
 
+# 技能类别归纳(人工归纳, 未命中归入"其他")
+# 注: trading-skills / gauss314-skills / InvestSkill / Ultimate-AI-Skill-Library
+#     为多技能合集仓库(无根 SKILL.md), 不在本表逐行列出
+CATEGORIES = {
+    "前端设计": [
+        "frontend-design", "brandkit", "design-system", "gpt-tasteskill",
+        "soft-skill", "interface-design", "image-to-code-skill",
+        "imagegen-frontend-mobile", "imagegen-frontend-web", "minimalist-skill",
+        "redesign-skill", "taste-skill", "ui-styling", "ui-ux-pro-max", "impeccable",
+    ],
+    "投研·交易": [
+        "a-stock-data", "serenity-skill",
+    ],
+    "内容·研究": [
+        "Humanizer-zh", "last30days", "last30days-cn", "agent-reach",
+    ],
+    "工程·效率": [
+        "find-skills", "gh-skill-installer", "output-skill",
+        "yao-meta-skill", "grill-me", "dotnet-mod-recon",
+    ],
+}
+CAT_ORDER = list(CATEGORIES.keys()) + ["其他"]
+
+
+def category_of(folder):
+    for cat, folders in CATEGORIES.items():
+        if folder in folders:
+            return cat
+    return "其他"
+
+
 def build_skills():
     sources = {s["folder"]: s for s in load_sources()}
     catalog = parse_catalog()
@@ -137,6 +168,7 @@ def build_skills():
             "repo": src.get("repo", "—"),
             "subpath": src.get("subpath", ""),
             "pinned": bool(src.get("pinned", False)),
+            "category": category_of(folder),
         })
     return skills
 
@@ -254,8 +286,9 @@ def run_cli(action):
 
 # ───────────────────────── 页面渲染 ─────────────────────────
 PAGE_CSS = """
-:root{--bg:#0d1117;--panel:#161b22;--border:#30363d;--text:#e6edf3;--muted:#8b949e;
---green:#2ea043;--blue:#388bfd;--warn:#d29922;--danger:#f85149;--neutral:#21262d;}
+:root{--bg:#f6f4ef;--panel:#ffffff;--border:#e7e3d8;--text:#2f2e2b;--muted:#8b877c;
+--green:#3f8f68;--blue:#4f7ca3;--warn:#a8823c;--danger:#bf5b52;--neutral:#efece3;
+--groupbg:#f1eee6;}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--text);
 font-family:'Segoe UI','Microsoft YaHei','PingFang SC',system-ui,sans-serif;font-size:14px;}
@@ -264,45 +297,49 @@ header{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;
 border-bottom:1px solid var(--border);padding-bottom:14px;margin-bottom:18px;}
 header h1{font-size:20px;margin:0;font-weight:650;letter-spacing:.3px;}
 header .sub{color:var(--muted);font-size:12.5px;}
-.card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin-bottom:18px;}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin-bottom:18px;
+box-shadow:0 1px 2px rgba(70,64,48,.04);}
 .card h2{font-size:14px;margin:0 0 12px;color:var(--text);font-weight:600;}
 .toolbar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
 button{font-family:inherit;font-size:13px;border:0;border-radius:7px;padding:8px 14px;
 cursor:pointer;color:#fff;background:var(--blue);transition:filter .15s;}
-button:hover{filter:brightness(1.12);}
+button:hover{filter:brightness(1.06);}
 button:disabled{opacity:.55;cursor:wait;filter:none;}
 button.primary{background:var(--green);}
-button.neutral{background:var(--neutral);color:var(--muted);}
+button.neutral{background:var(--neutral);color:var(--muted);border:1px solid var(--border);}
 button.danger{background:transparent;color:var(--danger);border:1px solid var(--danger);padding:5px 12px;}
-button.danger:hover{background:rgba(248,81,73,.12);}
+button.danger:hover{background:rgba(191,91,82,.08);}
 table{width:100%;border-collapse:collapse;font-size:13px;}
 th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top;}
 th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.4px;}
-tbody tr:hover{background:rgba(56,139,253,.06);}
+tbody tr:hover{background:#faf8f3;}
+tr.group td{background:var(--groupbg);color:#7a766a;font-size:12px;font-weight:600;
+letter-spacing:1.5px;padding:8px 12px;}
 td .folder{font-family:Consolas,Menlo,monospace;color:var(--blue);font-size:12.5px;}
-td.purpose{max-width:380px;color:var(--muted);font-size:12.5px;
+td.purpose{max-width:380px;color:#6f6c63;font-size:12.5px;
 white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:999px;
-background:rgba(210,153,34,.16);color:var(--warn);border:1px solid rgba(210,153,34,.4);}
+background:#f5efdf;color:var(--warn);border:1px solid #e5d8b8;}
 .muted{color:var(--muted);}
 form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 16px;}
 label{display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--muted);}
-input[type=text]{background:#0a0e14;border:1px solid var(--border);border-radius:7px;
+input[type=text]{background:#fbfaf6;border:1px solid var(--border);border-radius:7px;
 padding:9px 11px;color:var(--text);font-size:13px;font-family:inherit;}
 input[type=text]:focus{outline:none;border-color:var(--blue);}
 .check{display:flex;align-items:center;gap:8px;color:var(--text);font-size:13px;}
 .check input{width:16px;height:16px;accent-color:var(--green);}
 .form-actions{grid-column:1/-1;display:flex;gap:10px;align-items:center;}
-#result{background:#0a0e14;border:1px solid var(--border);border-radius:8px;padding:14px;
+#result{background:#fbfaf6;border:1px solid var(--border);border-radius:8px;padding:14px;
 font-family:Consolas,Menlo,monospace;font-size:12px;color:var(--text);white-space:pre-wrap;
 max-height:300px;overflow:auto;min-height:60px;margin:12px 0;}
+#result.err{color:var(--danger);}
 .empty{color:var(--muted);padding:20px;text-align:center;}
 """
 
 PAGE_JS = """
 function showErr(msg){
   const box = document.getElementById('result');
-  box.style.color = '#f85149';
+  box.classList.add('err');
   box.textContent = '[错误] ' + msg;
 }
 window.onerror = function(msg){ showErr(msg); };
@@ -316,7 +353,7 @@ async function post(url, payload){
 
 async function act(action, btn){
   const box = document.getElementById('result');
-  box.style.color = '';
+  box.classList.remove('err');
   box.textContent = '运行中…';
   box.scrollIntoView({behavior:'smooth', block:'nearest'});
   if(btn){ btn.disabled = true; btn.dataset.old = btn.textContent; btn.textContent = '运行中…'; }
@@ -428,20 +465,25 @@ def render_rows(skills):
     if not skills:
         return '<tr><td colspan="8" class="empty">未找到含 SKILL.md 的技能目录</td></tr>'
     rows = []
-    for s in skills:
-        pin = '<span class="badge">已固定</span>' if s["pinned"] else '<span class="muted">—</span>'
-        rows.append(
-            "<tr>"
-            f'<td><span class="folder">{html.escape(s["folder"])}</span></td>'
-            f'<td>{html.escape(s["name"])}</td>'
-            f'<td class="purpose" title="{html.escape(s["purpose"], quote=True)}">{html.escape(s["purpose"])}</td>'
-            f'<td>{html.escape(s["version"])}</td>'
-            f'<td>{html.escape(s["last_updated"])}</td>'
-            f'<td><span class="folder">{html.escape(s["repo"])}</span></td>'
-            f"<td>{pin}</td>"
-            f'<td><button class="danger" data-folder="{html.escape(s["folder"])}">删除</button></td>'
-            "</tr>"
-        )
+    for cat in CAT_ORDER:
+        group = [s for s in skills if s["category"] == cat]
+        if not group:
+            continue
+        rows.append(f'<tr class="group"><td colspan="8">{html.escape(cat)} · {len(group)} 个</td></tr>')
+        for s in sorted(group, key=lambda x: x["folder"].lower()):
+            pin = '<span class="badge">已固定</span>' if s["pinned"] else '<span class="muted">—</span>'
+            rows.append(
+                "<tr>"
+                f'<td><span class="folder">{html.escape(s["folder"])}</span></td>'
+                f'<td>{html.escape(s["name"])}</td>'
+                f'<td class="purpose" title="{html.escape(s["purpose"], quote=True)}">{html.escape(s["purpose"])}</td>'
+                f'<td>{html.escape(s["version"])}</td>'
+                f'<td>{html.escape(s["last_updated"])}</td>'
+                f'<td><span class="folder">{html.escape(s["repo"])}</span></td>'
+                f"<td>{pin}</td>"
+                f'<td><button class="danger" data-folder="{html.escape(s["folder"])}">删除</button></td>'
+                "</tr>"
+            )
     return "\n".join(rows)
 
 
