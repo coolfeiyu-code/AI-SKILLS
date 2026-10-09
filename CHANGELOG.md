@@ -10,6 +10,17 @@
 
 > **重要约定**：日常 `skillsync update` 刷新技能内容属于运维动作，**不一定**触发版本号步进；只有项目本体（脚本 / 结构 / 约定）变更才按上表 bump。技能自身的版本（如 `a-stock-data` v3.2.2）与本项目版本互不影响，分别记录于各自 `SKILL.md` 与下方的技能更新记录。
 
+## [1.3.1] - 2026-10-09 · 移除桌面 GUI · Web 按钮反馈修复
+
+### 移除
+- **删除 `skillsync_gui.py` 与 `skillsync-gui.bat`（Tkinter 桌面管理器）**：依赖 tcl/tk，实际环境无法启动（用户确认弃用）。技能管理统一走 Web 仪表盘 / CLI。
+
+### 修复（Web 仪表盘）
+- **按钮"点了没反应"的根因**：操作输出框原本在页面最底部（表格+表单之下，视口外），点击工具栏按钮后输出写进了看不见的框。修复：**输出框移至工具栏正下方**，点击即见；按钮增加运行态（禁用 + 显示"运行中…"，完成后恢复）；`fetch` 失败时错误直接显示在输出框（并提示确认服务窗口仍在运行）；`window.onerror` 全局兜底可见化；事件绑定由内联 `onclick` 改为 `data-action` + `addEventListener`。
+- **新增技能改用 codeload tarball**（与 `skillsync update` 同机制：GitHub API 取默认分支 → `codeload.github.com` 下载 → `unpack_archive` 解压），不再 `git clone`，规避 Windows git/schannel 与代理导致的克隆失败；**安装成功后才写入 `sources.json`**（旧逻辑先登记后克隆，失败会残留脏条目）；安装后校验目录含 `SKILL.md`，否则回滚。
+- `delete_skill` 兜底 `git add -A` 收窄为 `git add -A -- <folder>`，避免误暂存无关变更。
+- `skillsync-web.bat` 启动前检查 `python` 是否可用，缺失时给出明确提示。
+
 ## [1.3.0] - 2026-10-09 · Web 仪表盘（跨机器复用 · 增删技能可视化）
 
 > 触发条件（对照步进表）：新增 `skillsync_web.py` 零依赖 Web 仪表盘，支持技能表格化浏览与新增/删除 → 向后兼容新功能 → MINOR。

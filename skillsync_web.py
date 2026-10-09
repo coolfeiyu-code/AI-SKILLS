@@ -21,6 +21,7 @@ import subprocess
 import tempfile
 import datetime
 import html
+import urllib.request
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import urlparse
 
@@ -146,6 +147,9 @@ def sanitize_folder(name):
 
 
 def install_skill(folder, repo, subpath, pinned):
+    """安装技能: GitHub API 取默认分支 -> codeload tarball -> 解压复制 subpath。
+    与 skillsync update 同一机制(纯 urllib, 免 git clone, 规避代理/schannel 问题)。
+    安装成功后才写入 sources.json。"""
     folder = sanitize_folder(folder)
     if not folder:
         return False, "文件夹名无效"
@@ -154,26 +158,36 @@ def install_skill(folder, repo, subpath, pinned):
     data = load_sources()
     if any(s["folder"] == folder for s in data):
         return False, f"技能目录 {folder} 已存在"
-    data.append({"folder": folder, "repo": repo, "subpath": subpath or "", "pinned": bool(pinned)})
-    save_sources(data)
-    tmp = tempfile.mkdtemp(prefix="skillclone_")
     try:
-        r = subprocess.run(
-            ["git", "clone", "--depth", "1", f"https://github.com/{repo}.git", tmp],
-            capture_output=True, text=True, encoding="utf-8", timeout=180)
-        if r.returncode != 0:
-            return False, "克隆失败: " + (r.stderr.strip() or r.stdout.strip())[:300]
-        src = os.path.join(tmp, subpath) if subpath else tmp
+        with urllib.request.urlopen(f"https://api.github.com/repos/{repo}", timeout=30) as r:
+            branch = json.load(r).get("default_branch", "main")
+    except Exception as e:  # noqa: BLE001
+        return False, f"无法访问仓库 {repo}: {e}"
+    tmp = tempfile.mkdtemp(prefix="skillinstall_")
+    try:
+        tgz = os.path.join(tmp, "repo.tgz")
+        urllib.request.urlretrieve(
+            f"https://codeload.github.com/{repo}/tar.gz/refs/heads/{branch}", tgz)
+        ex = os.path.join(tmp, "ex")
+        os.makedirs(ex)
+        shutil.unpack_archive(tgz, ex)
+        top = next(d for d in os.listdir(ex) if os.path.isdir(os.path.join(ex, d)))
+        src = os.path.join(ex, top, subpath) if subpath else os.path.join(ex, top)
         if not os.path.isdir(src):
             return False, f"子路径不存在: {subpath or '(根)'}"
         dest = os.path.join(REPO, folder)
-        shutil.copytree(src, dest, ignore=shutil.ignore_patterns(".git", ".gitignore", "node_modules"))
+        shutil.copytree(src, dest,
+                        ignore=shutil.ignore_patterns(".git", ".gitignore", "node_modules"))
+        if not os.path.isfile(os.path.join(dest, "SKILL.md")):
+            shutil.rmtree(dest, ignore_errors=True)
+            return False, "该仓库/子路径下未找到 SKILL.md, 不是技能目录, 已回滚"
+        data.append({"folder": folder, "repo": repo,
+                     "subpath": subpath or "", "pinned": bool(pinned)})
+        save_sources(data)
         subprocess.run(["git", "add", "-A", folder], cwd=REPO)
         return True, f"已安装 {folder}(来自 {repo}{'/' + subpath if subpath else ''}), 待提交"
-    except subprocess.TimeoutExpired:
-        return False, "克隆超时(180s)"
     except Exception as e:  # noqa: BLE001
-        return False, f"安装异常: {e}"
+        return False, f"安装失败: {e}"
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
 
@@ -189,7 +203,7 @@ def delete_skill(folder):
                            capture_output=True, text=True, encoding="utf-8")
         if r.returncode != 0:
             shutil.rmtree(dest, ignore_errors=True)
-            subprocess.run(["git", "add", "-A"], cwd=REPO)
+            subprocess.run(["git", "add", "-A", "--", folder], cwd=REPO)
     return True, f"已删除 {folder}, 待提交/同步"
 
 
@@ -225,6 +239,7 @@ header .sub{color:var(--muted);font-size:12.5px;}
 button{font-family:inherit;font-size:13px;border:0;border-radius:7px;padding:8px 14px;
 cursor:pointer;color:#fff;background:var(--blue);transition:filter .15s;}
 button:hover{filter:brightness(1.12);}
+button:disabled{opacity:.55;cursor:wait;filter:none;}
 button.primary{background:var(--green);}
 button.neutral{background:var(--neutral);color:var(--muted);}
 button.danger{background:transparent;color:var(--danger);border:1px solid var(--danger);padding:5px 12px;}
@@ -249,36 +264,79 @@ input[type=text]:focus{outline:none;border-color:var(--blue);}
 .form-actions{grid-column:1/-1;display:flex;gap:10px;align-items:center;}
 #result{background:#0a0e14;border:1px solid var(--border);border-radius:8px;padding:14px;
 font-family:Consolas,Menlo,monospace;font-size:12px;color:var(--text);white-space:pre-wrap;
-max-height:300px;overflow:auto;min-height:60px;}
+max-height:300px;overflow:auto;min-height:60px;margin:12px 0;}
 .empty{color:var(--muted);padding:20px;text-align:center;}
 """
 
 PAGE_JS = """
-function act(a){
-  const box=document.getElementById('result');
-  box.textContent='运行中…';
-  fetch('/api/action',{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({action:a})})
-    .then(r=>r.json()).then(d=>{box.textContent=d.msg;});
+function showErr(msg){
+  const box = document.getElementById('result');
+  box.style.color = '#f85149';
+  box.textContent = '[错误] ' + msg;
 }
-document.querySelectorAll('.del').forEach(b=>{
-  b.onclick=()=>{
-    const f=b.dataset.folder;
-    if(!confirm('确认删除技能目录: '+f+' ?\\n将从仓库移除并提交删除(需另行同步)'))return;
-    fetch('/api/delete',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({folder:f})})
-      .then(r=>r.json()).then(d=>{alert(d.msg);location.reload();});
-  };
+window.onerror = function(msg){ showErr(msg); };
+
+async function post(url, payload){
+  const r = await fetch(url, {method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(payload)});
+  return r.json();
+}
+
+async function act(action, btn){
+  const box = document.getElementById('result');
+  box.style.color = '';
+  box.textContent = '运行中…';
+  box.scrollIntoView({behavior:'smooth', block:'nearest'});
+  if(btn){ btn.disabled = true; btn.dataset.old = btn.textContent; btn.textContent = '运行中…'; }
+  try{
+    const d = await post('/api/action', {action: action});
+    box.textContent = (d && d.msg) ? d.msg : '(无输出)';
+  }catch(e){
+    showErr('请求失败: ' + e + ' —— 请确认服务窗口(skillsync_web.py)仍在运行');
+  }finally{
+    if(btn){ btn.disabled = false; btn.textContent = btn.dataset.old; }
+  }
+}
+
+document.querySelectorAll('[data-action]').forEach(b=>{
+  b.addEventListener('click', ()=>act(b.dataset.action, b));
 });
-document.getElementById('addForm').onsubmit=e=>{
+
+document.querySelectorAll('.del').forEach(b=>{
+  b.addEventListener('click', async ()=>{
+    const f = b.dataset.folder;
+    if(!confirm('确认删除技能目录: '+f+' ?\\n将从仓库移除并提交删除(需另行同步)')) return;
+    b.disabled = true; b.dataset.old = b.textContent; b.textContent = '删除中…';
+    try{
+      const d = await post('/api/delete', {folder: f});
+      alert(d.msg); location.reload();
+    }catch(e){
+      b.disabled = false; b.textContent = b.dataset.old; showErr(e);
+    }
+  });
+});
+
+document.getElementById('addForm').addEventListener('submit', async e=>{
   e.preventDefault();
-  const p={folder:f_folder.value.trim(),repo:f_repo.value.trim(),
-    subpath:f_sub.value.trim(),pinned:f_pin.checked};
-  if(!p.folder||!p.repo){alert('文件夹名与来源仓库为必填');return;}
-  fetch('/api/add',{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify(p)})
-    .then(r=>r.json()).then(d=>{alert(d.msg);if(d.ok)location.reload();});
-};
+  const p = {
+    folder:  document.getElementById('f_folder').value.trim(),
+    repo:    document.getElementById('f_repo').value.trim(),
+    subpath: document.getElementById('f_sub').value.trim(),
+    pinned:  document.getElementById('f_pin').checked
+  };
+  if(!p.folder || !p.repo){ alert('文件夹名与来源仓库为必填'); return; }
+  const btn = document.getElementById('addBtn');
+  btn.disabled = true; btn.dataset.old = btn.textContent; btn.textContent = '安装中…';
+  try{
+    const d = await post('/api/add', p);
+    alert(d.msg);
+    if(d.ok){ location.reload(); }
+    else { btn.disabled = false; btn.textContent = btn.dataset.old; }
+  }catch(err){
+    btn.disabled = false; btn.textContent = btn.dataset.old; showErr(err);
+  }
+});
 """
 
 PAGE_HTML = """<!doctype html>
@@ -299,13 +357,14 @@ PAGE_HTML = """<!doctype html>
   <div class="card">
     <h2>技能总览(__COUNT__ 个)</h2>
     <div class="toolbar">
-      <button onclick="act('status')">状态</button>
-      <button class="primary" onclick="act('update')">检查更新</button>
-      <button onclick="act('discover')">发现新技能</button>
-      <button onclick="act('sync')">提交本地</button>
-      <button class="primary" onclick="act('syncpush')">推送远端</button>
-      <button class="neutral" onclick="act('version')">版本</button>
+      <button data-action="status">状态</button>
+      <button class="primary" data-action="update">检查更新</button>
+      <button data-action="discover">发现新技能</button>
+      <button data-action="sync">提交本地</button>
+      <button class="primary" data-action="syncpush">推送远端</button>
+      <button class="neutral" data-action="version">版本</button>
     </div>
+    <div id="result">点击上方按钮, 输出会显示在这里。</div>
     <table>
       <thead><tr>
         <th>目录</th><th>名称</th><th>作用</th><th>版本</th>
@@ -323,15 +382,10 @@ PAGE_HTML = """<!doctype html>
       <label>子路径(可选, 技能在仓库内的目录)<input type="text" id="f_sub" placeholder="skills/foo 或留空取根"></label>
       <label class="check"><input type="checkbox" id="f_pin"> 固定(pinned, 跳过自动更新)</label>
       <div class="form-actions">
-        <button class="primary" type="submit">安装并登记</button>
-        <span class="muted">会自动克隆、复制到技能库并写入 config/sources.json</span>
+        <button class="primary" type="submit" id="addBtn">安装并登记</button>
+        <span class="muted">会自动下载、复制到技能库并写入 config/sources.json</span>
       </div>
     </form>
-  </div>
-
-  <div class="card">
-    <h2>操作输出</h2>
-    <div id="result">点击上方按钮执行命令, 输出显示在此。</div>
   </div>
 </div>
 <script>__JS__</script>

@@ -2,7 +2,7 @@
 
 > 一个**带版本号、可一键更新、可自动发现高星技能、可同步到 GitHub** 的本地 AI 技能库。macOS / Windows 双端通用；并指导 Cursor / Claude Code / Codex / WorkBuddy / Cline / Windsurf 等把技能库指向此处，且**运行时不污染本仓库**。
 
-**当前版本：`1.2.0`**（版本定义见 [`VERSION`](./VERSION)，更新说明见 [`CHANGELOG.md`](./CHANGELOG.md)）。
+**当前版本：`1.3.1`**（版本定义见 [`VERSION`](./VERSION)，更新说明见 [`CHANGELOG.md`](./CHANGELOG.md)）。
 
 ---
 
@@ -24,8 +24,6 @@ AI-SKILLS/
 ├── VERSION          # 语义化版本号（1.0.0）
 ├── CHANGELOG.md     # 大/中/小版本更新说明
 ├── skillsync*       # 跨平台 CLI（update / discover / sync / status）
-├── skillsync_gui.py # 零依赖 Tkinter 桌面管理器（图形界面，需 tcl/tk）
-├── skillsync-gui.bat# 一键启动桌面图形界面（双击即用）
 ├── skillsync_web.py # 零依赖 Web 仪表盘（任意机器可用，无需 tkinter）
 ├── skillsync-web.bat# 一键启动 Web 仪表盘并打开浏览器
 ├── config/          # discover 的兴趣主题配置
@@ -57,15 +55,7 @@ AI-SKILLS/
 
 详见 [`TASK.md`](./TASK.md)。
 
-## 4.1 图形界面（推荐：一键更新）
-
-不想敲命令？双击仓库里的 **`skillsync-gui.bat`** 即可弹出桌面管理器（深墨风格，零依赖）：
-
-- **一键更新全部**：自动完成「检查更新 → 更新非 pinned 技能 → 提交并推送」，两步串行，中途出错即停止。
-- 另有 `状态` / `检查更新` / `发现新技能` / `推送同步` / `版本` / `打开目录` 按钮，带实时滚动日志。
-- 要求运行它的 Python 含 tcl/tk（`skillsync-gui.bat` 已自动定位本机带 tcl/tk 的 CPython；若直接双击 `.py` 而默认 Python 无 tkinter，会提示改用启动器）。
-
-## 4.2 Web 仪表盘（推荐：所有机器直接复用 · 增删技能可视化）
+## 4.1 Web 仪表盘（推荐：所有机器直接复用 · 增删技能可视化）
 
 想要**在任意机器零配置**管理技能库（表格看全部、网页里增删技能）？用 Web 版——它**只依赖 Python 标准库 + git，不需要 tkinter、不需要装任何包**：
 
@@ -74,9 +64,9 @@ AI-SKILLS/
 - **表格总览**：目录 / 名称 / 作用 / 版本号 / 最后更新 / 来源仓库 / 固定 / 操作，数据来自 `SKILL.md` + `CATALOG.md` + `sources.json` + `git`。
 - **新增技能**：填 文件夹名 + 来源仓库(owner/name) + 可选子路径 + 是否固定 → 自动克隆安装并登记到 `config/sources.json`。
 - **删除技能**：每行「删除」按钮（二次确认）→ 从仓库移除并提交删除。
-- **一键**：状态 / 检查更新 / 发现新技能 / 提交本地 / 推送远端 / 版本。
+- **一键**：状态 / 检查更新 / 发现新技能 / 提交本地 / 推送远端 / 版本。输出实时显示在工具栏下方的输出框内。
 
-> 与桌面版（`skillsync_gui.py`，需 tcl/tk）并存：Web 版主打「任意机器零依赖复用」，桌面版主打本机有 tcl/tk 的快捷操作。
+> 版本说明：v1.2.0 曾提供 Tkinter 桌面管理器，因依赖 tcl/tk 在实际环境无法启动，已于 v1.3.1 移除；技能管理统一使用 Web 仪表盘或 CLI。
 
 ## 5. 给其他 Coding 软件：把技能库指向此处
 
