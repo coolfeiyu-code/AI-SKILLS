@@ -8,7 +8,6 @@
 | `agent-reach` | **互联网平台路由器** | 17 平台工具集合，支持搜索/阅读社交/招聘/开发/网页/视频，零配置 8 渠道 | `$agent-reach` / `搜一下` / `读这个链接` |
 | `impeccable` | **前端视觉判官** | 像素级审查，干掉AI塑料感审美，死磕色彩间距排版动效，附带 critique / audit / polish / craft 全套子命令 | `$impeccable critique` / `$impeccable polish` |
 | `brandkit` | **品牌视觉生成器** | 生成高端品牌指南板、Logo系统、视觉身份套件、品牌色板 | `用 brandkit 生成品牌规范` |
-| `brutalist-skill` | **工业布鲁塔尔 UI** | 裸露机械感界面，瑞士字体排印 + 军事终端美学，刚硬网格、极端字号对比 | `用 brutalist 风格做一个仪表盘` |
 | `design-system` | **设计 Token 架构** | 三层 token（primitive→semantic→component）、CSS 变量、间距/排版标度、组件规格、策略幻灯片生成 | `生成 design tokens` / `做个品牌演示` |
 | `find-skills` | **本地技能发现器** | 快速搜索和发现 AI Skills Hub 中安装的技能，按需推荐合适的技能组合 | `有什么技能` / `找技能` / `find skill` |
 | `frontend-design` | **Anthropic 官方前端设计** | 官方审美方向指导：大胆排版、禁用 AI 套路字体(Inter/Roboto/Space Grotesk)、非对称构图、有意动效、CSS 变量调色板 | UI 任务自动触发 / `用 frontend-design 做一个落地页` |
@@ -16,7 +15,6 @@
 | `gpt-tasteskill` | **GSAP 动效大师** | 精准 GSAP ScrollTrigger 动效、视差滚动、弹性交互动画、AIDA 页面结构 | `用 gpt-taste 做一个带动效的落地页` |
 | `gh-skill-installer` | **GitHub 技能安装器** | 搜索 GitHub → 稀疏克隆 → 安全审计 → 安装到技能库的复用流程，自动跳过已装/重叠项 | `从 GitHub 装个 UI skill` |
 | `high-end-visual-design` | **高端视觉规范** | 定义字体、间距、阴影、卡片结构、动效的"昂贵感"标准，封杀廉价默认值 | `用高端视觉规范审查这个页面` |
-| `ian-xiaohei-illustrations` | **小黑怪诞配图** | 为中文文章生成手绘怪诞正文配图，小黑IP、纯白线稿、红橙蓝批注、清爽留白 | `分析怎么配图` / `生成小黑配图` |
 | `interface-design` | **跨会话一致 UI 工艺** | 仪表盘/SaaS/工具类产品的工艺优先设计，token/状态/视觉方向一致，跨会话持久（`.interface-design/system.md`） | `审查这个后台的 UI` |
 | `image-to-code` | **设计图转代码** | 先生成设计参考图，再逐像素还原成可运行的网页代码 | `用 image-to-code 实现这个设计` |
 | `imagegen-frontend-mobile` | **移动端界面生成** | 生成 iOS/Android 应用界面概念图，手机 mockup 框架，多屏一致性 | `生成移动端设置页面设计图` |
@@ -27,10 +25,8 @@
 | `last30days-cn` | **中文平台热点追踪** | last30days 中文专属版本，8 大中文平台搜索（微博/小红书/抖音/B站/知乎/微信/百度/头条），Playwright 浏览器引擎深度抓取 | `搜下 A股 <话题>` / `看看最近 <话题>` |
 | `output-skill` | **完整代码输出器** | 强制完整代码输出，禁止占位符，处理 token 上限拆分 | 自动生效（用于需要完整输出的任务） |
 | `redesign-skill` | **存量项目重设计** | 审计现有设计，识别 AI 通用模式，升级到高端标准而不破坏功能 | `用 redesign 升级这个项目的 UI` |
-| `stitch-skill` | **Google Stitch 设计系统** | 生成 agent 友好的 DESIGN.md，强制高端反通用 UI 标准 | `为项目生成 Stitch 设计系统文档` |
 | `taste-skill` | **反套路前端设计 v2** | 强制真随机布局、AIDA 结构、宽幅排版、GSAP ScrollTrigger，反 AI 模板化 | `用 taste-skill 做一个不AI味的落地页` |
 | `Humanizer-zh` | **中文内容人性化** | 将 AI 生成的中文内容改写为自然人类风格，消除机器味 | `用 Humanizer 改写这段文字` |
-| `seedance-prompt` | **AI视频真实感提示词** | 为 Seedance/Sora/Kling/Runway/Veo 生成去 AI 感、纪录片质感的结构化视频提示词，内置设备美学缺陷包(DV/VHS/Super 8/手机/监控)、氛围翻译表、去 AI 感自检清单 | `纽约街头早晨，真实手机随拍感` / `帮我把视频 prompt 改得更真实` |
 | `serenity-skill` | **供应链瓶颈投研** | 将 AI 转为供应链瓶颈猎手，溯源投研、产业链映射、股票筛选、逻辑压力测试 | `用 Serenity 的方式看` / `深度调研` / `产业链瓶颈` |
 | `Ultimate-AI-Skill-Library` | **终极 AI 技能总库** | 17 个规则文件覆盖需求/架构/编码/审查/调试/HTML/Godot/插件/资源/UI/性能/QA，适配 WorkBuddy·ChatGPT Projects·Cursor·Claude Code·Codex | `请读取 Skills 文件夹中的全部规则，整个项目严格遵守` |
 | `ui-styling` | **shadcn/Tailwind 组件样式** | shadcn/ui（Radix+Tailwind）可访问组件、Tailwind 工具类、canvas 视觉设计、暗色模式 | `用 ui-styling 搭一个后台` |
@@ -47,9 +43,9 @@
 | **新建落地页** | `imagegen-frontend-web` → `image-to-code` → `impeccable polish` |
 | **重设计现有项目** | `redesign-skill` → `impeccable critique` → `impeccable craft` |
 | **移动端 App UI** | `imagegen-frontend-mobile` → `image-to-code` |
-| **品牌/Logo/身份** | `brandkit` → `stitch-skill` |
+| **品牌/Logo/身份** | `brandkit` |
 | **纯动效页面** | `gpt-tasteskill` + `impeccable animate` |
-| **仪表盘/后台** | `brutalist-skill` 或 `minimalist-skill` |
+| **仪表盘/后台** | `minimalist-skill` |
 | **A股数据查询** | `a-stock-data` → 直接说股票代码+问题 |
 | **中文文案润色** | `Humanizer-zh` |
 | **通用视觉提升** | `high-end-visual-design` → `impeccable polish` |
@@ -57,10 +53,10 @@
 | **不知用什么技能** | `find-skills` → 搜索和发现推荐 |
 | **研究/热点追踪** | `$last30days <话题>` → 多平台近30天讨论汇总（海外平台） / `$last30days-cn <话题>` → 中文平台近30天讨论（微博/B站/知乎/小红书等） |
 | **投资研究/产业链分析** | `serenity-skill` → 深度产业链调研、瓶颈识别、股票排序 |
-| **中文文章配图** | `ian-xiaohei-illustrations` → 分析结构 → shot list → 单张生成 → QA检查 |
 
 ## 🔄 更新记录
 
+- **2026-10-09** 批量更新 12 个上游 skill 至最新版：`frontend-design` / `agent-reach` / `a-stock-data` / `serenity-skill` / `last30days-cn` / `ui-ux-pro-max` / `Humanizer-zh` / `seedance-prompt` / `last30days` / `InvestSkill` / `impeccable` / `ian-xiaohei-illustrations`；并修复 README 残留的合并冲突标记。跳过本地已较新（下游提交更旧）的 `trading-skills` / `interface-design` / `gauss314-skills`，以及本地移植合并的 `grill-me`。
 - **2026-08-08** 新增 `dotnet-mod-recon`（自建，非 GitHub 来源；由分析 The Bazaar 的 BazaarPlusPlus V5 插件的实战流程沉淀而来），.NET / Unity BepInEx Mod 无反编译器只读逆向勘察技能，含 #Strings/#US 双堆符号提取、Hook 点定位、只读 SQLite 取证；纯 Markdown 指导，零脚本
 - **2026-07-30** 新增 `grill-me`（来源: github.com/mattpocock/skills，移植为 WorkBuddy 自包含 skill，合并 grill-me + grilling 逻辑），需求拷问/反追问技能，用于编码·产品·方案任务前的边界厘清；安全审计 P2（纯提示词）。已同步安装至 `~/.workbuddy/skills/grill-me/`，副本在本目录 `grill-me/`
 - **2026-07-24** 新增 `ian-xiaohei-illustrations`（来源: github.com/helloianneo/ian-xiaohei-illustrations），中文文章小黑怪诞手绘配图技能，纯白线稿+红橙蓝批注+16:9横版，安全审计 P2 通过（纯 Markdown 指导，零脚本）
