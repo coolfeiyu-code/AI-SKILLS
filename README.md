@@ -2,7 +2,7 @@
 
 > 一个**带版本号、可一键更新、可自动发现高星技能、可同步到 GitHub** 的本地 AI 技能库。macOS / Windows 双端通用；并指导 Cursor / Claude Code / Codex / WorkBuddy / Cline / Windsurf 等把技能库指向此处，且**运行时不污染本仓库**。
 
-**当前版本：`1.1.1`**（版本定义见 [`VERSION`](./VERSION)，更新说明见 [`CHANGELOG.md`](./CHANGELOG.md)）。
+**当前版本：`1.2.0`**（版本定义见 [`VERSION`](./VERSION)，更新说明见 [`CHANGELOG.md`](./CHANGELOG.md)）。
 
 ---
 
@@ -24,6 +24,8 @@ AI-SKILLS/
 ├── VERSION          # 语义化版本号（1.0.0）
 ├── CHANGELOG.md     # 大/中/小版本更新说明
 ├── skillsync*       # 跨平台 CLI（update / discover / sync / status）
+├── skillsync_gui.py # 零依赖 Tkinter 桌面管理器（图形界面）
+├── skillsync-gui.bat# 一键启动图形界面（双击即用）
 ├── config/          # discover 的兴趣主题配置
 ├── tools/           # 给其他 Coding 软件的符号链接/配置脚本
 ├── .gitignore       # 已覆盖常见垃圾文件
@@ -53,6 +55,14 @@ AI-SKILLS/
 
 详见 [`TASK.md`](./TASK.md)。
 
+## 4.1 图形界面（推荐：一键更新）
+
+不想敲命令？双击仓库里的 **`skillsync-gui.bat`** 即可弹出桌面管理器（深墨风格，零依赖）：
+
+- **一键更新全部**：自动完成「检查更新 → 更新非 pinned 技能 → 提交并推送」，两步串行，中途出错即停止。
+- 另有 `状态` / `检查更新` / `发现新技能` / `推送同步` / `版本` / `打开目录` 按钮，带实时滚动日志。
+- 要求运行它的 Python 含 tcl/tk（`skillsync-gui.bat` 已自动定位本机带 tcl/tk 的 CPython；若直接双击 `.py` 而默认 Python 无 tkinter，会提示改用启动器）。
+
 ## 5. 给其他 Coding 软件：把技能库指向此处
 
 默认情况下，各 AI 编码工具在自己的目录（如 `~/.workbuddy/skills`、`~/.claude/skills`）读取技能。**推荐做法是把该目录软链（symlink）到本仓库根**，或逐技能软链，让所有工具共享同一份受管技能库：
@@ -81,7 +91,7 @@ AI-SKILLS/
 
 ## 7. 版本与更新说明
 
-- 版本号在 [`VERSION`](./VERSION)（当前 `1.0.0`），步进规则见 [`CHANGELOG.md`](./CHANGELOG.md)：
+- 版本号在 [`VERSION`](./VERSION)（当前 `1.2.0`），步进规则见 [`CHANGELOG.md`](./CHANGELOG.md)：
   - **大更新 `x.0.0`**：不兼容结构变更（移动目录、改 CLI、改 config 格式、增减平台）。
   - **中更新 `1.x.0`**：向后兼容新功能（新增 `discover`、支持新工具、新增兴趣分类）。
   - **小更新 `1.0.x`**：修复/小改（脚本 bug、文档、`.gitignore`、单技能更新）。

@@ -10,6 +10,20 @@
 
 > **重要约定**：日常 `skillsync update` 刷新技能内容属于运维动作，**不一定**触发版本号步进；只有项目本体（脚本 / 结构 / 约定）变更才按上表 bump。技能自身的版本（如 `a-stock-data` v3.2.2）与本项目版本互不影响，分别记录于各自 `SKILL.md` 与下方的技能更新记录。
 
+## [1.2.0] - 2026-10-09 · 图形界面（Tkinter 桌面管理器）
+
+> 触发条件（对照步进表）：新增 `skillsync_gui.py` 图形界面 + `skillsync-gui.bat` 一键启动器，属向后兼容的新功能 → MINOR。
+
+### 新增
+- **`skillsync_gui.py`**：零依赖 Tkinter 桌面管理器（深墨 / Linear-Vercel 克制风），提供按钮式操作：`状态` / `检查更新` / `一键更新全部` / `发现新技能` / `推送同步` / `版本` / `打开目录`，并带实时滚动输出与任务队列（运行中按钮自动禁用）。
+  - 「一键更新全部」= `update`（比对并本地更新非 pinned 技能）→ `sync --push`（提交并推送 `origin/main`），两步串行、失败即止。
+  - 仅依赖标准库 + tkinter；**必须用带 tcl/tk 的 CPython 启动**（本机为 `C:\Users\13588\AppData\Local\Python\pythoncore-3.14-64\python.exe`，tk 8.6）。缺失 tkinter 时会打印友好提示并退出。
+- **`skillsync-gui.bat`**：一键启动器。自动定位带 tcl/tk 的 Python，双击即弹出管理器窗口；无需命令行。
+- CLI（`skillsync.py`）与 GUI 共用同一解释器（`sys.executable`）调用，避免 PATH 混乱；CLI 仍为纯标准库，可在任意 3.11+ Python 运行。
+
+### 说明
+- GUI 与 CLI 并行存在：命令行用户继续用 `python skillsync.py ...`；偏好图形界面的用户双击 `skillsync-gui.bat` 即可。
+
 ## [1.1.1] - 2026-10-09 · discover 精度优化
 
 ### 修复 / 改进

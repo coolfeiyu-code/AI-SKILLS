@@ -12,7 +12,7 @@
 - 仓库根即技能库：31 个 skill 目录**直接放在根下**（不嵌套 `skills/`）。
 - 远程：`origin = https://github.com/coolfeiyu-code/AI-SKILLS.git`，默认分支 `main`。
 - 工具链：**Python 3.11+**（建议 3.13）。跨平台靠 Python + `pathlib`，不用平台专属命令。
-- 版本：`VERSION` 文件（`1.1.1`），语义化；`CHANGELOG.md` 记录大/中/小版本。
+- 版本：`VERSION` 文件（`1.2.0`），语义化；`CHANGELOG.md` 记录大/中/小版本。
 - 无垃圾公约：运行时产物一律写仓库外系统缓存；`.gitignore` 已覆盖常见垃圾。
 - 位置与同步：仓库现位于同步盘 `C:/AI 云同步/AGENT-SKILLS`（Syncthing/极空间同步）。`.gitignore` 已忽略 `.workbuddy/`；目录级 `.stignore` 已排除 `.git` / `.workbuddy` / 缓存，避免仓库内部与本地 agent 状态被同步到极空间。旧路径 `C:/AI-SKILLS` 为指向本目录的交接点。
 - 文档：`README.md`（项目复用+工具指向+公约）、`CATALOG.md`（技能清单）、本文件。
@@ -22,6 +22,7 @@
 | 文件 | 职责 |
 | :--- | :--- |
 | `skillsync*` | CLI：`update` / `discover` / `sync` / `status` / `version` |
+| `skillsync_gui.py` | 零依赖 Tkinter 桌面管理器（图形界面）；`skillsync-gui.bat` 为双击启动器 |
 | `config/interests.json` | `discover` 的兴趣主题（决定搜什么） |
 | `config/sources.json` | 每个 skill → GitHub repo + 子路径(subpath) + `pinned` 标志（内嵌于 `skillsync.py` 的 `SOURCES` 为兜底） |
 | `tools/` | 给其他 Coding 软件的符号链接/配置脚本（`.sh` + `.ps1`） |
@@ -36,6 +37,12 @@ python skillsync.py discover --top 20  # 列出 20 个候选高星相关技能
 python skillsync.py sync               # 提交并 push 到 origin/main
 python skillsync.py status             # 各技能 本地基线 vs 上游最新 / pinned / 待更新
 ```
+
+### 图形界面（一键更新）
+
+双击仓库内 **`skillsync-gui.bat`** 即可弹出桌面管理器，按钮对应上述命令；「一键更新全部」= `update` → `sync --push`（串行，失败即止）。
+
+> 注意：GUI 需要**带 tcl/tk 的 CPython**（本机为 `C:\Users\13588\AppData\Local\Python\pythoncore-3.14-64\python.exe`）；`skillsync-gui.bat` 已自动定位。CLI（`skillsync.py`）无此限制，任意 3.11+ Python 皆可运行。
 
 ## 4. 数据来源（sources 映射，维护要点）
 
