@@ -367,6 +367,7 @@ button.primary{background:var(--green);}
 button.neutral{background:var(--neutral);color:var(--muted);border:1px solid var(--border);}
 button.danger{background:transparent;color:var(--danger);border:1px solid var(--danger);padding:5px 12px;}
 button.danger:hover{background:rgba(191,91,82,.08);}
+button.armed{background:var(--danger) !important;color:#fff !important;border-color:var(--danger) !important;filter:none !important;}
 table{width:100%;border-collapse:collapse;font-size:13px;}
 th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top;}
 th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.4px;}
@@ -496,9 +497,8 @@ async function installRepo(repo, btn){
   try{
     const d = await post('/api/add', {folder: repo.split('/')[1], repo: repo,
                                       subpath: '', pinned: false});
-    alert(d.msg);
     if(d.ok){ location.reload(); }
-    else { btn.disabled = false; btn.textContent = '安装'; }
+    else { btn.disabled = false; btn.textContent = '安装'; showErr(d.msg); }
   }catch(e){
     btn.disabled = false; btn.textContent = '安装'; showErr(e);
   }
@@ -507,15 +507,24 @@ async function installRepo(repo, btn){
 document.getElementById('discBtn').addEventListener('click', e=>doDiscover(e.currentTarget));
 
 document.querySelectorAll('.del').forEach(b=>{
+  let armed = false, timer = null;
   b.addEventListener('click', async ()=>{
     const f = b.dataset.folder;
-    if(!confirm('确认删除技能目录: '+f+' ?\n将从仓库移除并提交删除(需另行同步)')) return;
-    b.disabled = true; b.dataset.old = b.textContent; b.textContent = '删除中…';
+    if(!armed){
+      armed = true;
+      b.dataset.old = b.textContent;
+      b.textContent = '确认删除?';
+      b.classList.add('armed');
+      timer = setTimeout(()=>{ armed = false; b.textContent = b.dataset.old; b.classList.remove('armed'); }, 4000);
+      return;
+    }
+    clearTimeout(timer);
+    b.disabled = true; b.textContent = '删除中…';
     try{
-      const d = await post('/api/delete', {folder: f});
-      alert(d.msg); location.reload();
+      await post('/api/delete', {folder: f});
+      location.reload();
     }catch(e){
-      b.disabled = false; b.textContent = b.dataset.old; showErr(e);
+      b.disabled = false; b.textContent = b.dataset.old; b.classList.remove('armed'); showErr(e);
     }
   });
 });
@@ -523,7 +532,7 @@ document.querySelectorAll('.del').forEach(b=>{
 document.getElementById('addForm').addEventListener('submit', async e=>{
   e.preventDefault();
   const repo = parseRepo(fRepo.value);
-  if(!repo){ alert('来源仓库请填写 GitHub 链接或 owner/name'); return; }
+  if(!repo){ showErr('来源仓库请填写 GitHub 链接或 owner/name'); return; }
   const p = {
     folder:  fFolder.value.trim() || repo.split('/')[1],
     repo:    repo,
@@ -534,9 +543,8 @@ document.getElementById('addForm').addEventListener('submit', async e=>{
   btn.disabled = true; btn.dataset.old = btn.textContent; btn.textContent = '安装中…';
   try{
     const d = await post('/api/add', p);
-    alert(d.msg);
     if(d.ok){ location.reload(); }
-    else { btn.disabled = false; btn.textContent = btn.dataset.old; }
+    else { btn.disabled = false; btn.textContent = btn.dataset.old; showErr(d.msg); }
   }catch(err){
     btn.disabled = false; btn.textContent = btn.dataset.old; showErr(err);
   }
@@ -582,11 +590,10 @@ PAGE_HTML = """<!doctype html>
       <button data-action="status" title="列出各技能本地基线 / 上游最新 / 是否需要更新">状态</button>
       <button class="primary" data-action="update" title="把有上游更新的技能更新到本地并提交">检查更新</button>
       <button id="discBtn" title="搜索 GitHub 高星相关技能, 在列表内可直接安装">发现新技能</button>
-      <button data-action="sync" title="把库里改动(新增/删除/更新)记入本地 git 历史, 不影响 GitHub">提交本地</button>
-      <button class="primary" data-action="syncpush" title="把本地提交同步到 GitHub 远端, 其他机器 git pull 即得">推送远端</button>
+      <button data-action="syncpush" title="一键同步: 把改动提交到本地 git 历史并推送到 GitHub">同步到 GitHub</button>
       <button class="neutral" data-action="version" title="显示当前版本号与最近更新内容">版本</button>
     </div>
-    <div class="hint">提交本地 = 改动记入本地 git 历史(不影响 GitHub) · 推送远端 = 同步到 GitHub(其他机器拉取即得) · GitHub API 每小时限 60 次, 在 bat 内配置 GITHUB_TOKEN 可提升至 5000 次</div>
+    <div class="hint">同步到 GitHub = 提交改动并推送远端, 一步完成(其他机器 git pull 即得) · GitHub API 每小时限 60 次, 在 bat 内配置 GITHUB_TOKEN 可提升至 5000 次</div>
     <div id="result">点击上方按钮, 输出会显示在这里。</div>
     <table>
       <thead><tr>
