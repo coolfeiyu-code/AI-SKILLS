@@ -6,7 +6,7 @@ skillsync.py — AI-SKILLS 技能库跨平台管理 CLI（零依赖，仅 Python
 子命令:
   status              查看每个受管技能的 本地基线 / 上游最新 / 是否待更新 / pinned
   update [--dry-run]  一键更新：仅对「上游更新且非 pinned」的技能用 tarball 覆盖并更新
-  discover [--top N]  在 GitHub 按 star 发现与你兴趣相关的高星技能，仅列出候选
+  discover [--top N]  在 GitHub 按 star 发现与你兴趣相关的高星技能，仅列出候选（已校验仓库含 SKILL.md，过滤非 skill 框架）
   sync [--push]       提交本地变更（--push 才推送到 origin/main）
   version             打印项目版本号
 
@@ -230,6 +230,32 @@ def matches_interests(text: str) -> bool:
     return False
 
 
+def repo_has_skill_md(full: str, desc: str = "") -> bool:
+    """校验仓库根目录是否真的含 SKILL.md 或 skills/ 子目录，过滤掉 dify/n8n 这类非 skill 框架。
+    - 正常：按 contents API 结果判定。
+    - 命中限流(403/429)：改用廉价文本启发式（名称/描述含 'skill' 才保留），避免大框架漏入。
+    - 其他网络错误：保守返回 True，保留候选而非误删。"""
+    try:
+        data = api_get(f"https://api.github.com/repos/{full}/contents/")
+    except RuntimeError as e:
+        msg = str(e)
+        if "403" in msg or "429" in msg:
+            hay = f"{full} {desc}".lower()
+            return "skill" in hay
+        return True
+    except Exception:
+        return True
+    if not isinstance(data, list):
+        return True
+    for it in data:
+        n = (it.get("name") or "").lower()
+        if n == "skill.md":
+            return True
+        if it.get("type") == "dir" and n in ("skills", "skill"):
+            return True
+    return False
+
+
 def cmd_discover(args):
     n = args.top
     min_stars = args.min_stars
@@ -239,7 +265,7 @@ def cmd_discover(args):
         if os.path.isdir(os.path.join(REPO_ROOT, d)) and os.path.isfile(os.path.join(REPO_ROOT, d, "SKILL.md"))
     }
     seen = set()
-    results = []
+    cands = []
     for t in DISCOVER_TOPICS:
         try:
             data = api_get(
@@ -260,10 +286,20 @@ def cmd_discover(args):
             seen.add(full)
             hay = f"{full} {it.get('description') or ''}".lower()
             if matches_interests(hay):
-                results.append((it["stargazers_count"], full, it.get("description", ""), it["html_url"]))
-    results.sort(reverse=True)
-    results = results[:n]
-    print(f"发现 {len(results)} 个候选高星相关技能（按 star 降序）：\n")
+                cands.append((it["stargazers_count"], full, it.get("description", ""), it["html_url"]))
+    # 仅对高星候选做 SKILL.md 校验（控制 API 调用量），过滤非 skill 仓库
+    cands.sort(reverse=True)
+    verify_cap = max(n * 2, 20)
+    results = []
+    skipped = 0
+    for stars, full, desc, url in cands[:verify_cap]:
+        if repo_has_skill_md(full, desc):
+            results.append((stars, full, desc, url))
+        else:
+            skipped += 1
+        if len(results) >= n:
+            break
+    print(f"发现 {len(results)} 个候选高星相关技能（按 star 降序；已过滤 {skipped} 个非 skill 仓库）：\n")
     for stars, full, desc, url in results:
         print(f"- **{full}**  ⭐{stars}\n  {desc}\n  {url}\n")
     out = os.path.join(cache_dir(), "discover-candidates.md")
