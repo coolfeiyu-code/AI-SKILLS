@@ -141,6 +141,27 @@ def build_skills():
 
 
 # ───────────────────────── 新增 / 删除 ─────────────────────────
+_UA = {"User-Agent": "skillsync-web", "Accept": "application/vnd.github+json"}
+
+
+def _fetch_bytes(url, timeout=120):
+    """下载 URL: 先走系统/环境代理, 失败则绕过代理直连重试(规避 Clash 等代理异常)。
+    HTTP 4xx/5xx 属于明确拒绝, 不重试直接抛出。"""
+    errs = []
+    openers = (urllib.request.build_opener(),
+               urllib.request.build_opener(urllib.request.ProxyHandler({})))
+    for op in openers:
+        try:
+            req = urllib.request.Request(url, headers=_UA)
+            with op.open(req, timeout=timeout) as resp:
+                return resp.read()
+        except urllib.error.HTTPError:
+            raise
+        except Exception as e:  # noqa: BLE001
+            errs.append(str(e))
+    raise RuntimeError("网络错误(系统代理与直连均失败): " + " | ".join(errs))
+
+
 def sanitize_folder(name):
     s = re.sub(r"[^A-Za-z0-9._-]", "-", name.strip())
     return s.strip("-")
@@ -159,15 +180,17 @@ def install_skill(folder, repo, subpath, pinned):
     if any(s["folder"] == folder for s in data):
         return False, f"技能目录 {folder} 已存在"
     try:
-        with urllib.request.urlopen(f"https://api.github.com/repos/{repo}", timeout=30) as r:
-            branch = json.load(r).get("default_branch", "main")
+        api = json.loads(_fetch_bytes(
+            f"https://api.github.com/repos/{repo}", timeout=30).decode("utf-8"))
+        branch = api.get("default_branch", "main")
     except Exception as e:  # noqa: BLE001
         return False, f"无法访问仓库 {repo}: {e}"
     tmp = tempfile.mkdtemp(prefix="skillinstall_")
     try:
         tgz = os.path.join(tmp, "repo.tgz")
-        urllib.request.urlretrieve(
-            f"https://codeload.github.com/{repo}/tar.gz/refs/heads/{branch}", tgz)
+        with open(tgz, "wb") as f:
+            f.write(_fetch_bytes(
+                f"https://codeload.github.com/{repo}/tar.gz/refs/heads/{branch}"))
         ex = os.path.join(tmp, "ex")
         os.makedirs(ex)
         shutil.unpack_archive(tgz, ex)
@@ -212,11 +235,18 @@ def run_cli(action):
                "sync": [], "syncpush": ["--push"], "version": []}
     if action not in allowed:
         return "不允许的操作"
+    # 强制子进程 UTF-8 输出: 中文 Windows 下管道默认 GBK, ⭐/✓ 会令子进程编码崩溃
+    env = dict(os.environ, PYTHONUTF8="1", PYTHONIOENCODING="utf-8")
     try:
         r = subprocess.run([sys.executable, CLI, action.replace("syncpush", "sync"),
                             *allowed[action]], cwd=REPO,
-                           capture_output=True, text=True, encoding="utf-8", timeout=600)
-        return (r.stdout + r.stderr).strip() or "(无输出)"
+                           capture_output=True, text=True,
+                           encoding="utf-8", errors="replace",
+                           timeout=600, env=env)
+        out = ((r.stdout or "") + "\n" + (r.stderr or "")).strip()
+        if r.returncode != 0:
+            out += f"\n(退出码 {r.returncode})"
+        return out or "(无输出)"
     except Exception as e:  # noqa: BLE001
         return f"[异常] {e}"
 

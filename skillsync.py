@@ -86,8 +86,24 @@ def cache_dir() -> str:
     return d
 
 
+def _download(url: str, path: str, timeout: int = 120) -> None:
+    """下载文件到 path: 先走系统代理, 失败绕过代理直连重试(规避 Clash 等代理异常)。"""
+    try:
+        urllib.request.urlretrieve(url, path)
+        return
+    except urllib.error.HTTPError:
+        raise
+    except Exception:
+        pass
+    req = urllib.request.Request(url, headers={"User-Agent": "skillsync"})
+    direct = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+    with direct.open(req, timeout=timeout) as r, open(path, "wb") as f:
+        f.write(r.read())
+
+
 def api_get(url: str):
-    """带文件缓存的 GitHub API GET（缓存 1 小时，尊重 60次/小时 限流）。"""
+    """带文件缓存的 GitHub API GET（缓存 1 小时，尊重 60次/小时 限流）。
+    网络层先走系统代理，失败自动绕过代理直连重试（规避 Clash 等系统代理异常）。"""
     cfile = os.path.join(cache_dir(), "api_cache.json")
     cache = {}
     if os.path.isfile(cfile):
@@ -104,8 +120,15 @@ def api_get(url: str):
     if tok:
         req.add_header("Authorization", f"Bearer {tok}")
     try:
-        with urllib.request.urlopen(req, timeout=30) as r:
-            data = json.loads(r.read().decode())
+        try:
+            with urllib.request.urlopen(req, timeout=30) as r:
+                data = json.loads(r.read().decode())
+        except urllib.error.HTTPError:
+            raise
+        except Exception:
+            direct = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+            with direct.open(req, timeout=30) as r:
+                data = json.loads(r.read().decode())
     except urllib.error.HTTPError as e:
         raise RuntimeError(f"HTTP {e.code} for {url}")
     except Exception as e:
@@ -171,7 +194,7 @@ def apply_update(s: dict) -> None:
     branch = get_default_branch(repo)
     safe = repo.replace("/", "_")
     tgz = os.path.join(cache_dir(), f"{safe}.tgz")
-    urllib.request.urlretrieve(f"https://codeload.github.com/{repo}/tar.gz/refs/heads/{branch}", tgz)
+    _download(f"https://codeload.github.com/{repo}/tar.gz/refs/heads/{branch}", tgz)
     ex = os.path.join(cache_dir(), safe)
     if os.path.isdir(ex):
         shutil.rmtree(ex)

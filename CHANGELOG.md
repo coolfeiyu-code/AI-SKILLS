@@ -10,6 +10,13 @@
 
 > **重要约定**：日常 `skillsync update` 刷新技能内容属于运维动作，**不一定**触发版本号步进；只有项目本体（脚本 / 结构 / 约定）变更才按上表 bump。技能自身的版本（如 `a-stock-data` v3.2.2）与本项目版本互不影响，分别记录于各自 `SKILL.md` 与下方的技能更新记录。
 
+## [1.3.2] - 2026-10-09 · 网络与编码健壮性修复
+
+### 修复
+- **Web `run_cli` 加固**：`r.stdout + r.stderr` 在子进程输出异常时可触发 `TypeError: unsupported operand type(s) for +: 'NoneType' and 'NoneType'`（用户实测发现新技能/检查更新均复现）。改为 `(r.stdout or "") + (r.stderr or "")`，并增加 `errors="replace"`、非零退出码提示，异常时不再吞掉真实输出。
+- **子进程强制 UTF-8**：中文 Windows 下管道默认 GBK 编码，`discover` 输出的 ⭐ / `status` 输出的 ✓ 可能令子进程编码崩溃；调用子进程时注入 `PYTHONUTF8=1` 与 `PYTHONIOENCODING=utf-8`。
+- **网络直连兜底（绕过系统代理）**：Clash 等系统代理异常会导致 urllib/git 全部联网失败（"下载新技能无法下载"、git clone schannel 报错）。`skillsync.py` 新增 `_download` 并在 `api_get`、`apply_update` 中接入"系统代理失败 → 绕过代理直连重试"；Web `install_skill` 同样改为 `_fetch_bytes` 双通道下载（API 取默认分支 + codeload tarball）。
+
 ## [1.3.1] - 2026-10-09 · 移除桌面 GUI · Web 按钮反馈修复
 
 ### 移除
