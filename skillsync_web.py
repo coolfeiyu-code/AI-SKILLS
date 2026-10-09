@@ -633,20 +633,26 @@ qBox.addEventListener('input', ()=>{
   const kw = qBox.value.trim().toLowerCase();
   const tb = document.getElementById('skillsTable').tBodies[0];
   const rows = [...tb.rows];
+  // 分段: 每个组头 + 其后到下一组头之前的数据行
   const segs = [];
-  let start = 0;
+  let cur = null;
   for(let i = 0; i < rows.length; i++){
-    if(rows[i].className === 'group'){ segs.push([start, i - 1, i]); start = i + 1; }
+    if(rows[i].className === 'group'){
+      if(cur) segs.push(cur);
+      cur = {g: i, from: i + 1, to: i};
+    } else if(cur){
+      cur.to = i;
+    }
   }
-  segs.push([start, rows.length - 1, -1]);
-  for(const [a, b, g] of segs){
-    let any = false;
-    for(let i = a; i <= b; i++){
+  if(cur) segs.push(cur);
+  for(const seg of segs){
+    let any = kw === '';
+    for(let i = seg.from; i <= seg.to; i++){
       const hit = kw === '' || rows[i].textContent.toLowerCase().includes(kw);
       rows[i].style.display = hit ? '' : 'none';
       if(hit) any = true;
     }
-    if(g >= 0) rows[g].style.display = any ? '' : 'none';
+    rows[seg.g].style.display = any ? '' : 'none';
   }
 });
 
@@ -1073,11 +1079,13 @@ def deleted_skills():
             if len(parts) == 3:
                 cur = parts
         elif cur and (line.startswith("D\t") or line.startswith("D ")):
+            # 文件级删除聚合到顶层目录/文件(整目录删除时 git 也可能直接记目录)
             p = line.split("\t", 1)[-1].strip().strip('"')
-            if "/" not in p and "\\" not in p and p not in out:
-                out[p] = {"folder": p, "when": cur[1], "msg": cur[2], "commit": cur[0]}
-    return [v for k, v in sorted(out.items(), key=lambda kv: kv[1]["when"], reverse=True)
-            if not os.path.isdir(os.path.join(REPO, k))]
+            top = p.replace("\\", "/").split("/")[0]
+            if top not in out and not os.path.isdir(os.path.join(REPO, top)):
+                out[top] = {"folder": top, "when": cur[1], "msg": cur[2],
+                            "commit": cur[0]}
+    return sorted(out.values(), key=lambda v: v["when"], reverse=True)
 
 
 def restore_skill(folder):
