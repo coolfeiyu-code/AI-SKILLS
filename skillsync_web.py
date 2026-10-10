@@ -7,7 +7,7 @@
 然后浏览器打开 http://localhost:8766
 
 功能:
-    - 表格展示所有技能: 名称 / 作用 / 版本号 / 最后更新 / 来源仓库 / 固定 / 操作
+    - 表格展示所有技能: 名称 / 作用 / 版本号 / 最后提交(本地git) / 来源仓库 / 固定 / 操作
     - 新增技能: 填仓库与子路径, 自动克隆安装并登记到 config/sources.json
     - 删除技能: 从仓库移除并提交删除(需另行同步)
     - 一键: 状态 / 检查更新 / 发现新技能 / 提交本地 / 推送远端
@@ -1114,7 +1114,7 @@ PAGE_HTML = """<!doctype html>
     <table id="skillsTable">
       <thead><tr>
         <th>目录</th><th>名称</th><th>作用</th><th>版本</th>
-        <th>最后更新</th><th>来源仓库</th><th>固定</th><th>风险</th><th>操作</th>
+        <th title="该技能目录在本仓库（本地）最后一次 git commit 的日期，非上游更新时间；上游动态请用「检查更新」">最后提交</th><th>来源仓库</th><th>固定</th><th>风险</th><th>操作</th>
       </tr></thead>
       <tbody>__ROWS__</tbody>
     </table>
