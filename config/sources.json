@@ -107,5 +107,122 @@
     "pinned": false,
     "local": true,
     "category": "自制SKILL"
+  },
+  {
+    "folder": "taste-skill",
+    "repo": "Leonxlnx/taste-skill",
+    "subpath": "skills/taste-skill",
+    "pinned": false,
+    "category": "前端设计"
+  },
+  {
+    "folder": "gpt-tasteskill",
+    "repo": "Leonxlnx/taste-skill",
+    "subpath": "skills/gpt-tasteskill",
+    "pinned": false,
+    "category": "前端设计"
+  },
+  {
+    "folder": "image-to-code-skill",
+    "repo": "Leonxlnx/taste-skill",
+    "subpath": "skills/image-to-code-skill",
+    "pinned": false,
+    "category": "前端设计"
+  },
+  {
+    "folder": "redesign-skill",
+    "repo": "Leonxlnx/taste-skill",
+    "subpath": "skills/redesign-skill",
+    "pinned": false,
+    "category": "前端设计"
+  },
+  {
+    "folder": "soft-skill",
+    "repo": "Leonxlnx/taste-skill",
+    "subpath": "skills/soft-skill",
+    "pinned": false,
+    "category": "前端设计"
+  },
+  {
+    "folder": "output-skill",
+    "repo": "Leonxlnx/taste-skill",
+    "subpath": "skills/output-skill",
+    "pinned": false,
+    "category": "前端设计"
+  },
+  {
+    "folder": "minimalist-skill",
+    "repo": "Leonxlnx/taste-skill",
+    "subpath": "skills/minimalist-skill",
+    "pinned": false,
+    "category": "前端设计"
+  },
+  {
+    "folder": "imagegen-frontend-web",
+    "repo": "Leonxlnx/taste-skill",
+    "subpath": "skills/imagegen-frontend-web",
+    "pinned": false,
+    "category": "前端设计"
+  },
+  {
+    "folder": "imagegen-frontend-mobile",
+    "repo": "Leonxlnx/taste-skill",
+    "subpath": "skills/imagegen-frontend-mobile",
+    "pinned": false,
+    "category": "前端设计"
+  },
+  {
+    "folder": "brandkit",
+    "repo": "Leonxlnx/taste-skill",
+    "subpath": "skills/brandkit",
+    "pinned": false,
+    "category": "前端设计"
+  },
+  {
+    "folder": "design-system",
+    "repo": "mrgoonie/claudekit-skills",
+    "subpath": ".claude/skills/design-system",
+    "pinned": false,
+    "category": "前端设计"
+  },
+  {
+    "folder": "ui-styling",
+    "repo": "mrgoonie/claudekit-skills",
+    "subpath": ".claude/skills/ui-styling",
+    "pinned": false,
+    "category": "前端设计"
+  },
+  {
+    "folder": "find-skills",
+    "repo": "vercel-labs/skills",
+    "subpath": "skills/find-skills",
+    "pinned": false
+  },
+  {
+    "folder": "yao-meta-skill",
+    "repo": "yaojingang/yao-meta-skill",
+    "subpath": "skills/yao-meta-skill",
+    "pinned": false
+  },
+  {
+    "folder": "dotnet-mod-recon",
+    "repo": "",
+    "subpath": "",
+    "pinned": false,
+    "category": "自制SKILL"
+  },
+  {
+    "folder": "Ultimate-AI-Skill-Library",
+    "repo": "",
+    "subpath": "",
+    "pinned": false,
+    "category": "自制SKILL"
+  },
+  {
+    "folder": "gh-skill-installer",
+    "repo": "",
+    "subpath": "",
+    "pinned": false,
+    "category": "自制SKILL"
   }
 ]
