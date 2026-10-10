@@ -10,6 +10,12 @@
 
 > **重要约定**：日常 `skillsync update` 刷新技能内容属于运维动作，**不一定**触发版本号步进；只有项目本体（脚本 / 结构 / 约定）变更才按上表 bump。技能自身的版本（如 `a-stock-data` v3.2.2）与本项目版本互不影响，分别记录于各自 `SKILL.md` 与下方的技能更新记录。
 
+## [1.8.8] - 2026-10-10 · 检查更新免 token：限流时自动回退网页版 commits.atom
+
+- 实测代理与直连出口 IP 均被 GitHub 匿名 API 限流（403）后，检查更新仍会失败。新增兜底：`get_latest_commit_date()` 在 API 失败时自动改抓 **`github.com/{repo}/commits.atom`**（网页版提交订阅源，**非 API 端点，不占 60 次/小时限额**），解析首条 `<updated>` 得到最新提交日期；抓取同样"先代理后直连"重试，结果带 1 小时缓存。
+- XML 用**字节**解析（`ET.fromstring(raw)`），避免带 encoding 声明的 feed 触发 `ValueError: Unicode strings with encoding declaration are not supported`。
+- 效果：不设置 `GITHUB_TOKEN` 也能正常"检查更新"；设置 token 后 API 路径仍优先（数据更精确）。安装/发现新技能等其余 API 调用不受此兜底影响，限流仍建议设置 token。
+
 ## [1.8.7] - 2026-10-10 · 修复"检查更新"全部 403
 
 ### 修复

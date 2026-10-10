@@ -168,11 +168,60 @@ def get_default_branch(repo: str) -> str:
     return data.get("default_branch", "main")
 
 
-def get_latest_commit_date(repo: str):
-    data = api_get(f"https://api.github.com/repos/{repo}/commits?per_page=1")
-    if isinstance(data, list) and data:
-        return data[0]["commit"]["author"]["date"][:10]
+def _atom_latest_commit(repo: str):
+    """GitHub 网页版 commits.atom(非 api.github.com 端点, 不占 60次/小时 API 限额)。
+    解析第一条 entry 的 <updated> 作为最新提交日期, 带 1 小时缓存; 失败返回 None。"""
+    import xml.etree.ElementTree as ET
+    cfile = os.path.join(cache_dir(), "api_cache.json")
+    key = f"atom:{repo}"
+    cache = {}
+    if os.path.isfile(cfile):
+        try:
+            cache = json.load(open(cfile, encoding="utf-8"))
+        except Exception:
+            cache = {}
+    if key in cache and time.time() - cache[key].get("ts", 0) < 3600:
+        return cache[key].get("data")
+    url = f"https://github.com/{repo}/commits.atom"
+    result = None
+    last = None
+    for no_proxy in (False, True):        # 先走系统代理, 失败绕过代理直连
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (compatible; skillsync)"})
+            opener = (urllib.request.build_opener(urllib.request.ProxyHandler({}))
+                      if no_proxy else urllib.request.build_opener())
+            with opener.open(req, timeout=30) as r:
+                raw = r.read()
+            # 用字节解析, 避免带 encoding 声明的 XML 触发 ET 的 ValueError
+            root = ET.fromstring(raw)
+            entry = root.find("{http://www.w3.org/2005/Atom}entry")
+            if entry is not None:
+                ts = (entry.findtext("{http://www.w3.org/2005/Atom}updated") or "").strip()
+                result = ts[:10] or None
+            break
+        except Exception as e:  # noqa: BLE001
+            last = e
+    if result is not None:
+        cache[key] = {"ts": time.time(), "data": result}
+        try:
+            json.dump(cache, open(cfile, "w", encoding="utf-8"))
+        except Exception:
+            pass
+        return result
+    print(f"[warn] {repo}: atom 回退也失败 ({last})")
     return None
+
+
+def get_latest_commit_date(repo: str):
+    """优先走 API(带缓存/token); API 被限流或网络异常时, 回退到网页版
+    commits.atom —— 该端点不是 API, 基本不受 60 次/小时 限额影响。"""
+    try:
+        data = api_get(f"https://api.github.com/repos/{repo}/commits?per_page=1")
+        if isinstance(data, list) and data:
+            return data[0]["commit"]["author"]["date"][:10]
+    except Exception:
+        pass                              # API 限流/网络问题 -> 回退 atom
+    return _atom_latest_commit(repo)
 
 
 def git(*args):
