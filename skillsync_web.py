@@ -17,6 +17,7 @@ import re
 import io
 import sys
 import json
+import email
 import shutil
 import contextlib
 import subprocess
@@ -311,6 +312,8 @@ def install_skill(folder, repo, subpath, pinned):
         data.append({"folder": folder, "repo": repo,
                      "subpath": sub, "pinned": bool(pinned)})
         save_sources(data)
+        if linker is not None:
+            linker.mark_pending([folder])
         subprocess.run(["git", "add", "-A", folder], cwd=REPO)
         level, hits = risk_scan(folder)
         warn = ""
@@ -399,6 +402,8 @@ def install_local_skill(folder, local_path, category="", pinned=False):
         entry["category"] = category
     data.append(entry)
     save_sources(data)
+    if linker is not None:
+        linker.mark_pending([folder])
     # 本地/自制技能可能含敏感配置, 默认不纳入 git(避免 push 到 GitHub 泄露)
     _ensure_gitignored(folder)
     level, hits = risk_scan(folder)
@@ -409,6 +414,64 @@ def install_local_skill(folder, local_path, category="", pinned=False):
     elif level == "warn":
         warn = f"\n安全扫描: {len(hits)} 处提示级匹配, 建议查看内容确认"
     return True, (f"已本地安装 {folder}(来自 {src}), 已登记"
+                  + (f", 分类={category}" if category else "")
+                  + ", 并加入 .gitignore(不进 GitHub)" + warn)
+
+
+def install_local_skill_from_files(folder, category, pinned, files):
+    """从本机文件夹上传的字节流安装技能(multipart): 重建目录结构并登记。
+    不依赖浏览器能否拿到绝对路径 —— 绕开『打开文件夹对话框拿不到路径』的历史坑。"""
+    folder = sanitize_folder(folder)
+    if not folder:
+        return False, "文件夹名无效"
+    data = load_sources()
+    if any(s["folder"] == folder for s in data):
+        return False, f"技能目录 {folder} 已存在"
+    if not files:
+        return False, "没有收到任何文件"
+    # 校验顶层含 SKILL.md
+    rel_paths = [r.replace("\\", "/") for r, _ in files]
+    inner = [(p.split("/", 1)[1] if "/" in p else p) for p in rel_paths]
+    if not any(n.lower() == "skill.md" for n in inner):
+        return False, "所选文件夹顶层没有 SKILL.md, 请选择含 SKILL.md 的技能目录"
+    dest = os.path.join(REPO, folder)
+    if os.path.exists(dest):
+        return False, f"目标目录已存在: {folder}"
+    try:
+        os.makedirs(dest, exist_ok=True)
+        for relpath, content in files:
+            rel = relpath.replace("\\", "/")
+            parts = rel.split("/")
+            if len(parts) > 1:
+                parts = parts[1:]          # 去掉浏览器给的顶层目录名
+            if not parts or parts[-1] == "" or ".." in parts:
+                continue
+            target = os.path.join(dest, *parts)
+            os.makedirs(os.path.dirname(target), exist_ok=True)
+            with open(target, "wb") as f:
+                f.write(content)
+    except Exception as e:  # noqa: BLE001
+        shutil.rmtree(dest, ignore_errors=True)
+        return False, f"写入失败: {e}"
+    if not os.path.isfile(os.path.join(dest, "SKILL.md")):
+        shutil.rmtree(dest, ignore_errors=True)
+        return False, "未找到 SKILL.md, 已回滚"
+    entry = {"folder": folder, "repo": "", "subpath": "", "pinned": bool(pinned), "local": True}
+    if category:
+        entry["category"] = category
+    data.append(entry)
+    save_sources(data)
+    if linker is not None:
+        linker.mark_pending([folder])
+    _ensure_gitignored(folder)
+    level, hits = risk_scan(folder)
+    warn = ""
+    if level == "high":
+        warn = (f"\n⚠ 安全扫描: 发现 {sum(1 for h in hits if h[0] == '高危')}"
+                f" 处高危模式(如明文密钥), 已加入 .gitignore, 不会进 GitHub")
+    elif level == "warn":
+        warn = f"\n安全扫描: {len(hits)} 处提示级匹配, 建议查看内容确认"
+    return True, (f"已本地安装 {folder}(来自本机文件夹上传), 已登记"
                   + (f", 分类={category}" if category else "")
                   + ", 并加入 .gitignore(不进 GitHub)" + warn)
 
@@ -655,27 +718,37 @@ async function loadLinks(){
       + '<td>' + t.total + '</td>'
       + '</tr>').join('');
     document.getElementById('linkRows').innerHTML = rows;
-    const nb = document.getElementById('linkNotice');
-    if(d.needs_relink){
-      const sample = d.new_skills.slice(0,3).map(esc).join('、');
-      const more = d.new_skills.length > 3 ? ' 等 ' + d.new_skills.length + ' 个' : '';
-      nb.className = 'notice warn';
-      nb.style.display = '';
-      nb.innerHTML = '⚠ 检测到 ' + d.new_skills.length + ' 个新增技能（如 ' + sample + more + '），工具侧尚未生效。点「一键连接全部」即可同步（幂等，不影响已有链接）。';
-    } else if(d.removed_skills && d.removed_skills.length){
-      const sample = d.removed_skills.slice(0,3).map(esc).join('、');
-      const more = d.removed_skills.length > 3 ? ' 等 ' + d.removed_skills.length + ' 个' : '';
-      nb.className = 'notice info';
-      nb.style.display = '';
-      nb.innerHTML = 'ℹ 已删除 ' + d.removed_skills.length + ' 个技能（如 ' + sample + more + '）。工具侧悬挂链接会在下次连接或撤销时自动清理，无需重连。';
-    } else if(d.baseline_exists){
-      nb.className = 'notice ok';
-      nb.style.display = '';
-      nb.innerHTML = '✓ 链接已是最新，无需重新连接';
-    } else {
-      nb.style.display = 'none';
-    }
+    applyRelink(d);
   }catch(e){ /* 静默: 状态加载失败不影响其他功能 */ }
+}
+
+function applyRelink(d){
+  const setEl = (el, cls, html, show) => {
+    if(!el) return;
+    if(show){ el.className = 'notice ' + cls; el.style.display = ''; el.innerHTML = html; }
+    else { el.style.display = 'none'; }
+  };
+  const sub = document.getElementById('linkNotice');
+  const home = document.getElementById('relinkBanner');
+  if(d.display_new && d.display_new.length){
+    const sample = d.display_new.slice(0,3).map(esc).join('、');
+    const more = d.display_new.length > 3 ? ' 等 ' + d.display_new.length + ' 个' : '';
+    const html = '⚠ 检测到 ' + d.display_new.length + ' 个新增/变更技能（如 ' + sample + more + '），工具侧尚未生效。点下方「一键连接全部」即可同步（幂等，不影响已有链接）。';
+    setEl(sub, 'warn', html, true);
+    setEl(home, 'warn', html, true);
+  } else if(d.removed_skills && d.removed_skills.length){
+    const sample = d.removed_skills.slice(0,3).map(esc).join('、');
+    const more = d.removed_skills.length > 3 ? ' 等 ' + d.removed_skills.length + ' 个' : '';
+    const html = 'ℹ 已删除 ' + d.removed_skills.length + ' 个技能（如 ' + sample + more + '）。工具侧悬挂链接会在下次连接时自动清理，无需重连。';
+    setEl(sub, 'info', html, true);
+    setEl(home, 'info', html, true);
+  } else if(d.baseline_exists){
+    setEl(sub, 'ok', '✓ 链接已是最新，无需重新连接', true);
+    setEl(home, '', '', false);   // 主页不刷「已是最新」噪声
+  } else {
+    setEl(sub, '', '', false);
+    setEl(home, '', '', false);
+  }
 }
 
 async function linksAct(url, btn){
@@ -877,6 +950,81 @@ document.getElementById('localForm').addEventListener('submit', async e=>{
     btn.disabled = false; btn.textContent = btn.dataset.old; showErr(err);
   }
 });
+
+/* ───── 从本机安装: 打开文件夹对话框 ───── */
+// 用 showDirectoryPicker(原生系统对话框) 选目录, 再把文件读出来上传,
+// 完全不依赖浏览器能否拿到绝对路径 —— 这正是以前『打不开/拿不到路径』坑的根因。
+async function pickAndUpload(){
+  const btn = document.getElementById('browseBtn');
+  try{
+    const dirHandle = await window.showDirectoryPicker({mode:'read'});
+    const files = [];
+    async function walk(handle, prefix){
+      for await (const [name, entry] of handle.entries()){
+        const rel = prefix ? prefix + '/' + name : name;
+        if(entry.kind === 'file'){
+          const file = await entry.getFile();
+          files.push({rel: rel, file: file});
+        } else {
+          await walk(entry, rel);
+        }
+      }
+    }
+    await walk(dirHandle, '');
+    if(!files.some(f => /(^|\/)SKILL\.md$/i.test(f.rel))){
+      showErr('所选文件夹内没有 SKILL.md, 请选择含 SKILL.md 的技能目录');
+      return;
+    }
+    const fd = new FormData();
+    fd.append('folder', document.getElementById('f_lfolder').value.trim() || dirHandle.name);
+    fd.append('category', document.getElementById('f_lcat').value.trim() || '自制SKILL');
+    fd.append('pinned', document.getElementById('f_lpin').checked ? '1' : '0');
+    for(const f of files){ fd.append('files[]', f.file, f.rel); }
+    uploadLocalFiles(fd, btn);
+  }catch(e){
+    if(e && e.name === 'AbortError') return;          // 用户取消
+    // 不支持 showDirectoryPicker → 回退到 webkitdirectory 隐藏输入框
+    const fb = document.getElementById('dirFallback');
+    if(fb){
+      fb.setAttribute('webkitdirectory', '');
+      fb.setAttribute('directory', '');
+      fb.click();
+    } else {
+      showErr('当前浏览器不支持文件夹选择: ' + (e && e.message ? e.message : e));
+    }
+  }
+}
+
+document.getElementById('browseBtn').addEventListener('click', pickAndUpload);
+
+document.getElementById('dirFallback').addEventListener('change', e=>{
+  const files = Array.from(e.target.files || []);
+  if(!files.length) return;
+  const rootName = (files[0].webkitRelativePath || files[0].name).split('/')[0];
+  if(!files.some(f => /\/SKILL\.md$/.test(f.webkitRelativePath))){
+    showErr('所选文件夹内没有 SKILL.md, 请选择含 SKILL.md 的技能目录');
+    return;
+  }
+  const fd = new FormData();
+  fd.append('folder', document.getElementById('f_lfolder').value.trim() || rootName);
+  fd.append('category', document.getElementById('f_lcat').value.trim() || '自制SKILL');
+  fd.append('pinned', document.getElementById('f_lpin').checked ? '1' : '0');
+  for(const f of files){ fd.append('files[]', f, f.webkitRelativePath); }
+  uploadLocalFiles(fd, document.getElementById('browseBtn'));
+  e.target.value = '';
+});
+
+async function uploadLocalFiles(fd, btn){
+  btn.disabled = true; btn.dataset.old = btn.textContent; btn.textContent = '上传中…';
+  try{
+    const r = await fetch('/api/add-local', {method:'POST', body: fd});
+    const d = await r.json();
+    if(d.ok){ location.reload(); }
+    else { btn.disabled = false; btn.textContent = btn.dataset.old; showErr(d.msg); }
+  }catch(err){
+    btn.disabled = false; btn.textContent = btn.dataset.old; showErr('上传失败: ' + err);
+  }
+}
 """
 
 PAGE_HTML = """<!doctype html>
@@ -894,6 +1042,8 @@ PAGE_HTML = """<!doctype html>
     <span class="sub">仓库: __REPO__ · 版本 __VERSION__ · 服务启动于 __START__ · __UNPUSHED__零依赖 Web 仪表盘(所有机器可用)</span>
   </header>
 
+  <div id="relinkBanner" class="notice warn" style="display:none"></div>
+
   <div class="card">
     <h2>安装新技能</h2>
     <form id="addForm">
@@ -910,15 +1060,21 @@ PAGE_HTML = """<!doctype html>
     <div class="local-install">
       <h3 style="margin-top:18px">从本机安装技能</h3>
       <form id="localForm">
-        <label>本机文件夹路径(绝对路径)<input type="text" id="f_lpath" placeholder="C:/路径/到/技能目录"></label>
-        <label>文件夹名(自动取路径末段, 可改)<input type="text" id="f_lfolder" placeholder="自动生成"></label>
+        <label>本机文件夹
+          <div style="display:flex;gap:8px;align-items:center">
+            <input type="text" id="f_lpath" placeholder="填绝对路径 或 直接点「浏览…」选文件夹" style="flex:1">
+            <button type="button" id="browseBtn" class="neutral" style="white-space:nowrap">浏览…</button>
+          </div>
+        </label>
+        <label>文件夹名(自动取所选文件夹名, 可改)<input type="text" id="f_lfolder" placeholder="自动生成"></label>
         <label>分类<input type="text" id="f_lcat" value="自制SKILL" placeholder="如 自制SKILL"></label>
         <label class="check"><input type="checkbox" id="f_lpin"> 固定(跳过自动更新)</label>
         <div class="form-actions">
           <button class="primary" type="submit" id="localBtn">安装(本地)</button>
-          <span class="muted">复制本机目录进仓库并登记; 含敏感配置自动加入 .gitignore(不进 GitHub)</span>
+          <span class="muted">两种方式: ① 填绝对路径后点「安装(本地)」; ② 点「浏览…」用系统对话框选文件夹直接上传(推荐, 无需手填路径)</span>
         </div>
       </form>
+      <input type="file" id="dirFallback" multiple style="display:none">
     </div>
 
     <div id="discWrap" style="display:none">
@@ -1106,11 +1262,14 @@ def links_status():
     st = linker.load_state()
     baseline = st.get("linked_skills")
     if baseline is None:
-        new_skills, removed_skills, needs_relink = [], [], False
+        new_skills, removed_skills = [], []
     else:
         new_skills = sorted(names - set(baseline))
         removed_skills = sorted(set(baseline) - names)
-        needs_relink = bool(new_skills)
+    # 合并"安装后待重连"标记: 即使从未建立基线也能可靠提示
+    pending_new = st.get("pending_new") or []
+    display_new = sorted(set(new_skills) | set(pending_new))
+    needs_relink = bool(display_new) or bool(st.get("pending_relink"))
     for name, tdir in linker.candidate_targets():
         linked = collide = titems = 0
         if tdir.is_dir():
@@ -1127,6 +1286,7 @@ def links_status():
     tools.sort(key=lambda t: t["name"].lower())
     return {"ok": True, "tools": tools, "total": total,
             "new_skills": new_skills, "removed_skills": removed_skills,
+            "display_new": display_new, "pending_new": pending_new,
             "needs_relink": needs_relink, "baseline_exists": baseline is not None}
 
 
@@ -1262,6 +1422,47 @@ def restore_skill(folder):
 
 
 # ───────────────────────── HTTP 服务 ─────────────────────────
+def parse_multipart(body, boundary):
+    """解析 multipart/form-data(浏览器上传的文件夹)。Python 3.13 已移除 cgi,
+    这里用稳健的手动切分(我们对收发两端都可控, 不依赖 email 的严格边界要求)。
+    返回 (fields:dict, files:[(fieldname, filename, bytes)])。"""
+    if not boundary:
+        return {}, []
+    delim = ("--" + boundary).encode("utf-8")
+    fields, files = {}, []
+    for part in body.split(delim):
+        # 跳过空段 / 结束段(--\r\n)
+        if part in (b"", b"--", b"\r\n", b"--\r\n"):
+            continue
+        if part.startswith(b"\r\n"):
+            part = part[2:]
+        sep = b"\r\n\r\n"
+        idx = part.find(sep)
+        if idx < 0:
+            continue
+        header_bytes, content = part[:idx], part[idx + 4:]
+        if content.endswith(b"\r\n"):
+            content = content[:-2]
+        headers = {}
+        for line in header_bytes.split(b"\r\n"):
+            if b":" in line:
+                k, v = line.split(b":", 1)
+                headers[k.strip().decode("latin-1").lower()] = v.strip().decode("latin-1")
+        disp = headers.get("content-disposition", "")
+        name = filename = None
+        for tok in disp.split(";"):
+            tok = tok.strip()
+            if tok.startswith("name="):
+                name = tok[5:].strip().strip('"')
+            elif tok.startswith("filename="):
+                filename = tok[9:].strip().strip('"')
+        if filename:
+            files.append((name, filename, content))
+        elif name is not None:
+            fields[name] = content.decode("utf-8", "replace")
+    return fields, files
+
+
 class Handler(BaseHTTPRequestHandler):
     def _send(self, code, body, ctype="text/html; charset=utf-8"):
         data = body.encode("utf-8") if isinstance(body, str) else body
@@ -1314,9 +1515,9 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         length = int(self.headers.get("Content-Length", 0) or 0)
-        raw = self.rfile.read(length).decode("utf-8") if length else "{}"
+        raw_bytes = self.rfile.read(length) if length else b""
         try:
-            data = json.loads(raw)
+            data = json.loads(raw_bytes.decode("utf-8")) if raw_bytes else {}
         except Exception:
             data = {}
         path = urlparse(self.path).path
@@ -1326,9 +1527,25 @@ class Handler(BaseHTTPRequestHandler):
             self._send(200, json.dumps({"ok": ok, "msg": msg}, ensure_ascii=False),
                        "application/json; charset=utf-8")
         elif path == "/api/add-local":
-            ok, msg = install_local_skill(
-                data.get("folder", ""), data.get("local_path", ""),
-                data.get("category", ""), data.get("pinned", False))
+            ctype = self.headers.get("Content-Type", "") or ""
+            if ctype.startswith("multipart/form-data"):
+                try:
+                    boundary = None
+                    m = re.search(r"boundary=([^;]+)", ctype)
+                    if m:
+                        boundary = m.group(1).strip().strip('"')
+                    fields, fileparts = parse_multipart(raw_bytes, boundary)
+                    files = [(fn, data_) for (_n, fn, data_) in fileparts if fn]
+                    folder = (fields.get("folder") or "").strip()
+                    category = fields.get("category", "") or ""
+                    pinned = str(fields.get("pinned", "")) in ("1", "true", "True")
+                    ok, msg = install_local_skill_from_files(folder, category, pinned, files)
+                except Exception as e:  # noqa: BLE001
+                    ok, msg = False, f"[上传解析失败] {e}"
+            else:
+                ok, msg = install_local_skill(
+                    data.get("folder", ""), data.get("local_path", ""),
+                    data.get("category", ""), data.get("pinned", False))
             self._send(200, json.dumps({"ok": ok, "msg": msg}, ensure_ascii=False),
                        "application/json; charset=utf-8")
         elif path == "/api/delete":

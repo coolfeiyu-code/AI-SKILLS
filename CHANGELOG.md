@@ -10,6 +10,18 @@
 
 > **重要约定**：日常 `skillsync update` 刷新技能内容属于运维动作，**不一定**触发版本号步进；只有项目本体（脚本 / 结构 / 约定）变更才按上表 bump。技能自身的版本（如 `a-stock-data` v3.2.2）与本项目版本互不影响，分别记录于各自 `SKILL.md` 与下方的技能更新记录。
 
+## [1.8.5] - 2026-10-10 · 重新连接提示修复 · 从本机安装支持系统文件夹对话框
+
+### 修复
+- **新增技能不弹"重新连接"提示（根因修复）**：原提示靠"连接基线"（首次点「一键连接全部」才生成）对比差异，从未连接过时基线不存在 → 直接不提示；且提示只挂在「连接 Coding 工具」子面板，主页看不到。
+  - 新增 `link.py: mark_pending(folders)`：安装/删除技能后写 `pending_relink` 与 `pending_new` 到本机状态文件；`link_all()` 完成后清空标记并写基线。
+  - `install_skill`（GitHub）/`install_local_skill`（本机）成功后均调用 `linker.mark_pending([folder])`，**即使从未建立基线也能可靠提示**。
+  - `links_status()` 合并 `pending_new` 与基线差异为 `display_new`，返回给前端；主页新增 `#relinkBanner` 横幅，加载即显示"检测到 N 个新增/变更技能，工具侧尚未生效"；子面板提示同步改用 `display_new`。
+- **从本机安装支持"打开文件夹对话框"**：新增「浏览…」按钮，优先用 `window.showDirectoryPicker()`（Edge/Chrome 原生系统对话框），读取出目录内全部文件后**以 multipart 上传**安装；不支持时回退到隐藏的 `webkitdirectory` 文件输入框。
+  - 关键点：安装完全不依赖浏览器能否拿到绝对路径（即以前"打不开/拿不到路径"坑的根因），改用"上传文件内容"方式，后端 `install_local_skill_from_files()` 重建目录结构并登记。
+  - 后端新增 `parse_multipart()`（Python 3.13 已移除 `cgi`，改用 `email` 模块）解析 `multipart/form-data`；`/api/add-local` 同时支持 JSON（绝对路径模式）与 multipart（对话框上传模式）。
+  - URL 路径穿越防护：逐文件校验 `..` 与绝对路径，仅落地于 `REPO/<folder>/` 下。
+
 ## [1.8.4] - 2026-10-10 · 网页端支持从本机安装技能
 
 - 新增「从本机安装技能」：在仪表盘「安装新技能」卡片内填**本机绝对路径**即可把任意本地目录复制进仓库并登记到 `config/sources.json`，无需 GitHub 仓库。

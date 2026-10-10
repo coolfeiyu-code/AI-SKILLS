@@ -65,6 +65,20 @@ def save_state(st):
     STATE.write_text(json.dumps(st, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
+def mark_pending(folders):
+    """安装/删除技能后标记"待重新连接", 供仪表盘提示用户点「一键连接全部」。"""
+    if not folders:
+        return
+    st = load_state()
+    st["pending_relink"] = True
+    pend = st.get("pending_new") or []
+    for f in folders:
+        if f not in pend:
+            pend.append(f)
+    st["pending_new"] = pend
+    save_state(st)
+
+
 def candidate_targets(create=True):
     """返回 [(工具名, skills目录)]; 已知列表 + 启发式扫描(~/.*/skills) + 用户额外(--to)。"""
     found = {}
@@ -167,6 +181,8 @@ def link_all(targets, skills):
                 print(f"  [失败]   {tname}: {sk.name} -> {e}")
     st = load_state()
     st["linked_skills"] = sorted(s.name for s in skills)
+    st["pending_relink"] = False
+    st["pending_new"] = []
     save_state(st)
     return ok, skip, collide, fail
 
