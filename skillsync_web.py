@@ -1054,7 +1054,7 @@ PAGE_HTML = """<!doctype html>
 <div class="wrap">
   <header>
     <h1>AI-SKILLS 技能管理</h1>
-    <span class="sub">仓库: __REPO__ · 版本 __VERSION__ · 服务启动于 __START__ · __UNPUSHED__零依赖 Web 仪表盘(所有机器可用)</span>
+    <span class="sub">仓库: __REPO__ · 版本 __VERSION__ · __LASTCOMMIT__ · 服务启动于 __START__ · __UNPUSHED__零依赖 Web 仪表盘(所有机器可用)</span>
   </header>
 
   <div id="relinkBanner" class="notice danger" style="display:none"></div>
@@ -1203,6 +1203,12 @@ def render_page():
     disp = "" if n > 0 else "none"
     unpushed_html = (f'<span class="badge risk-high" id="unpushedBadge" '
                      f'style="display:{disp}">⚠ 本地领先 {n} 个提交未推送</span> ')
+    try:
+        _r = subprocess.run(["git", "log", "-1", "--format=%ci"], cwd=REPO,
+                            capture_output=True, text=True, encoding="utf-8")
+        last_commit = "仓库最后提交: " + (_r.stdout.strip()[:16] if _r.returncode == 0 and _r.stdout.strip() else "未知")
+    except Exception:
+        last_commit = "仓库最后提交: 未知"
     return (PAGE_HTML
             .replace("__CSS__", PAGE_CSS)
             .replace("__JS__", PAGE_JS)
@@ -1211,6 +1217,7 @@ def render_page():
             .replace("__VERSION__", html.escape(read_version()))
             .replace("__START__", html.escape(START_TS))
             .replace("__UNPUSHED__", unpushed_html)
+            .replace("__LASTCOMMIT__", html.escape(last_commit))
             .replace("__COUNT__", str(len(skills))))
 
 
