@@ -94,6 +94,13 @@
     "category": "自制SKILL"
   },
   {
+    "folder": "wanxiang-build",
+    "repo": "Cjy-CN/wanxiang-build",
+    "subpath": "skills/wanxiang-build",
+    "pinned": false,
+    "category": "游戏攻略"
+  },
+  {
     "folder": "wxq-lineups-update",
     "repo": "",
     "subpath": "",
