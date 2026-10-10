@@ -573,6 +573,7 @@ max-height:300px;overflow:auto;min-height:60px;margin:12px 0;}
 .notice{margin:0 0 12px;padding:9px 12px;border-radius:8px;font-size:12.5px;line-height:1.55;
 border-left:4px solid var(--green);background:#f3f8f3;color:#2f5230;}
 .notice.warn{border-left-color:var(--warn);background:#fbf3e0;color:#7a5a12;}
+.notice.danger{border:1px solid #e3a39e;background:#fbe9e8;border-left-width:5px;border-left-color:var(--danger);color:#9c342d;font-weight:600;font-size:13.5px;}
 .notice.info{border-left-color:var(--blue);background:#eef4fb;color:#2a4a66;}
 .notice.ok{border-left-color:var(--green);background:#f3f8f3;color:#2f5230;}
 .disc-item{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);}
@@ -731,15 +732,11 @@ function applyRelink(d){
   const sub = document.getElementById('linkNotice');
   const home = document.getElementById('relinkBanner');
   if(d.display_new && d.display_new.length){
-    const sample = d.display_new.slice(0,3).map(esc).join('、');
-    const more = d.display_new.length > 3 ? ' 等 ' + d.display_new.length + ' 个' : '';
-    const html = '⚠ 检测到 ' + d.display_new.length + ' 个新增/变更技能（如 ' + sample + more + '），工具侧尚未生效。点下方「一键连接全部」即可同步（幂等，不影响已有链接）。';
-    setEl(sub, 'warn', html, true);
-    setEl(home, 'warn', html, true);
+    const html = '⚠ 有 ' + d.display_new.length + ' 个新技能未同步到工具侧，点「一键连接全部」即可生效';
+    setEl(sub, 'danger', html, true);
+    setEl(home, 'danger', html, true);
   } else if(d.removed_skills && d.removed_skills.length){
-    const sample = d.removed_skills.slice(0,3).map(esc).join('、');
-    const more = d.removed_skills.length > 3 ? ' 等 ' + d.removed_skills.length + ' 个' : '';
-    const html = 'ℹ 已删除 ' + d.removed_skills.length + ' 个技能（如 ' + sample + more + '）。工具侧悬挂链接会在下次连接时自动清理，无需重连。';
+    const html = 'ℹ 已删除 ' + d.removed_skills.length + ' 个技能，工具侧链接下次连接时自动清理';
     setEl(sub, 'info', html, true);
     setEl(home, 'info', html, true);
   } else if(d.baseline_exists){
@@ -1042,7 +1039,7 @@ PAGE_HTML = """<!doctype html>
     <span class="sub">仓库: __REPO__ · 版本 __VERSION__ · 服务启动于 __START__ · __UNPUSHED__零依赖 Web 仪表盘(所有机器可用)</span>
   </header>
 
-  <div id="relinkBanner" class="notice warn" style="display:none"></div>
+  <div id="relinkBanner" class="notice danger" style="display:none"></div>
 
   <div class="card">
     <h2>安装新技能</h2>
