@@ -1040,6 +1040,25 @@ function startHeartbeat(){
   setInterval(ping, 2000);
 }
 startHeartbeat();
+
+async function loadUpstreamDates(){
+  const fill = (d) => {
+    for (const [folder, date] of Object.entries(d || {})) {
+      const td = document.getElementById('upd-' + folder);
+      if (td) td.textContent = date || '—';
+    }
+  };
+  try {
+    const r = await fetch('/api/upstream-dates', {cache: 'no-store'});
+    const j = await r.json();
+    if (j && j.ok) fill(j.dates);
+    else fill(null);
+  } catch(e) {
+    document.querySelectorAll('td[id^="upd-"]').forEach(
+      td => { if (td.textContent.includes('查询中')) td.textContent = '—'; });
+  }
+}
+setTimeout(loadUpstreamDates, 300);
 """
 
 PAGE_HTML = """<!doctype html>
@@ -1114,7 +1133,7 @@ PAGE_HTML = """<!doctype html>
     <table id="skillsTable">
       <thead><tr>
         <th>目录</th><th>名称</th><th>作用</th><th>版本</th>
-        <th title="该技能目录在本仓库（本地）最后一次 git commit 的日期，非上游更新时间；上游动态请用「检查更新」">最后提交</th><th>来源仓库</th><th>固定</th><th>风险</th><th>操作</th>
+        <th title="上游 GitHub 仓库最近一次提交日期；页面加载后自动查询(带缓存)。本地/自制技能无上游，显示 —">最近更新</th><th>来源仓库</th><th>固定</th><th>风险</th><th>操作</th>
       </tr></thead>
       <tbody>__ROWS__</tbody>
     </table>
@@ -1186,7 +1205,9 @@ def render_rows(skills):
                 f'<td>{html.escape(s["name"])}</td>'
                 f'<td class="purpose" title="{html.escape(s["purpose"], quote=True)}">{html.escape(s["purpose"])}</td>'
                 f'<td>{html.escape(s["version"])}</td>'
-                f'<td>{html.escape(s["last_updated"])}</td>'
+                f'<td id="upd-{html.escape(s["folder"])}">'
+                + ('<span class="muted">查询中…</span>' if repo
+                   else '<span class="muted">—</span>') + '</td>'
                 f"{repo_cell}"
                 f"<td>{pin}</td>"
                 f"<td>{risk}</td>"
@@ -1547,6 +1568,21 @@ class Handler(BaseHTTPRequestHandler):
             self._send(200, render_page())
         elif path == "/api/skills":
             self._send(200, json.dumps(build_skills(), ensure_ascii=False),
+                       "application/json; charset=utf-8")
+        elif path == "/api/upstream-dates":
+            # 每个技能的上游仓库最近一次提交日期(带缓存+限流回退, 首次可能较慢)
+            import skillsync as _ss
+            out = {}
+            for s in build_skills():
+                repo = s.get("repo", "")
+                if not repo:
+                    continue
+                try:
+                    out[s["folder"]] = _ss.get_latest_commit_date(repo)
+                except Exception:
+                    out[s["folder"]] = ""
+            self._send(200, json.dumps({"ok": True, "dates": out},
+                                       ensure_ascii=False),
                        "application/json; charset=utf-8")
         else:
             self._send(404, "Not found")
