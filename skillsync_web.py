@@ -579,6 +579,8 @@ max-height:300px;overflow:auto;min-height:60px;margin:12px 0;}
 .notice{margin:0 0 12px;padding:9px 12px;border-radius:8px;font-size:12.5px;line-height:1.55;
 border-left:4px solid var(--green);background:#f3f8f3;color:#2f5230;}
 .notice.warn{border-left-color:var(--warn);background:#fbf3e0;color:#7a5a12;}
+a.gh-link{font-family:Consolas,Menlo,monospace;font-size:12.5px;color:var(--blue);text-decoration:none;}
+a.gh-link:hover{text-decoration:underline;}
 .notice.danger{border:1px solid #e3a39e;background:#fbe9e8;border-left-width:5px;border-left-color:var(--danger);color:#9c342d;font-weight:600;font-size:13.5px;}
 .notice.info{border-left-color:var(--blue);background:#eef4fb;color:#2a4a66;}
 .notice.ok{border-left-color:var(--green);background:#f3f8f3;color:#2f5230;}
@@ -1167,6 +1169,14 @@ def render_rows(skills):
             risk = {"high": '<span class="badge risk-high">高危</span>',
                     "warn": '<span class="badge risk-warn">注意</span>'}.get(
                         s.get("risk", "clean"), '<span class="muted">✓</span>')
+            repo = s["repo"]
+            if repo and "/" in repo:   # GitHub 技能: 仓库列可一键跳转
+                safe_repo = html.escape(repo, quote=True)
+                repo_cell = (f'<td><a class="gh-link" href="https://github.com/{safe_repo}" '
+                             f'target="_blank" rel="noopener" title="在 GitHub 打开 {safe_repo}">'
+                             f'{html.escape(repo)} ↗</a></td>')
+            else:                      # 本地/自制技能: 无上游
+                repo_cell = '<td><span class="muted">本地</span></td>'
             rows.append(
                 "<tr>"
                 f'<td><span class="folder">{html.escape(s["folder"])}</span></td>'
@@ -1174,7 +1184,7 @@ def render_rows(skills):
                 f'<td class="purpose" title="{html.escape(s["purpose"], quote=True)}">{html.escape(s["purpose"])}</td>'
                 f'<td>{html.escape(s["version"])}</td>'
                 f'<td>{html.escape(s["last_updated"])}</td>'
-                f'<td><span class="folder">{html.escape(s["repo"])}</span></td>'
+                f"{repo_cell}"
                 f"<td>{pin}</td>"
                 f"<td>{risk}</td>"
                 f'<td><button class="neutral view" data-folder="{html.escape(s["folder"])}">查看</button> '
