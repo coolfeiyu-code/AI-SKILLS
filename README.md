@@ -1,4 +1,4 @@
-﻿# AI-SKILLS · 跨平台 AI 技能库管理器
+# AI-SKILLS · 跨平台 AI 技能库管理器
 
 > 一个**带版本号、可一键更新、可自动发现高星技能、可同步到 GitHub** 的本地 AI 技能库。macOS / Windows 双端通用；并指导 Cursor / Claude Code / Codex / WorkBuddy / Cline / Windsurf 等把技能库指向此处，且**运行时不污染本仓库**。
 
@@ -36,22 +36,22 @@ AI-SKILLS/
 
 ## 3. 快速开始（Mac / Win）
 
-| | macOS | Windows |
-| :--- | :--- | :--- |
-| 运行时 | 系统自带或 `brew install python` | Git Bash（随 Git 安装）或 PowerShell + Python 3.11+ |
-| 克隆 | `git clone https://github.com/coolfeiyu-code/AI-SKILLS.git` | 同上 |
-| 运行 | `python3 skillsync.py <命令>` | `python skillsync.py <命令>`（或 Git Bash 内同左） |
+|     | macOS                                                       | Windows                                       |
+| :-- | :---------------------------------------------------------- | :-------------------------------------------- |
+| 运行时 | 系统自带或 `brew install python`                                 | Git Bash（随 Git 安装）或 PowerShell + Python 3.11+ |
+| 克隆  | `git clone https://github.com/coolfeiyu-code/AI-SKILLS.git` | 同上                                            |
+| 运行  | `python3 skillsync.py <命令>`                                 | `python skillsync.py <命令>`（或 Git Bash 内同左）    |
 
 所有命令均**跨平台**，依靠 Python + `pathlib`，不依赖任何平台专属命令。
 
 ## 4. 核心功能
 
-| 命令 | 作用 |
-| :--- | :--- |
-| `skillsync update [--dry-run]` | **一键更新**：比对每个受管技能的上游最近提交，仅对确有更新的、且非 `pinned` 的技能用 tarball 覆盖更新，并提交。 |
+| 命令                             | 作用                                                                            |
+| :----------------------------- | :---------------------------------------------------------------------------- |
+| `skillsync update [--dry-run]` | **一键更新**：比对每个受管技能的上游最近提交，仅对确有更新的、且非 `pinned` 的技能用 tarball 覆盖更新，并提交。           |
 | `skillsync discover [--top N]` | **自动发现**：在 GitHub 按 star 数搜索与你兴趣主题相关的高星 skill，去重后给出候选清单（含 stars / 简介 / 仓库地址）。 |
-| `skillsync sync` | **同步到 GitHub**：`git add -A` → 提交 → `git push origin`（默认分支 `main`）。 |
-| `skillsync status` | 列出每个技能的本地基线 vs 上游最新、是否 `pinned`、是否有待更新。 |
+| `skillsync sync`               | **同步到 GitHub**：`git add -A` → 提交 → `git push origin`（默认分支 `main`）。            |
+| `skillsync status`             | 列出每个技能的本地基线 vs 上游最新、是否 `pinned`、是否有待更新。                                       |
 
 详见 [`TASK.md`](./TASK.md)。
 
@@ -98,7 +98,7 @@ AI-SKILLS/
 
 本仓库只放「技能目录 + 项目文档 + 工具脚本」。任何运行时产物严禁写入仓库：
 
-1. **运行时产物外置**：下载的 tarball、临时解压、缓存、日志一律写到仓库外的系统缓存
+1. **运行时产物外置**：下载的 tarball、临时解压、缓存、日志一律写到仓库外的系统缓存  
    （Win: `%LOCALAPPDATA%/skillsync`；Mac: `~/Library/Caches/skillsync` 或 `~/.cache/skillsync`），运行后清理。
 2. **`.gitignore` 已覆盖**：`*.log`、`tmp/`、`**/.cache/`、`node_modules/`、`output/`、`reports/`、`dist/`、`build/`、`*.db`、`.env` 等常见垃圾。
 3. **提交前自检**：`git status --porcelain` 若出现意外文件，先排查来源，不要直接 `add -A` 提交垃圾。
