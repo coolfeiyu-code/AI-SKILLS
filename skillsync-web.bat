@@ -1,6 +1,10 @@
 @echo off
 setlocal
 :: AI-SKILLS 技能管理 Web 仪表盘 —— 一键启动(所有机器通用: 仅需 Python 3.11+ 与 git)
+if not defined GITHUB_TOKEN (
+  echo [提示] 未检测到 GITHUB_TOKEN 环境变量, GitHub API 限流为 60 次/小时(数据中心/代理出口易被限)。
+  echo [提示] 如需"检查更新"稳定可用, 运行:  setx GITHUB_TOKEN "你的只读PAT"   然后重启本程序。
+)
 cd /d "%~dp0"
 where python >nul 2>nul
 if errorlevel 1 (

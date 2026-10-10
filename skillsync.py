@@ -101,9 +101,40 @@ def _download(url: str, path: str, timeout: int = 120) -> None:
         f.write(r.read())
 
 
+def _gh_errmsg(code, body):
+    """把 GitHub 的 403/429 翻成中文可操作提示。"""
+    if code in (403, 429):
+        low = (body or "").lower()
+        if "rate limit" in low:
+            return ("GitHub API 限流(匿名 60 次/小时; 数据中心/代理出口 IP 更易被限)。"
+                    "请在系统环境变量设置 GITHUB_TOKEN(只读 public 的 PAT)后重启仪表盘, "
+                    "额度升至 5000 次/小时。详见 skillsync-web.bat 注释。")
+        return ("GitHub 拒绝(HTTP 403)。若请求经代理出口, 数据中心 IP 常被限流; "
+                "建议设置 GITHUB_TOKEN 或检查代理。")
+    return (body or "").strip() or f"HTTP {code}"
+
+
+def _api_fetch(req, no_proxy=False):
+    opener = (urllib.request.build_opener(urllib.request.ProxyHandler({}))
+              if no_proxy else urllib.request.build_opener())
+    try:
+        with opener.open(req, timeout=30) as r:
+            return json.loads(r.read().decode())
+    except urllib.error.HTTPError as e:
+        body = ""
+        try:
+            body = e.read().decode("utf-8", "replace")
+        except Exception:
+            pass
+        raise RuntimeError(f"HTTP {e.code} for {req.full_url}: {_gh_errmsg(e.code, body)}")
+    except Exception as e:  # noqa: BLE001
+        raise RuntimeError(f"网络错误: {e}")
+
+
 def api_get(url: str):
-    """带文件缓存的 GitHub API GET（缓存 1 小时，尊重 60次/小时 限流）。
-    网络层先走系统代理，失败自动绕过代理直连重试（规避 Clash 等系统代理异常）。"""
+    """带文件缓存的 GitHub API GET(缓存 1 小时, 匿名 60 次/小时)。
+    先走系统代理; 遇 403/429 限流时自动绕过代理直连重试(Clash 等数据中心出口
+    常被 GitHub 限流, 直连住宅 IP 往往可用)。设置 GITHUB_TOKEN 可彻底解除限流。"""
     cfile = os.path.join(cache_dir(), "api_cache.json")
     cache = {}
     if os.path.isfile(cfile):
@@ -115,24 +146,15 @@ def api_get(url: str):
         entry = cache[url]
         if time.time() - entry.get("ts", 0) < 3600:
             return entry["data"]
-    req = urllib.request.Request(url, headers={"User-Agent": "skillsync", "Accept": "application/vnd.github+json"})
+    req = urllib.request.Request(url, headers={"User-Agent": "skillsync",
+                                               "Accept": "application/vnd.github+json"})
     tok = os.environ.get("GITHUB_TOKEN")
     if tok:
         req.add_header("Authorization", f"Bearer {tok}")
     try:
-        try:
-            with urllib.request.urlopen(req, timeout=30) as r:
-                data = json.loads(r.read().decode())
-        except urllib.error.HTTPError:
-            raise
-        except Exception:
-            direct = urllib.request.build_opener(urllib.request.ProxyHandler({}))
-            with direct.open(req, timeout=30) as r:
-                data = json.loads(r.read().decode())
-    except urllib.error.HTTPError as e:
-        raise RuntimeError(f"HTTP {e.code} for {url}")
-    except Exception as e:
-        raise RuntimeError(f"网络错误: {e}")
+        data = _api_fetch(req)                  # 先走系统代理
+    except RuntimeError:
+        data = _api_fetch(req, no_proxy=True)   # 限流/代理异常 -> 绕过代理直连重试
     cache[url] = {"ts": time.time(), "data": data}
     try:
         json.dump(cache, open(cfile, "w", encoding="utf-8"))
@@ -173,6 +195,9 @@ def cmd_status(args):
     print(f"{'技能':32} {'本地基线':12} {'上游最新':12} 状态")
     print("-" * 70)
     for s in SOURCES:
+        if not s.get("repo"):
+            print(f"{s['folder']:32} {'本地':12} {'—':12} 本地/自制(无上游)")
+            continue
         base = local_baseline(s["folder"])
         try:
             up = get_latest_commit_date(s["repo"])
@@ -216,6 +241,9 @@ def cmd_update(args):
         folder = s["folder"]
         if s.get("pinned"):
             print(f"[pinned] 跳过 {folder}（本地定制，覆盖会降级/丢改造）")
+            continue
+        if not s.get("repo"):
+            print(f"[local] 跳过 {folder}（本地/自制技能，无上游，不检查更新）")
             continue
         base = local_baseline(folder)
         try:
