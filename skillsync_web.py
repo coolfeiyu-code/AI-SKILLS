@@ -1159,7 +1159,10 @@ def render_rows(skills):
     if not skills:
         return '<tr><td colspan="9" class="empty">未找到含 SKILL.md 的技能目录</td></tr>'
     rows = []
-    for cat in CAT_ORDER:
+    # 兜底：自定义分类不在 CAT_ORDER 时也显示，避免技能从表格消失
+    seen_cats = {s["category"] for s in skills}
+    order = list(CAT_ORDER) + sorted(c for c in seen_cats if c not in CAT_ORDER)
+    for cat in order:
         group = [s for s in skills if s["category"] == cat]
         if not group:
             continue
