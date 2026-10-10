@@ -22,6 +22,7 @@ import shutil
 import contextlib
 import subprocess
 import tempfile
+import time
 import datetime
 import html
 import urllib.request
@@ -34,6 +35,11 @@ SOURCES = os.path.join(REPO, "config", "sources.json")
 CATALOG = os.path.join(REPO, "CATALOG.md")
 VERSION_FILE = os.path.join(REPO, "VERSION")
 START_TS = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+
+# 浏览器心跳看门狗: 页面打开时 JS 每 2 秒打一次 /api/ping;
+# 首次 ping 后"armed", 若连续 10 秒无心跳(页面已关)则服务自动退出,
+# 实现"关闭网页即关闭服务窗口", 不用再去手动关 bat/控制台。
+WATCHDOG = {"armed": False, "last": 0.0}
 
 # 复用统一连接器(tools/link.py): 探测/连接/撤销/提示词
 sys.path.insert(0, os.path.join(REPO, "tools"))
@@ -1022,6 +1028,16 @@ async function uploadLocalFiles(fd, btn){
     btn.disabled = false; btn.textContent = btn.dataset.old; showErr('上传失败: ' + err);
   }
 }
+
+/* ───── 心跳保活 ───── */
+// 页面开着每 2 秒 ping 一次; 关闭页面后心跳停止, 服务端 10 秒后自动退出,
+// 实现"关网页即关服务窗口", 不用再手动关控制台。
+function startHeartbeat(){
+  const ping = () => { try{ fetch('/api/ping', {cache:'no-store'}); }catch(e){} };
+  ping();
+  setInterval(ping, 2000);
+}
+startHeartbeat();
 """
 
 PAGE_HTML = """<!doctype html>
@@ -1475,6 +1491,11 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/favicon.ico":
             self._send(204, b"")
             return
+        if path == "/api/ping":
+            WATCHDOG["armed"] = True
+            WATCHDOG["last"] = time.time()
+            self._send(200, b"ok")
+            return
         if path == "/api/unpushed":
             self._send(200, json.dumps({"ok": True, "count": unpushed_count()},
                                        ensure_ascii=False),
@@ -1641,8 +1662,14 @@ def main():
         sys.exit(1)
     print(f"AI-SKILLS 仪表盘已启动: http://{args.host}:{args.port}  (Ctrl+C 退出)")
     print(f"(本服务进程启动于 {START_TS}; 页面顶部显示的启动时间即当前进程, 可用于确认非旧实例)")
+    print("提示: 关闭浏览器页面后约 10 秒, 本服务会自动退出。")
     try:
-        srv.serve_forever()
+        srv.timeout = 5
+        while True:
+            srv.handle_request()
+            if WATCHDOG["armed"] and time.time() - WATCHDOG["last"] > 10:
+                print("\n检测到浏览器页面已关闭, 服务自动退出。")
+                break
     except KeyboardInterrupt:
         print("\n已停止")
         srv.shutdown()
